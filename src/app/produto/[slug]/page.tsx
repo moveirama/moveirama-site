@@ -3,6 +3,14 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import RecursosMontagem from '@/components/RecursosMontagem'
+
+// Função para limpar markdown da descrição
+function cleanMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold markdown
+    .replace(/\*(.*?)\*/g, '$1')     // Remove italic markdown
+}
 
 // Busca produto com detalhes
 async function getProduct(slug: string) {
@@ -455,6 +463,14 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </div>
         </section>
 
+        {/* Seção: Tudo pra montar tranquilo */}
+        <RecursosMontagem
+          manualUrl={product.manual_url}
+          medidasImagemUrl={product.medidas_image_url}
+          videoUrl={product.video_url}
+          productName={product.name}
+        />
+
         {/* Seção: Descrição */}
         {product.long_description && (
           <section className="mt-8">
@@ -462,7 +478,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               Sobre o produto
             </h2>
             <div className="prose prose-sm max-w-none text-[var(--color-graphite)]">
-              <p className="whitespace-pre-line">{product.long_description}</p>
+              <p className="whitespace-pre-line">{cleanMarkdown(product.long_description)}</p>
             </div>
           </section>
         )}
