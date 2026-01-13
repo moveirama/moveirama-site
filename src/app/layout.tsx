@@ -1,9 +1,59 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "Moveirama | Móveis em Curitiba e Região",
-  description: "Móveis na caixa com entrega rápida em Curitiba e região metropolitana. Racks, painéis, escrivaninhas e mais. Preço justo e montagem fácil.",
+  metadataBase: new URL('https://moveirama.com.br'),
+  title: {
+    default: "Moveirama | Móveis em Curitiba e Região",
+    template: "%s | Moveirama"
+  },
+  description: "Loja de móveis em Curitiba com entrega rápida. Racks, painéis, escrivaninhas e mais. Preço justo, montagem fácil e suporte no WhatsApp.",
+  keywords: ["móveis Curitiba", "rack para TV", "painel para TV", "escrivaninha", "móveis baratos", "loja de móveis Curitiba", "móveis RMC"],
+  authors: [{ name: "Moveirama" }],
+  creator: "Moveirama",
+  publisher: "Moveirama",
+  formatDetection: {
+    telephone: true,
+    email: true,
+  },
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    url: "https://moveirama.com.br",
+    siteName: "Moveirama",
+    title: "Moveirama | Móveis em Curitiba e Região",
+    description: "Loja de móveis em Curitiba com entrega rápida. Racks, painéis, escrivaninhas e mais. Preço justo, montagem fácil e suporte no WhatsApp.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Moveirama - Móveis em Curitiba",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Moveirama | Móveis em Curitiba e Região",
+    description: "Loja de móveis em Curitiba com entrega rápida. Racks, painéis, escrivaninhas e mais.",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    // google: "seu-codigo-google-search-console",
+  },
 };
 
 export default function RootLayout({
@@ -18,9 +68,12 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
+        <link rel="canonical" href="https://moveirama.com.br" />
       </head>
       <body>
+        <Header />
         {children}
+        <Footer />
       </body>
     </html>
   );

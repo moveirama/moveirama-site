@@ -29,9 +29,36 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   
   if (!product) return { title: 'Produto não encontrado' }
   
+  const mainImage = product.images?.find((img: { image_type: string }) => img.image_type === 'principal') || product.images?.[0]
+  
   return {
     title: product.meta_title || `${product.name} | Moveirama`,
     description: product.meta_description || product.short_description,
+    openGraph: {
+      title: `${product.name} | Moveirama`,
+      description: product.short_description,
+      url: `https://moveirama.com.br/produto/${slug}`,
+      siteName: 'Moveirama',
+      images: mainImage ? [
+        {
+          url: mainImage.cloudinary_path,
+          width: 800,
+          height: 800,
+          alt: product.name,
+        }
+      ] : [],
+      locale: 'pt_BR',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: product.name,
+      description: product.short_description,
+      images: mainImage ? [mainImage.cloudinary_path] : [],
+    },
+    alternates: {
+      canonical: `https://moveirama.com.br/produto/${slug}`,
+    },
   }
 }
 
@@ -70,8 +97,116 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no ${product.name}. Podem me ajudar?`)
   const whatsappLink = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`
 
+  // Schema.org Product
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": product.name,
+    "description": product.short_description,
+    "image": product.images?.map((img: { cloudinary_path: string }) => img.cloudinary_path) || [],
+    "sku": product.sku,
+    "brand": {
+      "@type": "Brand",
+      "name": product.brand || "Moveirama"
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": `https://moveirama.com.br/produto/${slug}`,
+      "priceCurrency": "BRL",
+      "price": product.price,
+      "priceValidUntil": new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
+      "availability": product.stock_quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      "itemCondition": "https://schema.org/NewCondition",
+      "seller": {
+        "@type": "Organization",
+        "name": "Moveirama"
+      },
+      "shippingDetails": {
+        "@type": "OfferShippingDetails",
+        "shippingDestination": {
+          "@type": "DefinedRegion",
+          "addressCountry": "BR",
+          "addressRegion": "PR"
+        },
+        "deliveryTime": {
+          "@type": "ShippingDeliveryTime",
+          "handlingTime": {
+            "@type": "QuantitativeValue",
+            "minValue": 1,
+            "maxValue": 2,
+            "unitCode": "DAY"
+          },
+          "transitTime": {
+            "@type": "QuantitativeValue",
+            "minValue": 1,
+            "maxValue": 3,
+            "unitCode": "DAY"
+          }
+        }
+      }
+    },
+    "additionalProperty": [
+      {
+        "@type": "PropertyValue",
+        "name": "Material",
+        "value": product.main_material
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Largura",
+        "value": `${product.width_cm} cm`
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Altura",
+        "value": `${product.height_cm} cm`
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Profundidade",
+        "value": `${product.depth_cm} cm`
+      }
+    ]
+  }
+
+  // Schema.org BreadcrumbList
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Início",
+        "item": "https://moveirama.com.br"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": product.category?.name,
+        "item": `https://moveirama.com.br/categoria/${product.category?.slug}`
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": product.name,
+        "item": `https://moveirama.com.br/produto/${slug}`
+      }
+    ]
+  }
+
   return (
     <main className="min-h-screen pb-24 md:pb-8">
+      {/* Schema.org JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+
       {/* Container */}
       <div className="container mx-auto px-4 py-4 md:py-8">
         
