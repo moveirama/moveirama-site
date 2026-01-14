@@ -8,6 +8,7 @@ interface RecursosMontagem {
   manualUrl?: string | null
   medidasImagemUrl?: string | null
   videoUrl?: string | null
+  datasheetUrl?: string | null
   productName: string
   whatsappNumber?: string
 }
@@ -38,6 +39,12 @@ const DownloadIcon = () => (
   </svg>
 )
 
+const ClipboardIcon = () => (
+  <svg className="w-12 h-12 text-[var(--color-sage-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+  </svg>
+)
+
 const ExternalLinkIcon = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -54,11 +61,12 @@ export default function RecursosMontagem({
   manualUrl, 
   medidasImagemUrl, 
   videoUrl,
+  datasheetUrl,
   productName,
   whatsappNumber = '5541999999999'
 }: RecursosMontagem) {
   // Se nenhum recurso disponível, não renderizar a seção
-  const temRecursos = manualUrl || medidasImagemUrl || videoUrl
+  const temRecursos = manualUrl || medidasImagemUrl || videoUrl || datasheetUrl
   if (!temRecursos) return null
 
   const whatsappMessage = encodeURIComponent(`Preciso de ajuda com a montagem do ${productName}`)
@@ -81,7 +89,7 @@ export default function RecursosMontagem({
       </p>
 
       {/* Grid de Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+      <div className={`grid grid-cols-1 gap-3 md:gap-4 ${datasheetUrl ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
         
         {/* Card: Manual */}
         <div className={`
@@ -97,7 +105,8 @@ export default function RecursosMontagem({
           {manualUrl ? (
             <a
               href={manualUrl}
-              download
+              target="_blank"
+              rel="noopener noreferrer"
               className="
                 bg-transparent border border-[var(--color-sage-500)] text-[var(--color-sage-500)]
                 text-sm font-medium py-2 px-4 rounded-lg
@@ -106,10 +115,10 @@ export default function RecursosMontagem({
                 focus-visible:outline focus-visible:outline-2 
                 focus-visible:outline-[var(--color-sage-500)] focus-visible:outline-offset-2
               "
-              aria-label="Baixar manual de montagem em PDF"
+              aria-label="Abrir manual de montagem em PDF"
             >
-              <DownloadIcon />
-              Baixar PDF
+              <ExternalLinkIcon />
+              Abrir PDF
             </a>
           ) : (
             <span className="
@@ -170,7 +179,7 @@ export default function RecursosMontagem({
         `}>
           <PlayIcon />
           <span className="text-base font-medium text-[var(--color-graphite)] mb-3 mt-3">
-            Vídeo do produto
+            Vídeo de montagem
           </span>
           {videoUrl ? (
             <a
@@ -185,7 +194,7 @@ export default function RecursosMontagem({
                 focus-visible:outline focus-visible:outline-2 
                 focus-visible:outline-[var(--color-sage-500)] focus-visible:outline-offset-2
               "
-              aria-label="Assistir vídeo do produto no YouTube"
+              aria-label="Assistir vídeo de montagem no YouTube"
             >
               <ExternalLinkIcon />
               Assistir
@@ -200,6 +209,37 @@ export default function RecursosMontagem({
             </span>
           )}
         </div>
+
+        {/* Card: Ficha Técnica (só aparece se tiver) */}
+        {datasheetUrl && (
+          <div className="
+            bg-white border border-[var(--color-sand-light)] rounded-lg p-4
+            flex flex-col items-center text-center
+            transition-shadow hover:shadow-md
+          ">
+            <ClipboardIcon />
+            <span className="text-base font-medium text-[var(--color-graphite)] mb-3 mt-3">
+              Ficha técnica
+            </span>
+            <a
+              href={datasheetUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="
+                bg-transparent border border-[var(--color-sage-500)] text-[var(--color-sage-500)]
+                text-sm font-medium py-2 px-4 rounded-lg
+                min-h-[44px] inline-flex items-center justify-center gap-2
+                transition-all hover:bg-[var(--color-sage-500)]/10
+                focus-visible:outline focus-visible:outline-2 
+                focus-visible:outline-[var(--color-sage-500)] focus-visible:outline-offset-2
+              "
+              aria-label="Abrir ficha técnica em PDF"
+            >
+              <ExternalLinkIcon />
+              Abrir PDF
+            </a>
+          </div>
+        )}
       </div>
 
       {/* CTA WhatsApp */}

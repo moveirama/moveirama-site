@@ -509,6 +509,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           manualUrl={product.manual_url}
           medidasImagemUrl={product.medidas_image_url}
           videoUrl={product.video_url}
+          datasheetUrl={product.datasheet_url}
           productName={product.name}
         />
 
@@ -573,6 +574,12 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                   <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Material</td>
                   <td className="px-4 py-3">{product.main_material}{product.thickness_mm && ` ${product.thickness_mm}mm`}</td>
                 </tr>
+                {product.coating && (
+                  <tr className="border-b border-[var(--color-sand-light)]">
+                    <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Revestimento</td>
+                    <td className="px-4 py-3">{product.coating}</td>
+                  </tr>
+                )}
                 <tr className="border-b border-[var(--color-sand-light)]">
                   <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Dimensões (L×A×P)</td>
                   <td className="px-4 py-3">{product.width_cm} × {product.height_cm} × {product.depth_cm} cm</td>
@@ -581,6 +588,42 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                   <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Peso</td>
                   <td className="px-4 py-3">{product.weight_kg} kg</td>
                 </tr>
+                {product.weight_capacity && (
+                  <tr className="border-b border-[var(--color-sand-light)]">
+                    <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Peso suportado</td>
+                    <td className="px-4 py-3">Até {product.weight_capacity} kg distribuídos</td>
+                  </tr>
+                )}
+                {product.num_drawers > 0 && (
+                  <tr className="border-b border-[var(--color-sand-light)]">
+                    <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Gavetas</td>
+                    <td className="px-4 py-3">{product.num_drawers} {product.num_drawers === 1 ? 'gaveta' : 'gavetas'}</td>
+                  </tr>
+                )}
+                {product.num_shelves > 0 && (
+                  <tr className="border-b border-[var(--color-sand-light)]">
+                    <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Prateleiras</td>
+                    <td className="px-4 py-3">{product.num_shelves} {product.num_shelves === 1 ? 'prateleira' : 'prateleiras'}</td>
+                  </tr>
+                )}
+                {product.slide_type && (
+                  <tr className="border-b border-[var(--color-sand-light)]">
+                    <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Corrediças</td>
+                    <td className="px-4 py-3 capitalize">{product.slide_type === 'metalica' ? 'Metálicas' : product.slide_type}</td>
+                  </tr>
+                )}
+                {product.has_wheels && (
+                  <tr className="border-b border-[var(--color-sand-light)]">
+                    <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Rodízios</td>
+                    <td className="px-4 py-3">Sim, com rodinhas</td>
+                  </tr>
+                )}
+                {product.has_lock && (
+                  <tr className="border-b border-[var(--color-sand-light)]">
+                    <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Tranca</td>
+                    <td className="px-4 py-3">Sim, com chave</td>
+                  </tr>
+                )}
                 {product.tv_max_size && (
                   <tr className="border-b border-[var(--color-sand-light)]">
                     <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">TV recomendada</td>
