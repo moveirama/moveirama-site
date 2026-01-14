@@ -51,6 +51,18 @@ export default function Footer() {
               {
                 "@type": "City",
                 "name": "Fazenda Rio Grande"
+              },
+              {
+                "@type": "City",
+                "name": "Almirante Tamandaré"
+              },
+              {
+                "@type": "City",
+                "name": "Campina Grande do Sul"
+              },
+              {
+                "@type": "City",
+                "name": "Quatro Barras"
               }
             ],
             "openingHoursSpecification": {
@@ -71,8 +83,8 @@ export default function Footer() {
           {/* Sobre */}
           <div>
             <h3 className="text-xl font-bold mb-4">moveirama</h3>
-            <p className="text-gray-300 text-sm leading-relaxed">
-              Móveis na caixa com entrega rápida em Curitiba e Região Metropolitana. 
+            <p className="text-[#D9CFC4] text-sm leading-relaxed">
+              Móveis novos com entrega rápida em Curitiba e Região Metropolitana. 
               Preço justo, montagem fácil e suporte de verdade.
             </p>
           </div>
@@ -80,7 +92,7 @@ export default function Footer() {
           {/* Categorias */}
           <div>
             <h4 className="font-semibold mb-4">Categorias</h4>
-            <ul className="space-y-2 text-sm text-gray-300">
+            <ul className="space-y-2 text-sm text-[#D9CFC4]">
               <li><Link href="/categoria/racks" className="hover:text-white transition-colors">Racks para TV</Link></li>
               <li><Link href="/categoria/paineis" className="hover:text-white transition-colors">Painéis para TV</Link></li>
               <li><Link href="/categoria/escrivaninhas" className="hover:text-white transition-colors">Escrivaninhas</Link></li>
@@ -92,7 +104,7 @@ export default function Footer() {
           {/* Atendimento */}
           <div>
             <h4 className="font-semibold mb-4">Atendimento</h4>
-            <ul className="space-y-2 text-sm text-gray-300">
+            <ul className="space-y-2 text-sm text-[#D9CFC4]">
               <li><Link href="/contato" className="hover:text-white transition-colors">Fale Conosco</Link></li>
               <li><Link href="/politicas/troca-devolucao" className="hover:text-white transition-colors">Trocas e Devoluções</Link></li>
               <li><Link href="/politicas/privacidade" className="hover:text-white transition-colors">Política de Privacidade</Link></li>
@@ -103,31 +115,34 @@ export default function Footer() {
           {/* Entrega */}
           <div>
             <h4 className="font-semibold mb-4">📍 Onde Entregamos</h4>
-            <ul className="space-y-1 text-sm text-gray-300">
+            <ul className="space-y-1 text-sm text-[#D9CFC4]">
               <li>Curitiba</li>
               <li>Colombo</li>
               <li>São José dos Pinhais</li>
               <li>Araucária</li>
               <li>Pinhais</li>
               <li>Fazenda Rio Grande</li>
+              <li>Almirante Tamandaré</li>
+              <li>Campina Grande do Sul</li>
+              <li>Quatro Barras</li>
             </ul>
-            <p className="mt-4 text-xs text-gray-400">
+            <p className="mt-4 text-xs text-[#B8A99A]">
               Entrega própria • Sem surpresa no frete
             </p>
           </div>
         </div>
 
         {/* Linha divisória */}
-        <div className="border-t border-gray-700 mt-10 pt-8">
+        <div className="border-t border-[#8B7355] mt-10 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             {/* CNPJ e info legal */}
-            <div className="text-sm text-gray-400 text-center md:text-left">
+            <div className="text-sm text-[#B8A99A] text-center md:text-left">
               <p>Moveirama Móveis LTDA • CNPJ: XX.XXX.XXX/0001-XX</p>
               <p>Curitiba, PR • CEP XXXXX-XXX</p>
             </div>
 
             {/* Pagamentos */}
-            <div className="flex items-center gap-3 text-gray-400">
+            <div className="flex items-center gap-3 text-[#B8A99A]">
               <span className="text-xs">Pagamento seguro:</span>
               <span className="text-sm">Pix</span>
               <span className="text-sm">•</span>
@@ -136,7 +151,7 @@ export default function Footer() {
           </div>
 
           {/* Copyright */}
-          <p className="text-center text-xs text-gray-500 mt-6">
+          <p className="text-center text-xs text-[#B8A99A] mt-6">
             © {new Date().getFullYear()} Moveirama. Todos os direitos reservados.
           </p>
         </div>
