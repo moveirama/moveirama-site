@@ -178,6 +178,94 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     ]
   }
 
+  // Schema.org FAQPage (SEO + AIO optimization)
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Qual tamanho de TV cabe no Rack Théo?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "O Rack Théo acomoda TVs de até 55 polegadas. Com 136cm de largura, ele suporta TVs de até 125cm — sobra espaço nas laterais pra ficar bonito. Se sua TV é de 43\" ou 50\", também serve tranquilo."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "É difícil de montar?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Nada! Montagem nível fácil, tempo estimado de 40 minutos. Vem com manual ilustrado e todas as ferragens — nada de peça faltando. Travou em algum passo? Chama no WhatsApp que ajudamos na hora."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Vem com manual e parafusos?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sim! O Rack Théo vem com manual completo, parafusos, buchas e todo o kit de ferragens. Só precisa de chave Phillips pra montar. Tudo na caixa, sem precisar comprar nada separado."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Qual o material? É resistente?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Estrutura em MDF 15mm e pés reforçados em MDF 25mm. MDF é mais resistente que MDP — aguenta melhor o peso e não lasca fácil. Não é móvel descartável: é móvel de verdade que dura."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Precisa furar a parede?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Não precisa! O Rack Théo fica apoiado no chão, sem necessidade de fixação na parede. É só montar, colocar no lugar e pronto. Perfeito pra quem mora de aluguel ou não quer complicação."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Aguenta o peso da minha TV?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "O tampo superior suporta tranquilamente TVs de até 55 polegadas — incluindo soundbar, videogame e controles em cima. A estrutura de MDF 15mm e os pés de MDF 25mm garantem estabilidade."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Vocês entregam em Curitiba? Qual o prazo?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sim! Entrega própria em Curitiba e região metropolitana (Colombo, São José dos Pinhais, Araucária, Pinhais e mais). Prazo de até 2 dias úteis após o pagamento. Frota nossa, sem surpresa."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "E se faltar alguma peça na caixa?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Difícil acontecer, mas se faltar: tira foto, manda no WhatsApp com o número do pedido e a gente resolve rapidinho. Não deixamos cliente na mão."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Posso devolver se não gostar?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Claro! Você tem 7 dias pra se arrepender, conforme o Código de Defesa do Consumidor. Chegou e não era o que esperava? Chama no WhatsApp que orientamos a troca ou devolução sem enrolação."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Vocês são de Curitiba mesmo?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sim! Somos de Curitiba, com CNPJ e endereço no rodapé do site. Entrega com frota própria — a gente conhece as ruas da cidade. Qualquer dúvida, o WhatsApp é de verdade e responde rápido."
+        }
+      }
+    ]
+  }
+
   // Schema.org BreadcrumbList
   const breadcrumbSchema = {
     "@context": "https://schema.org",
@@ -215,6 +303,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
 
       {/* Container */}
       <div className="container mx-auto px-4 py-4 md:py-8">
@@ -251,6 +343,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <h1 className="text-2xl md:text-3xl font-semibold text-[var(--color-graphite)] mb-2">
               {product.name}
             </h1>
+            
+            {/* Resumo IA-friendly (SEO/AIO) */}
+            <p className="text-sm text-[var(--color-toffee)] mb-3 leading-relaxed">
+              <strong>{product.name}</strong> — rack de madeira para TV até {product.tv_max_size || 55} polegadas, {formatPrice(product.price)} à vista ou {parcelas}x {formatPrice(valorParcela)} sem juros. {product.main_material}{product.thickness_mm && ` ${product.thickness_mm}mm`}, montagem fácil (~{product.assembly_time_minutes}min). Entrega própria em Curitiba e região metropolitana em até 2 dias úteis.
+            </p>
             
             {/* SKU e Marca */}
             <p className="text-sm text-[var(--color-toffee)] mb-4">
@@ -370,6 +467,45 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </div>
         </div>
 
+        {/* Seção: Para quem é (identificação emocional) */}
+        <section className="mt-10 p-6 bg-[var(--color-sage-500)]/5 rounded-lg border border-[var(--color-sage-500)]/20">
+          <h2 className="text-lg font-semibold text-[var(--color-graphite)] mb-4">
+            Para quem é o {product.name}?
+          </h2>
+          <ul className="space-y-3">
+            <li className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              <span className="text-[var(--color-graphite)]">Quem tem TV de 43&quot; a 55&quot; e quer um rack bonito sem gastar muito</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              <span className="text-[var(--color-graphite)]">Quem mora em apartamento compacto e precisa otimizar cada cantinho</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              <span className="text-[var(--color-graphite)]">Quem quer montar sozinho sem dor de cabeça — nível fácil, ~40 minutos</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              <span className="text-[var(--color-graphite)]">Quem está em Curitiba ou região e não quer esperar semanas pela entrega</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              <span className="text-[var(--color-graphite)]">Quem já teve problema com móvel frágil e quer algo que aguenta o tranco</span>
+            </li>
+          </ul>
+        </section>
+
         {/* Seção: Tira-Medo (Bullets) */}
         <section className="mt-10 p-6 bg-white rounded-lg border border-[var(--color-sand-light)]">
           <h2 className="text-lg font-semibold text-[var(--color-graphite)] mb-4">
@@ -440,17 +576,50 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           productName={product.name}
         />
 
-        {/* Seção: Descrição */}
-        {product.long_description && (
-          <section className="mt-8">
-            <h2 className="text-lg font-semibold text-[var(--color-graphite)] mb-4">
-              Sobre o produto
-            </h2>
-            <div className="prose prose-sm max-w-none text-[var(--color-graphite)]">
-              <p className="whitespace-pre-line">{cleanMarkdown(product.long_description)}</p>
+        {/* Seção: Descrição Expandida (SEO/AIO optimized) */}
+        <section className="mt-8">
+          <h2 className="text-lg font-semibold text-[var(--color-graphite)] mb-4">
+            Sobre o {product.name}
+          </h2>
+          <div className="prose prose-sm max-w-none text-[var(--color-graphite)] space-y-4">
+            {/* Bloco 1: Abertura */}
+            <p>
+              O {product.name} é a escolha certa para quem busca um rack para TV bonito, funcional e com ótimo custo-benefício em Curitiba. Se você tem uma TV de até {product.tv_max_size || 55} polegadas e quer organizar a sala sem gastar muito, esse é o móvel. Ideal pra apartamento compacto onde cada centímetro conta.
+            </p>
+            
+            {/* Bloco 2: Design */}
+            <div>
+              <h3 className="text-base font-semibold text-[var(--color-graphite)] mb-2">Design que faz diferença</h3>
+              <p>
+                Com design retrô e cantos arredondados, o {product.name} traz um charme especial para sua sala. Diferente dos racks quadrados e sem graça, ele tem visual leve e moderno. As laterais e fundo vazados deixam o ambiente mais arejado — perfeito pra salas pequenas que precisam parecer maiores.
+              </p>
             </div>
-          </section>
-        )}
+            
+            {/* Bloco 3: Qualidade */}
+            <div>
+              <h3 className="text-base font-semibold text-[var(--color-graphite)] mb-2">Feito para durar</h3>
+              <p>
+                Estrutura em {product.main_material}{product.thickness_mm && ` ${product.thickness_mm}mm`} e pés reforçados em MDF 25mm. MDF é mais resistente que MDP: aguenta melhor o peso, não lasca fácil e dura mais. Não é móvel descartável de loja grande — é móvel de verdade que aguenta o tranco do dia a dia, fácil de limpar e resistente à umidade de Curitiba.
+              </p>
+            </div>
+            
+            {/* Bloco 4: Compatibilidade */}
+            <div>
+              <h3 className="text-base font-semibold text-[var(--color-graphite)] mb-2">Compatibilidade com sua TV</h3>
+              <p>
+                O {product.name} tem {product.width_cm}cm de largura e acomoda TVs de até {product.tv_max_size || 55} polegadas (largura máxima da TV: {Math.round((product.width_cm || 136) * 0.92)}cm). Funciona bem com Samsung, LG, TCL, Philco e outras marcas. Cabe também soundbar, videogame e controles em cima. Quer confirmar se a sua TV cabe? <a href={whatsappLink} className="text-[var(--color-sage-600)] hover:underline">Manda as medidas no WhatsApp</a> que a gente confere.
+              </p>
+            </div>
+            
+            {/* Bloco 5: Entrega */}
+            <div>
+              <h3 className="text-base font-semibold text-[var(--color-graphite)] mb-2">Entrega rápida em Curitiba</h3>
+              <p>
+                Entregamos com frota própria em Curitiba e região metropolitana — Colombo, São José dos Pinhais, Araucária, Pinhais e mais. Prazo de até 2 dias úteis após o pagamento. Sem surpresa no frete: você vê o valor antes de finalizar. Dúvida? <a href={whatsappLink} className="text-[var(--color-sage-600)] hover:underline">WhatsApp de verdade</a>, resposta rápida.
+              </p>
+            </div>
+          </div>
+        </section>
 
         {/* Seção: Especificações Técnicas */}
         <section className="mt-8">
@@ -496,6 +665,116 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 </tr>
               </tbody>
             </table>
+          </div>
+        </section>
+
+        {/* Seção: FAQ - Perguntas Frequentes */}
+        <section className="mt-8">
+          <h2 className="text-lg font-semibold text-[var(--color-graphite)] mb-4">
+            Perguntas frequentes sobre o {product.name}
+          </h2>
+          <div className="bg-white rounded-lg border border-[var(--color-sand-light)] divide-y divide-[var(--color-sand-light)]">
+            
+            <details className="group">
+              <summary className="flex justify-between items-center cursor-pointer p-4 hover:bg-[var(--color-cream)]/50 transition-colors">
+                <span className="font-medium text-[var(--color-graphite)]">Qual tamanho de TV cabe no Rack Théo?</span>
+                <svg className="w-5 h-5 text-[var(--color-toffee)] group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <p className="px-4 pb-4 text-[var(--color-toffee)]">O Rack Théo acomoda TVs de até 55 polegadas. Com 136cm de largura, ele suporta TVs de até 125cm — sobra espaço nas laterais pra ficar bonito. Se sua TV é de 43&quot; ou 50&quot;, também serve tranquilo.</p>
+            </details>
+            
+            <details className="group">
+              <summary className="flex justify-between items-center cursor-pointer p-4 hover:bg-[var(--color-cream)]/50 transition-colors">
+                <span className="font-medium text-[var(--color-graphite)]">É difícil de montar?</span>
+                <svg className="w-5 h-5 text-[var(--color-toffee)] group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <p className="px-4 pb-4 text-[var(--color-toffee)]">Nada! Montagem nível fácil, tempo estimado de 40 minutos. Vem com manual ilustrado e todas as ferragens — nada de peça faltando. Travou em algum passo? <a href={whatsappLink} className="text-[var(--color-sage-600)] hover:underline">Chama no WhatsApp</a> que ajudamos na hora.</p>
+            </details>
+            
+            <details className="group">
+              <summary className="flex justify-between items-center cursor-pointer p-4 hover:bg-[var(--color-cream)]/50 transition-colors">
+                <span className="font-medium text-[var(--color-graphite)]">Vem com manual e parafusos?</span>
+                <svg className="w-5 h-5 text-[var(--color-toffee)] group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <p className="px-4 pb-4 text-[var(--color-toffee)]">Sim! O Rack Théo vem com manual completo, parafusos, buchas e todo o kit de ferragens. Só precisa de chave Phillips pra montar. Tudo na caixa, sem precisar comprar nada separado.</p>
+            </details>
+            
+            <details className="group">
+              <summary className="flex justify-between items-center cursor-pointer p-4 hover:bg-[var(--color-cream)]/50 transition-colors">
+                <span className="font-medium text-[var(--color-graphite)]">Qual o material? É resistente?</span>
+                <svg className="w-5 h-5 text-[var(--color-toffee)] group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <p className="px-4 pb-4 text-[var(--color-toffee)]">Estrutura em MDF 15mm e pés reforçados em MDF 25mm. MDF é mais resistente que MDP — aguenta melhor o peso e não lasca fácil. Não é móvel descartável: é móvel de verdade que dura.</p>
+            </details>
+            
+            <details className="group">
+              <summary className="flex justify-between items-center cursor-pointer p-4 hover:bg-[var(--color-cream)]/50 transition-colors">
+                <span className="font-medium text-[var(--color-graphite)]">Precisa furar a parede?</span>
+                <svg className="w-5 h-5 text-[var(--color-toffee)] group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <p className="px-4 pb-4 text-[var(--color-toffee)]">Não precisa! O Rack Théo fica apoiado no chão, sem necessidade de fixação na parede. É só montar, colocar no lugar e pronto. Perfeito pra quem mora de aluguel ou não quer complicação.</p>
+            </details>
+            
+            <details className="group">
+              <summary className="flex justify-between items-center cursor-pointer p-4 hover:bg-[var(--color-cream)]/50 transition-colors">
+                <span className="font-medium text-[var(--color-graphite)]">Aguenta o peso da minha TV?</span>
+                <svg className="w-5 h-5 text-[var(--color-toffee)] group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <p className="px-4 pb-4 text-[var(--color-toffee)]">O tampo superior suporta tranquilamente TVs de até 55 polegadas — incluindo soundbar, videogame e controles em cima. A estrutura de MDF 15mm e os pés de MDF 25mm garantem estabilidade.</p>
+            </details>
+            
+            <details className="group">
+              <summary className="flex justify-between items-center cursor-pointer p-4 hover:bg-[var(--color-cream)]/50 transition-colors">
+                <span className="font-medium text-[var(--color-graphite)]">Vocês entregam em Curitiba? Qual o prazo?</span>
+                <svg className="w-5 h-5 text-[var(--color-toffee)] group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <p className="px-4 pb-4 text-[var(--color-toffee)]">Sim! Entrega própria em Curitiba e região metropolitana (Colombo, São José dos Pinhais, Araucária, Pinhais e mais). Prazo de até 2 dias úteis após o pagamento. Frota nossa, sem surpresa.</p>
+            </details>
+            
+            <details className="group">
+              <summary className="flex justify-between items-center cursor-pointer p-4 hover:bg-[var(--color-cream)]/50 transition-colors">
+                <span className="font-medium text-[var(--color-graphite)]">E se faltar alguma peça na caixa?</span>
+                <svg className="w-5 h-5 text-[var(--color-toffee)] group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <p className="px-4 pb-4 text-[var(--color-toffee)]">Difícil acontecer, mas se faltar: tira foto, manda no <a href={whatsappLink} className="text-[var(--color-sage-600)] hover:underline">WhatsApp</a> com o número do pedido e a gente resolve rapidinho. Não deixamos cliente na mão.</p>
+            </details>
+            
+            <details className="group">
+              <summary className="flex justify-between items-center cursor-pointer p-4 hover:bg-[var(--color-cream)]/50 transition-colors">
+                <span className="font-medium text-[var(--color-graphite)]">Posso devolver se não gostar?</span>
+                <svg className="w-5 h-5 text-[var(--color-toffee)] group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <p className="px-4 pb-4 text-[var(--color-toffee)]">Claro! Você tem 7 dias pra se arrepender, conforme o Código de Defesa do Consumidor. Chegou e não era o que esperava? <a href={whatsappLink} className="text-[var(--color-sage-600)] hover:underline">Chama no WhatsApp</a> que orientamos a troca ou devolução sem enrolação.</p>
+            </details>
+            
+            <details className="group">
+              <summary className="flex justify-between items-center cursor-pointer p-4 hover:bg-[var(--color-cream)]/50 transition-colors">
+                <span className="font-medium text-[var(--color-graphite)]">Vocês são de Curitiba mesmo?</span>
+                <svg className="w-5 h-5 text-[var(--color-toffee)] group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <p className="px-4 pb-4 text-[var(--color-toffee)]">Sim! Somos de Curitiba, com CNPJ e endereço no rodapé do site. Entrega com frota própria — a gente conhece as ruas da cidade. Qualquer dúvida, o <a href={whatsappLink} className="text-[var(--color-sage-600)] hover:underline">WhatsApp</a> é de verdade e responde rápido.</p>
+            </details>
+            
           </div>
         </section>
 
