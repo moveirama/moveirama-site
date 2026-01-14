@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import RecursosMontagem from '@/components/RecursosMontagem'
+import ProductGallery from '@/components/ProductGallery'
 
 // Função para limpar markdown da descrição
 function cleanMarkdown(text: string): string {
@@ -238,42 +239,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           
           {/* Coluna Esquerda: Galeria */}
           <div>
-            <div className="relative aspect-square bg-[var(--color-cream)] rounded-lg overflow-hidden">
-              {mainImage ? (
-                <Image
-                  src={mainImage.cloudinary_path}
-                  alt={mainImage.alt_text || product.name}
-                  fill
-                  className="object-contain"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  priority
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full text-[var(--color-toffee)]">
-                  Sem imagem
-                </div>
-              )}
-            </div>
-            
-            {/* Thumbnails */}
-            {product.images && product.images.length > 1 && (
-              <div className="flex gap-2 mt-3 overflow-x-auto">
-                {product.images.map((img: { id: string; cloudinary_path: string; alt_text: string | null }, index: number) => (
-                  <div 
-                    key={img.id} 
-                    className="relative w-16 h-16 flex-shrink-0 bg-[var(--color-cream)] rounded border-2 border-[var(--color-sand-light)] cursor-pointer hover:border-[var(--color-sage-500)]"
-                  >
-                    <Image
-                      src={img.cloudinary_path}
-                      alt={img.alt_text || `${product.name} ${index + 1}`}
-                      fill
-                      className="object-contain"
-                      sizes="64px"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+            <ProductGallery 
+              images={product.images || []} 
+              productName={product.name} 
+            />
           </div>
 
           {/* Coluna Direita: Informações */}
@@ -375,21 +344,21 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <div className="grid grid-cols-2 gap-4 py-4 border-t border-b border-[var(--color-sand-light)]">
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-[var(--color-sage-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
-                <span className="text-sm text-[var(--color-toffee)]">Nota fiscal</span>
+                <span className="text-sm text-[var(--color-toffee)]">Produto novo</span>
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-[var(--color-sage-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
-                <span className="text-sm text-[var(--color-toffee)]">Garantia</span>
+                <span className="text-sm text-[var(--color-toffee)]">3 meses de garantia</span>
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-[var(--color-sage-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
-                <span className="text-sm text-[var(--color-toffee)]">Troca fácil</span>
+                <span className="text-sm text-[var(--color-toffee)]">Peças completas</span>
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-[var(--color-sage-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -412,26 +381,26 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span><strong>Suporta TV até {product.tv_max_size}&quot;</strong> — medida confirmada pelo fabricante</span>
+                <span><strong>Suporta TV até {product.tv_max_size}&quot;</strong> - medida confirmada pelo fabricante</span>
               </li>
             )}
             <li className="flex items-start gap-3">
               <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              <span><strong>Montagem nível {product.assembly_difficulty}</strong> — tempo estimado ~{product.assembly_time_minutes} min</span>
+              <span><strong>Montagem nível {product.assembly_difficulty}</strong> - tempo estimado ~{product.assembly_time_minutes} min</span>
             </li>
             <li className="flex items-start gap-3">
               <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              <span><strong>Vem com manual + ferragens completas</strong> — sem peças faltando</span>
+              <span><strong>Vem com manual + ferragens completas</strong> - sem peças faltando</span>
             </li>
             <li className="flex items-start gap-3">
               <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              <span><strong>Curitiba/RMC: entrega rápida</strong> — frota própria, sem surpresa no frete</span>
+              <span><strong>Curitiba/RMC: entrega rápida</strong> - frota própria, sem surpresa no frete</span>
             </li>
             <li className="flex items-start gap-3">
               <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
