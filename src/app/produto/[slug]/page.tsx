@@ -283,12 +283,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             
             {/* Resumo IA-friendly (SEO/AIO) */}
             <p className="text-sm text-[var(--color-toffee)] mb-3 leading-relaxed">
-              <strong>{product.name}</strong> — rack de madeira para TV até {product.tv_max_size || 55} polegadas, {formatPrice(product.price)} à vista ou {parcelas}x {formatPrice(valorParcela)} sem juros. {product.main_material}{product.thickness_mm && ` ${product.thickness_mm}mm`}, montagem fácil (~{product.assembly_time_minutes}min). Entrega própria em Curitiba e região metropolitana em até 2 dias úteis.
+              <strong>{product.name}</strong> - rack de madeira para TV até {product.tv_max_size || 55} polegadas, {formatPrice(product.price)} à vista ou {parcelas}x {formatPrice(valorParcela)} sem juros. {product.main_material}{product.thickness_mm && ` ${product.thickness_mm}mm`}, montagem fácil (~{product.assembly_time_minutes}min). Entrega própria em Curitiba e região metropolitana em até 2 dias úteis.
             </p>
             
-            {/* SKU e Marca */}
+            {/* SKU */}
             <p className="text-sm text-[var(--color-toffee)] mb-4">
-              {product.brand && <span>{product.brand} • </span>}
               SKU: {product.sku}
             </p>
 
@@ -406,7 +405,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
         {/* Seção: Para quem é (identificação emocional) */}
         <section className="mt-10 p-6 bg-[var(--color-sage-500)]/5 rounded-lg border border-[var(--color-sage-500)]/20">
-          <h2 className="text-lg font-semibold text-[var(--color-graphite)] mb-4">
+          <h2 className="text-2xl font-semibold text-[var(--color-graphite)] mb-4">
             Para quem é o {product.name}?
           </h2>
           <ul className="space-y-3">
@@ -426,7 +425,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
-              <span className="text-[var(--color-graphite)]">Quem quer montar sozinho sem dor de cabeça — nível fácil, ~40 minutos</span>
+              <span className="text-[var(--color-graphite)]">Quem quer montar sozinho sem dor de cabeça - nível fácil, ~40 minutos</span>
             </li>
             <li className="flex items-start gap-3">
               <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -445,7 +444,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
         {/* Seção: Tira-Medo (Bullets) */}
         <section className="mt-10 p-6 bg-white rounded-lg border border-[var(--color-sand-light)]">
-          <h2 className="text-lg font-semibold text-[var(--color-graphite)] mb-4">
+          <h2 className="text-2xl font-semibold text-[var(--color-graphite)] mb-4">
             Por que escolher o {product.name}?
           </h2>
           <ul className="space-y-3">
@@ -486,7 +485,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
         {/* Seção: Medidas */}
         <section className="mt-8">
-          <h2 className="text-lg font-semibold text-[var(--color-graphite)] mb-4">
+          <h2 className="text-2xl font-semibold text-[var(--color-graphite)] mb-4">
             Medidas do produto
           </h2>
           <div className="grid grid-cols-3 gap-4 p-4 bg-white rounded-lg border border-[var(--color-sand-light)]">
@@ -515,20 +514,20 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
         {/* Seção: Descrição Expandida (SEO/AIO optimized) */}
         <section className="mt-8">
-          <h2 className="text-lg font-semibold text-[var(--color-graphite)] mb-4">
+          <h2 className="text-2xl font-semibold text-[var(--color-graphite)] mb-4">
             Sobre o {product.name}
           </h2>
           <div className="prose prose-sm max-w-none text-[var(--color-graphite)] space-y-4">
             {/* Bloco 1: Abertura */}
             <p>
-              O {product.name} é a escolha certa para quem busca um rack para TV bonito, funcional e com ótimo custo-benefício em Curitiba. Se você tem uma TV de até {product.tv_max_size || 55} polegadas e quer organizar a sala sem gastar muito, esse é o móvel. Ideal pra apartamento compacto onde cada centímetro conta.
+              O <strong>{product.name}</strong> é a escolha certa para quem busca um rack para TV bonito, funcional e com ótimo custo-benefício em Curitiba. Se você tem uma TV de até {product.tv_max_size || 55} polegadas e quer organizar a sala sem gastar muito, esse é o móvel. Ideal pra apartamento compacto onde cada centímetro conta.
             </p>
             
             {/* Bloco 2: Design */}
             <div>
               <h3 className="text-base font-semibold text-[var(--color-graphite)] mb-2">Design que faz diferença</h3>
               <p>
-                Com design retrô e cantos arredondados, o {product.name} traz um charme especial para sua sala. Diferente dos racks quadrados e sem graça, ele tem visual leve e moderno. As laterais e fundo vazados deixam o ambiente mais arejado — perfeito pra salas pequenas que precisam parecer maiores.
+                Com design retrô e cantos arredondados, o {product.name} traz um charme especial para sua sala. Diferente dos racks quadrados e sem graça, ele tem visual leve e moderno. As laterais e fundo vazados deixam o ambiente mais arejado - perfeito pra salas pequenas que precisam parecer maiores.
               </p>
             </div>
             
@@ -536,7 +535,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <div>
               <h3 className="text-base font-semibold text-[var(--color-graphite)] mb-2">Feito para durar</h3>
               <p>
-                Estrutura em {product.main_material}{product.thickness_mm && ` ${product.thickness_mm}mm`} e pés reforçados em MDF 25mm. MDF é mais resistente que MDP: aguenta melhor o peso, não lasca fácil e dura mais. Não é móvel descartável de loja grande — é móvel de verdade que aguenta o tranco do dia a dia, fácil de limpar e resistente à umidade de Curitiba.
+                Estrutura em {product.main_material}{product.thickness_mm && ` ${product.thickness_mm}mm`} e pés reforçados em MDF 25mm. MDF é mais resistente que MDP: aguenta melhor o peso, não lasca fácil e dura mais. Não é móvel descartável de loja grande - é móvel de verdade que aguenta o tranco do dia a dia, fácil de limpar e resistente à umidade de Curitiba.
               </p>
             </div>
             
@@ -552,7 +551,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <div>
               <h3 className="text-base font-semibold text-[var(--color-graphite)] mb-2">Entrega rápida em Curitiba</h3>
               <p>
-                Entregamos com frota própria em Curitiba e região metropolitana — Colombo, São José dos Pinhais, Araucária, Pinhais e mais. Prazo de até 2 dias úteis após o pagamento. Sem surpresa no frete: você vê o valor antes de finalizar. Dúvida? <a href={whatsappLink} className="text-[var(--color-sage-600)] hover:underline">WhatsApp de verdade</a>, resposta rápida.
+                Entregamos com frota própria em Curitiba e região metropolitana - Colombo, São José dos Pinhais, Araucária, Pinhais e mais. Prazo de até 2 dias úteis após o pagamento. Sem surpresa no frete: você vê o valor antes de finalizar. Dúvida? <a href={whatsappLink} className="text-[var(--color-sage-600)] hover:underline">WhatsApp de verdade</a>, resposta rápida.
               </p>
             </div>
           </div>
@@ -560,7 +559,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
         {/* Seção: Especificações Técnicas */}
         <section className="mt-8">
-          <h2 className="text-lg font-semibold text-[var(--color-graphite)] mb-4">
+          <h2 className="text-2xl font-semibold text-[var(--color-graphite)] mb-4">
             Especificações técnicas
           </h2>
           <div className="bg-white rounded-lg border border-[var(--color-sand-light)] overflow-hidden">
@@ -608,7 +607,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         {/* Seção: FAQ - Perguntas Frequentes (dinâmico do banco) */}
         {product.faqs && product.faqs.length > 0 && (
           <section className="mt-8">
-            <h2 className="text-lg font-semibold text-[var(--color-graphite)] mb-4">
+            <h2 className="text-2xl font-semibold text-[var(--color-graphite)] mb-4">
               Perguntas frequentes sobre o {product.name}
             </h2>
             <div className="bg-white rounded-lg border border-[var(--color-sand-light)] divide-y divide-[var(--color-sand-light)]">
@@ -641,7 +640,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
         {/* Seção: Confiança */}
         <section className="mt-10 p-6 bg-[var(--color-cream)] rounded-lg">
-          <h2 className="text-lg font-semibold text-[var(--color-graphite)] mb-4">
+          <h2 className="text-2xl font-semibold text-[var(--color-graphite)] mb-4">
             Compre com segurança
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
@@ -651,10 +650,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             </div>
             <div>
               <h3 className="font-medium text-[var(--color-graphite)]">Garantia</h3>
-              <p className="text-sm text-[var(--color-toffee)]">Garantia legal + fabricante</p>
+              <p className="text-sm text-[var(--color-toffee)]">3 meses de garantia de fábrica</p>
             </div>
             <div>
-              <h3 className="font-medium text-[var(--color-graphite)]">Empresa real</h3>
+              <h3 className="font-medium text-[var(--color-graphite)]">A Moveirama é Curitibana</h3>
               <p className="text-sm text-[var(--color-toffee)]">CNPJ e endereço no rodapé</p>
             </div>
           </div>

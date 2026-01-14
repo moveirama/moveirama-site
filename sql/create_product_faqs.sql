@@ -41,11 +41,11 @@ FROM products p
 CROSS JOIN (
   VALUES
     ('Qual tamanho de TV cabe no Rack Théo?', 
-     'O Rack Théo acomoda TVs de até 55 polegadas. Com 136cm de largura, ele suporta TVs de até 125cm — sobra espaço nas laterais pra ficar bonito. Se sua TV é de 43" ou 50", também serve tranquilo.', 
+     'O Rack Théo acomoda TVs de até 55 polegadas. Com 136cm de largura, ele suporta TVs de até 125cm - sobra espaço nas laterais pra ficar bonito. Se sua TV é de 43" ou 50", também serve tranquilo.', 
      1),
     
     ('É difícil de montar?', 
-     'Nada! Montagem nível fácil, tempo estimado de 40 minutos. Vem com manual ilustrado e todas as ferragens — nada de peça faltando. Travou em algum passo? Chama no WhatsApp que ajudamos na hora.', 
+     'Nada! Montagem nível fácil, tempo estimado de 40 minutos. Vem com manual ilustrado e todas as ferragens - nada de peça faltando. Travou em algum passo? Chama no WhatsApp que ajudamos na hora.', 
      2),
     
     ('Vem com manual e parafusos?', 
@@ -53,7 +53,7 @@ CROSS JOIN (
      3),
     
     ('Qual o material? É resistente?', 
-     'Estrutura em MDF 15mm e pés reforçados em MDF 25mm. MDF é mais resistente que MDP — aguenta melhor o peso e não lasca fácil. Não é móvel descartável: é móvel de verdade que dura.', 
+     'Estrutura em MDF 15mm e pés reforçados em MDF 25mm. MDF é mais resistente que MDP - aguenta melhor o peso e não lasca fácil. Não é móvel descartável: é móvel de verdade que dura.', 
      4),
     
     ('Precisa furar a parede?', 
@@ -61,7 +61,7 @@ CROSS JOIN (
      5),
     
     ('Aguenta o peso da minha TV?', 
-     'O tampo superior suporta tranquilamente TVs de até 55 polegadas — incluindo soundbar, videogame e controles em cima. A estrutura de MDF 15mm e os pés de MDF 25mm garantem estabilidade.', 
+     'O tampo superior suporta tranquilamente TVs de até 55 polegadas - incluindo soundbar, videogame e controles em cima. A estrutura de MDF 15mm e os pés de MDF 25mm garantem estabilidade.', 
      6),
     
     ('Vocês entregam em Curitiba? Qual o prazo?', 
@@ -77,7 +77,7 @@ CROSS JOIN (
      9),
     
     ('Vocês são de Curitiba mesmo?', 
-     'Sim! Somos de Curitiba, com CNPJ e endereço no rodapé do site. Entrega com frota própria — a gente conhece as ruas da cidade. Qualquer dúvida, o WhatsApp é de verdade e responde rápido.', 
+     'Sim! Somos de Curitiba, com CNPJ e endereço no rodapé do site. Entrega com frota própria - a gente conhece as ruas da cidade. Qualquer dúvida, o WhatsApp é de verdade e responde rápido.', 
      10)
 ) AS faq(question, answer, position)
 WHERE p.slug = 'rack-theo'
