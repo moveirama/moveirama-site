@@ -144,7 +144,7 @@ export default function Header() {
               <span className="hidden md:inline">Entrega rápida com frota própria</span>
             </p>
             <a 
-              href="https://wa.me/5541999999999" 
+              href="https://wa.me/5541984209323" 
               target="_blank" 
               rel="noopener noreferrer"
               className="hidden md:flex items-center gap-2 hover:text-[var(--color-sage-500)] transition-colors"
@@ -222,7 +222,7 @@ export default function Header() {
               
               {/* WhatsApp Desktop */}
               <a
-                href="https://wa.me/5541999999999"
+                href="https://wa.me/5541984209323"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hidden lg:flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[var(--color-whatsapp)] hover:bg-[#20BD5A] rounded-lg transition-colors"
@@ -339,7 +339,7 @@ export default function Header() {
           {/* Footer do Menu */}
           <div className="p-4 border-t border-[var(--color-sand-light)]">
             <a
-              href="https://wa.me/5541999999999"
+              href="https://wa.me/5541984209323"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 w-full py-3.5 text-base font-semibold text-white bg-[var(--color-whatsapp)] hover:bg-[#20BD5A] rounded-lg transition-colors"

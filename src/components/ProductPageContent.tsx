@@ -42,7 +42,7 @@ export default function ProductPageContent({
   const defaultVariant = product.variants?.find((v: { is_default: boolean }) => v.is_default) || product.variants?.[0]
 
   // WhatsApp link
-  const whatsappNumber = '5541999999999' // TODO: Configurar número real
+  const whatsappNumber = '5541984209323'
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no ${product.name}. Podem me ajudar?`)
   const whatsappLink = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`
 
