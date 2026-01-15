@@ -272,6 +272,76 @@ export async function getProductsByCategory(
 }
 
 /**
+ * Busca subcategoria pelo slug (sem precisar do pai)
+ */
+export async function getSubcategoryBySlug(slug: string): Promise<Category | null> {
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('slug', slug)
+    .not('parent_id', 'is', null) // Só subcategorias (que têm parent_id)
+    .eq('is_active', true)
+    .single()
+  
+  if (error) return null
+  return data
+}
+
+/**
+ * Busca produto por slug da subcategoria e slug do produto
+ */
+export async function getProductBySubcategoryAndSlug(
+  subcategorySlug: string, 
+  productSlug: string
+): Promise<ProductWithDetails | null> {
+  // Primeiro verifica se a subcategoria existe
+  const subcategory = await getSubcategoryBySlug(subcategorySlug)
+  if (!subcategory) return null
+
+  const { data: product, error } = await supabase
+    .from('products')
+    .select(`
+      *,
+      category:categories(*),
+      variants:product_variants(*),
+      images:product_images(*),
+      faqs:product_faqs(*)
+    `)
+    .eq('slug', productSlug)
+    .eq('category_id', subcategory.id)
+    .eq('is_active', true)
+    .single()
+
+  if (error || !product) return null
+  
+  // Ordenar FAQs por position
+  if (product.faqs) {
+    product.faqs = product.faqs
+      .filter((faq: { is_active?: boolean }) => faq.is_active !== false)
+      .sort((a: { position: number }, b: { position: number }) => a.position - b.position)
+  }
+  
+  return product
+}
+
+/**
+ * Busca categoria pai de uma subcategoria
+ */
+export async function getParentOfSubcategory(subcategorySlug: string): Promise<Category | null> {
+  const subcategory = await getSubcategoryBySlug(subcategorySlug)
+  if (!subcategory || !subcategory.parent_id) return null
+
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('id', subcategory.parent_id)
+    .single()
+  
+  if (error) return null
+  return data
+}
+
+/**
  * Verifica se uma rota é uma categoria válida
  */
 export async function isValidCategoryRoute(

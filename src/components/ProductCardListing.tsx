@@ -11,6 +11,7 @@ interface ProductCardListingProps {
   imageUrl?: string | null
   avgRating?: number
   reviewCount?: number
+  categorySlug: string // Slug da subcategoria para URL correta
 }
 
 export default function ProductCardListing({
@@ -20,7 +21,8 @@ export default function ProductCardListing({
   compareAtPrice,
   imageUrl,
   avgRating = 0,
-  reviewCount = 0
+  reviewCount = 0,
+  categorySlug
 }: ProductCardListingProps) {
   // Calcula desconto
   const hasDiscount = compareAtPrice && compareAtPrice > price
@@ -60,7 +62,7 @@ export default function ProductCardListing({
 
   return (
     <article className="relative bg-white rounded-xl overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-all duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 group">
-      <Link href={`/produto/${slug}`} className="block text-inherit no-underline">
+      <Link href={`/${categorySlug}/${slug}`} className="block text-inherit no-underline">
         {/* Badge de desconto */}
         {hasDiscount && (
           <span className="absolute top-2 left-2 z-10 bg-[var(--color-terracota)] text-white text-xs font-semibold px-2 py-1 rounded">
