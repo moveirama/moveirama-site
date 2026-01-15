@@ -1,162 +1,114 @@
-import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
-import { supabase, getCategoryBySlug, getSubcategories, type CategoryWithCount } from '@/lib/supabase'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
+import { notFound } from 'next/navigation'
+import { getParentCategory, getSubcategories } from '@/lib/supabase'
 import Breadcrumb from '@/components/Breadcrumb'
 import SubcategoryCard from '@/components/SubcategoryCard'
-import EmptyState from '@/components/EmptyState'
 
-type CategoryPageProps = {
+interface PageProps {
   params: Promise<{ category: string }>
 }
 
-// Categorias pai válidas (para generateStaticParams)
-const VALID_PARENT_CATEGORIES = ['casa', 'escritorio']
-
-export async function generateStaticParams() {
-  return VALID_PARENT_CATEGORIES.map(category => ({ category }))
+// Mapeamento de slugs para nomes amigáveis
+const CATEGORY_NAMES: Record<string, { name: string; description: string }> = {
+  casa: {
+    name: 'Móveis para Casa',
+    description: 'Encontre o móvel perfeito pra sua sala e quarto'
+  },
+  escritorio: {
+    name: 'Móveis para Escritório',
+    description: 'Monte seu home office com conforto e praticidade'
+  }
 }
 
-export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
-  const { category: categorySlug } = await params
-  const category = await getCategoryBySlug(categorySlug)
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { category } = await params
+  const categoryData = await getParentCategory(category)
   
-  if (!category) {
+  if (!categoryData) {
     return { title: 'Categoria não encontrada | Moveirama' }
   }
 
-  const title = `${category.name} | Moveirama`
-  const description = category.description || `Móveis para ${category.name.toLowerCase()} em Curitiba. Encontre o móvel perfeito para seu espaço.`
+  const info = CATEGORY_NAMES[category] || { name: categoryData.name, description: '' }
 
   return {
-    title,
-    description,
+    title: `${info.name} | Moveirama`,
+    description: info.description || `Confira nossa linha de ${info.name.toLowerCase()} com entrega rápida em Curitiba e região.`,
     openGraph: {
-      title,
-      description,
-      type: 'website',
-      locale: 'pt_BR',
-      siteName: 'Moveirama',
-    },
-    alternates: {
-      canonical: `https://moveirama.com.br/${categorySlug}`,
-    },
-  }
-}
-
-async function getPageData(categorySlug: string) {
-  // Busca categoria pai
-  const category = await getCategoryBySlug(categorySlug)
-  
-  if (!category || category.parent_id !== null) {
-    // Não é uma categoria pai válida
-    return null
-  }
-
-  // Busca subcategorias
-  const subcategories = await getSubcategories(category.id)
-
-  return { category, subcategories }
-}
-
-export default async function CategoryPage({ params }: CategoryPageProps) {
-  const { category: categorySlug } = await params
-  
-  // Verifica se é uma categoria pai válida
-  if (!VALID_PARENT_CATEGORIES.includes(categorySlug)) {
-    notFound()
-  }
-
-  const data = await getPageData(categorySlug)
-
-  if (!data) {
-    notFound()
-  }
-
-  const { category, subcategories } = data
-
-  // Breadcrumb items
-  const breadcrumbItems = [
-    { label: 'Início', href: '/' },
-    { label: category.name }
-  ]
-
-  // Descrição para a página
-  const pageDescription = category.slug === 'casa'
-    ? 'Encontre o móvel perfeito para sua sala e quarto'
-    : 'Móveis para home office e escritório'
-
-  // Schema.org ItemList
-  const schemaData = {
-    '@context': 'https://schema.org',
-    '@type': 'CollectionPage',
-    'name': category.name,
-    'description': pageDescription,
-    'url': `https://moveirama.com.br/${categorySlug}`,
-    'mainEntity': {
-      '@type': 'ItemList',
-      'numberOfItems': subcategories.length,
-      'itemListElement': subcategories.map((sub, index) => ({
-        '@type': 'ListItem',
-        'position': index + 1,
-        'name': sub.name,
-        'url': `https://moveirama.com.br/${categorySlug}/${sub.slug}`
-      }))
+      title: `${info.name} | Moveirama`,
+      description: info.description,
     }
   }
+}
+
+export default async function CategoryPage({ params }: PageProps) {
+  const { category } = await params
+  
+  // Busca categoria e subcategorias
+  const categoryData = await getParentCategory(category)
+  
+  if (!categoryData) {
+    notFound()
+  }
+
+  const subcategories = await getSubcategories(category)
+  const info = CATEGORY_NAMES[category] || { name: categoryData.name, description: categoryData.description }
+
+  // Breadcrumb
+  const breadcrumbItems = [
+    { label: 'Início', href: '/' },
+    { label: info.name }
+  ]
 
   return (
-    <>
-      <Header />
-      
-      <main className="category-page">
-        <div className="container">
-          {/* Schema.org */}
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
-          />
+    <main className="min-h-screen bg-[var(--color-warm-white)]">
+      <div className="max-w-[1280px] mx-auto px-4 lg:px-8">
+        {/* Breadcrumb */}
+        <Breadcrumb items={breadcrumbItems} />
 
-          {/* Breadcrumb */}
-          <Breadcrumb items={breadcrumbItems} />
-
-          {/* Header da página */}
-          <header className="category-page__header">
-            <h1 className="category-page__title">
-              {category.slug === 'casa' ? 'Móveis para Casa' : 'Móveis para Escritório'}
-            </h1>
-            <p className="category-page__description">
-              {pageDescription}
+        {/* Header */}
+        <header className="py-4 md:py-6">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-[var(--color-graphite)] m-0 mb-2">
+            {info.name}
+          </h1>
+          {info.description && (
+            <p className="text-base text-[var(--color-toffee)] m-0 max-w-xl">
+              {info.description}
             </p>
-          </header>
-
-          {/* Grid de subcategorias */}
-          {subcategories.length > 0 ? (
-            <section className="subcategories-section">
-              <div className="subcategories-grid">
-                {subcategories.map(sub => (
-                  <SubcategoryCard 
-                    key={sub.id} 
-                    category={sub} 
-                    parentSlug={categorySlug} 
-                  />
-                ))}
-              </div>
-            </section>
-          ) : (
-            <EmptyState 
-              title="Nenhuma categoria disponível"
-              message="Esta seção ainda não tem categorias. Volte em breve!"
-              linkHref="/"
-              linkText="Voltar para início"
-            />
           )}
-        </div>
-      </main>
+        </header>
 
-      <Footer />
-
-    </>
+        {/* Grid de Subcategorias */}
+        <section className="pb-12">
+          {subcategories.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4 lg:gap-6">
+              {subcategories.map(subcategory => (
+                <SubcategoryCard
+                  key={subcategory.id}
+                  name={subcategory.name}
+                  slug={subcategory.slug}
+                  parentSlug={category}
+                  imageUrl={subcategory.image_url}
+                  productCount={subcategory.product_count}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-[var(--color-toffee)]">
+                Nenhuma subcategoria disponível no momento.
+              </p>
+            </div>
+          )}
+        </section>
+      </div>
+    </main>
   )
+}
+
+// Gera páginas estáticas para categorias conhecidas
+export async function generateStaticParams() {
+  return [
+    { category: 'casa' },
+    { category: 'escritorio' }
+  ]
 }

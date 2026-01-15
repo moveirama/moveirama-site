@@ -1,94 +1,116 @@
+'use client'
+
 import Link from 'next/link'
 import Image from 'next/image'
-import type { ProductForListing } from '@/lib/supabase'
 
-type ProductCardListingProps = {
-  product: ProductForListing
+interface ProductCardListingProps {
+  slug: string
+  name: string
+  price: number
+  compareAtPrice?: number | null
+  imageUrl?: string | null
+  avgRating?: number
+  reviewCount?: number
 }
 
-export default function ProductCardListing({ product }: ProductCardListingProps) {
-  // Calcula desconto se houver preço comparativo
-  const hasDiscount = product.compare_at_price && product.compare_at_price > product.price
+export default function ProductCardListing({
+  slug,
+  name,
+  price,
+  compareAtPrice,
+  imageUrl,
+  avgRating = 0,
+  reviewCount = 0
+}: ProductCardListingProps) {
+  // Calcula desconto
+  const hasDiscount = compareAtPrice && compareAtPrice > price
   const discountPercent = hasDiscount 
-    ? Math.round((1 - product.price / product.compare_at_price!) * 100)
+    ? Math.round(((compareAtPrice - price) / compareAtPrice) * 100) 
     : 0
 
   // Formata preço
   const formatPrice = (value: number) => {
-    return value.toLocaleString('pt-BR', {
+    return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
-    })
+    }).format(value)
   }
 
   // Calcula parcelas (6x sem juros)
-  const installmentValue = product.price / 6
+  const installmentValue = price / 6
   const installmentFormatted = formatPrice(installmentValue)
 
-  // URL da imagem via Cloudinary (ou placeholder)
-  const imageUrl = product.image_url
-    ? `https://res.cloudinary.com/dsz5rnlvy/image/upload/c_fill,w_400,h_400,q_auto,f_auto/${product.image_url}`
-    : null
+  // Gera estrelas
+  const renderStars = (rating: number) => {
+    const stars = []
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <span key={i} className={i <= Math.round(rating) ? 'text-[var(--color-toffee)]' : 'text-[var(--color-sand-light)]'}>
+          ★
+        </span>
+      )
+    }
+    return stars
+  }
+
+  // URL da imagem (Cloudinary ou placeholder)
+  const imageSrc = imageUrl 
+    ? `https://res.cloudinary.com/moveirama/image/upload/c_fill,w_400,h_400,q_auto,f_auto/${imageUrl}`
+    : '/placeholder-product.png'
 
   return (
-    <article className="product-card-listing">
-      <Link href={`/produto/${product.slug}`} className="product-card-listing__link">
+    <article className="relative bg-white rounded-xl overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-all duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 group">
+      <Link href={`/produto/${slug}`} className="block text-inherit no-underline">
         {/* Badge de desconto */}
-        {hasDiscount && discountPercent >= 5 && (
-          <span className="product-card-listing__badge">-{discountPercent}%</span>
+        {hasDiscount && (
+          <span className="absolute top-2 left-2 z-10 bg-[var(--color-terracota)] text-white text-xs font-semibold px-2 py-1 rounded">
+            -{discountPercent}%
+          </span>
         )}
-        
+
         {/* Imagem */}
-        <div className="product-card-listing__image-wrapper">
-          {imageUrl ? (
-            <Image
-              src={imageUrl}
-              alt={product.name}
-              className="product-card-listing__image"
-              loading="lazy"
-              width={300}
-              height={300}
-              sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            />
-          ) : (
-            <div className="product-card-listing__placeholder" aria-label="Imagem não disponível">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                <circle cx="8.5" cy="8.5" r="1.5"/>
-                <polyline points="21 15 16 10 5 21"/>
-              </svg>
+        <div className="relative aspect-square overflow-hidden bg-[var(--color-cream)]">
+          <Image
+            src={imageSrc}
+            alt={name}
+            fill
+            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+            loading="lazy"
+          />
+        </div>
+
+        {/* Conteúdo */}
+        <div className="p-2.5 md:p-3">
+          {/* Título */}
+          <h3 className="text-sm font-medium text-[var(--color-graphite)] leading-tight line-clamp-2 min-h-[36px] mb-1.5">
+            {name}
+          </h3>
+
+          {/* Rating (se houver) */}
+          {reviewCount > 0 && (
+            <div 
+              className="flex items-center gap-1 mb-2 text-xs"
+              aria-label={`${avgRating.toFixed(1)} de 5 estrelas, ${reviewCount} avaliações`}
+            >
+              <span className="flex tracking-tighter">
+                {renderStars(avgRating)}
+              </span>
+              <span className="text-[var(--color-toffee)]">({reviewCount})</span>
             </div>
           )}
-        </div>
-        
-        {/* Conteúdo */}
-        <div className="product-card-listing__content">
-          <h3 className="product-card-listing__title">
-            {product.name}
-          </h3>
-          
-          {/* Rating (se houver) */}
-          {product.avg_rating && product.review_count ? (
-            <div 
-              className="product-card-listing__rating" 
-              aria-label={`${product.avg_rating} de 5 estrelas, ${product.review_count} avaliações`}
-            >
-              <span className="product-card-listing__stars">
-                {'★'.repeat(Math.round(product.avg_rating))}
-                {'☆'.repeat(5 - Math.round(product.avg_rating))}
-              </span>
-              <span className="product-card-listing__reviews">({product.review_count})</span>
-            </div>
-          ) : null}
-          
+
           {/* Preço */}
-          <div className="product-card-listing__price-block">
-            <p className="product-card-listing__price">{formatPrice(product.price)}</p>
-            <p className="product-card-listing__installment">ou 6x {installmentFormatted}</p>
+          <div className="mt-auto">
+            <p className="text-base md:text-lg font-bold text-[var(--color-graphite)] m-0">
+              {formatPrice(price)}
+            </p>
+            <p className="text-xs text-[var(--color-toffee)] mt-0.5 m-0">
+              ou 6x {installmentFormatted}
+            </p>
           </div>
         </div>
       </Link>
-
     </article>
   )
 }

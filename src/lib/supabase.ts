@@ -5,27 +5,31 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-// Types para as tabelas principais
-
-// Categoria com estrutura hierárquica (2 níveis)
+// Types para categorias (estrutura 2 níveis)
 export type Category = {
   id: string
   slug: string
   name: string
   description: string | null
   parent_id: string | null
+  position: number
   is_active: boolean
+  image_url?: string | null
 }
 
-// Categoria com contagem de produtos (para listagem)
 export type CategoryWithCount = Category & {
   product_count: number
-  image_url?: string
 }
 
-// Categoria com parent (para breadcrumb)
-export type CategoryWithParent = Category & {
-  parent?: Category | null
+// Types legados (mantidos para compatibilidade)
+export type Environment = {
+  id: string
+  slug: string
+  name: string
+  description: string | null
+  icon: string | null
+  display_order: number
+  is_active: boolean
 }
 
 export type Supplier = {
@@ -91,29 +95,39 @@ export type ProductImage = {
 }
 
 export type ProductWithDetails = Product & {
-  category: CategoryWithParent
+  category: Category
   variants: ProductVariant[]
   images: ProductImage[]
 }
 
-// Produto para listagem (mais leve, sem detalhes completos)
+// Types para listagem de produtos
 export type ProductForListing = {
   id: string
   slug: string
   name: string
   price: number
   compare_at_price: number | null
-  image_url?: string
-  avg_rating?: number
-  review_count?: number
+  image_url: string | null
+  avg_rating: number
+  review_count: number
 }
 
-// Helpers para queries
-export async function getCategoryBySlug(slug: string): Promise<Category | null> {
+// Tipos de ordenação
+export type SortOption = 'relevance' | 'price-asc' | 'price-desc' | 'newest' | 'bestseller'
+
+// ========================================
+// FUNÇÕES HELPER PARA CATEGORIAS
+// ========================================
+
+/**
+ * Busca categoria pai pelo slug
+ */
+export async function getParentCategory(slug: string): Promise<Category | null> {
   const { data, error } = await supabase
     .from('categories')
     .select('*')
     .eq('slug', slug)
+    .is('parent_id', null)
     .eq('is_active', true)
     .single()
   
@@ -121,75 +135,98 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
   return data
 }
 
-export async function getParentCategories(): Promise<Category[]> {
-  const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .is('parent_id', null)
-    .eq('is_active', true)
-    .order('name')
-  
-  if (error) return []
-  return data || []
-}
+/**
+ * Busca subcategorias de uma categoria pai
+ */
+export async function getSubcategories(parentSlug: string): Promise<CategoryWithCount[]> {
+  // Primeiro busca o ID do pai
+  const parent = await getParentCategory(parentSlug)
+  if (!parent) return []
 
-export async function getSubcategories(parentId: string): Promise<CategoryWithCount[]> {
   const { data, error } = await supabase
     .from('categories')
     .select(`
       *,
       products:products(count)
     `)
-    .eq('parent_id', parentId)
+    .eq('parent_id', parent.id)
     .eq('is_active', true)
-    .order('name')
-  
-  if (error) return []
-  
-  // Transform para incluir product_count
-  return (data || []).map(cat => ({
+    .order('position')
+
+  if (error || !data) return []
+
+  // Mapeia para adicionar product_count
+  return data.map(cat => ({
     ...cat,
     product_count: cat.products?.[0]?.count || 0
   }))
 }
 
+/**
+ * Busca subcategoria pelo slug do pai e da subcategoria
+ */
+export async function getSubcategory(parentSlug: string, subcategorySlug: string): Promise<Category | null> {
+  // Primeiro busca o ID do pai
+  const parent = await getParentCategory(parentSlug)
+  if (!parent) return null
+
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('slug', subcategorySlug)
+    .eq('parent_id', parent.id)
+    .eq('is_active', true)
+    .single()
+  
+  if (error) return null
+  return data
+}
+
+/**
+ * Busca produtos de uma subcategoria com paginação e ordenação
+ */
 export async function getProductsByCategory(
   categoryId: string,
   page: number = 1,
   perPage: number = 12,
-  sortBy: string = 'relevance'
+  sort: SortOption = 'relevance'
 ): Promise<{ products: ProductForListing[], total: number }> {
-  // Determinar ordenação
-  let orderColumn = 'name'
-  let orderAsc = true
   
-  switch (sortBy) {
+  // Determina ordenação
+  let orderColumn = 'position'
+  let orderAscending = true
+  
+  switch (sort) {
     case 'price-asc':
       orderColumn = 'price'
-      orderAsc = true
+      orderAscending = true
       break
     case 'price-desc':
       orderColumn = 'price'
-      orderAsc = false
+      orderAscending = false
       break
     case 'newest':
       orderColumn = 'created_at'
-      orderAsc = false
+      orderAscending = false
       break
     case 'bestseller':
-      orderColumn = 'stock_quantity' // placeholder - futuramente será sales_count
-      orderAsc = false
+      orderColumn = 'position' // Por enquanto usa position
+      orderAscending = true
       break
     default:
-      orderColumn = 'name'
-      orderAsc = true
+      orderColumn = 'position'
+      orderAscending = true
   }
-  
-  const from = (page - 1) * perPage
-  const to = from + perPage - 1
-  
-  // Query produtos (sem inner join para não excluir produtos sem imagem)
-  const { data, error, count } = await supabase
+
+  // Conta total
+  const { count } = await supabase
+    .from('products')
+    .select('*', { count: 'exact', head: true })
+    .eq('category_id', categoryId)
+    .eq('is_active', true)
+
+  // Busca produtos com paginação
+  const { data, error } = await supabase
     .from('products')
     .select(`
       id,
@@ -197,34 +234,44 @@ export async function getProductsByCategory(
       name,
       price,
       compare_at_price,
-      product_images(cloudinary_path, image_type)
-    `, { count: 'exact' })
+      product_images!inner(cloudinary_path)
+    `)
     .eq('category_id', categoryId)
     .eq('is_active', true)
-    .order(orderColumn, { ascending: orderAsc })
-    .range(from, to)
-  
-  if (error) {
-    console.error('Error fetching products:', error)
+    .eq('product_images.image_type', 'principal')
+    .order(orderColumn, { ascending: orderAscending })
+    .range((page - 1) * perPage, page * perPage - 1)
+
+  if (error || !data) {
     return { products: [], total: 0 }
   }
-  
-  // Transform para ProductForListing (busca imagem principal ou primeira disponível)
-  const products: ProductForListing[] = (data || []).map(p => {
-    // Tenta encontrar imagem principal, senão usa a primeira
-    const images = p.product_images || []
-    const principalImage = images.find((img: { image_type: string }) => img.image_type === 'principal')
-    const imageUrl = principalImage?.cloudinary_path || images[0]?.cloudinary_path
-    
-    return {
-      id: p.id,
-      slug: p.slug,
-      name: p.name,
-      price: p.price,
-      compare_at_price: p.compare_at_price,
-      image_url: imageUrl
-    }
-  })
-  
+
+  // Mapeia para o formato esperado
+  const products: ProductForListing[] = data.map(p => ({
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    price: p.price,
+    compare_at_price: p.compare_at_price,
+    image_url: p.product_images?.[0]?.cloudinary_path || null,
+    avg_rating: 0, // TODO: implementar quando tiver reviews
+    review_count: 0
+  }))
+
   return { products, total: count || 0 }
+}
+
+/**
+ * Verifica se uma rota é uma categoria válida
+ */
+export async function isValidCategoryRoute(
+  category: string, 
+  subcategory?: string
+): Promise<boolean> {
+  if (subcategory) {
+    const sub = await getSubcategory(category, subcategory)
+    return sub !== null
+  }
+  const parent = await getParentCategory(category)
+  return parent !== null
 }

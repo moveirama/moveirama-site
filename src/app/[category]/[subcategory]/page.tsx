@@ -1,242 +1,174 @@
-import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
-import { Suspense } from 'react'
-import { supabase, getCategoryBySlug, getProductsByCategory, type Category, type ProductForListing } from '@/lib/supabase'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
+import { notFound } from 'next/navigation'
+import { 
+  getParentCategory, 
+  getSubcategory, 
+  getProductsByCategory,
+  SortOption 
+} from '@/lib/supabase'
 import Breadcrumb from '@/components/Breadcrumb'
 import ProductCardListing from '@/components/ProductCardListing'
 import SortControl from '@/components/SortControl'
 import Pagination from '@/components/Pagination'
 import EmptyState from '@/components/EmptyState'
 
-type SubcategoryPageProps = {
+interface PageProps {
   params: Promise<{ category: string; subcategory: string }>
   searchParams: Promise<{ page?: string; sort?: string }>
 }
 
 const PRODUCTS_PER_PAGE = 12
 
-// Mapeamento de categorias válidas
-const VALID_ROUTES: Record<string, string[]> = {
-  'casa': ['racks', 'paineis', 'buffets', 'penteadeiras'],
-  'escritorio': ['escrivaninhas', 'gaveteiros', 'mesas', 'estacoes']
-}
-
-export async function generateStaticParams() {
-  const params: { category: string; subcategory: string }[] = []
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { category, subcategory } = await params
   
-  for (const [category, subcategories] of Object.entries(VALID_ROUTES)) {
-    for (const subcategory of subcategories) {
-      params.push({ category, subcategory })
-    }
-  }
+  const parentCategory = await getParentCategory(category)
+  const subcategoryData = await getSubcategory(category, subcategory)
   
-  return params
-}
-
-export async function generateMetadata({ params }: SubcategoryPageProps): Promise<Metadata> {
-  const { category: categorySlug, subcategory: subcategorySlug } = await params
-  
-  const subcategory = await getCategoryBySlug(subcategorySlug)
-  
-  if (!subcategory) {
+  if (!parentCategory || !subcategoryData) {
     return { title: 'Categoria não encontrada | Moveirama' }
   }
 
-  const title = `${subcategory.name} | Moveirama - Móveis em Curitiba`
-  const description = subcategory.description || `${subcategory.name} com entrega rápida em Curitiba e região. Móveis de qualidade com preço justo.`
-
   return {
-    title,
-    description,
+    title: `${subcategoryData.name} | Moveirama`,
+    description: subcategoryData.description || 
+      `Confira nossa linha de ${subcategoryData.name.toLowerCase()} com preço justo e entrega rápida em Curitiba e região.`,
     openGraph: {
-      title,
-      description,
-      type: 'website',
-      locale: 'pt_BR',
-      siteName: 'Moveirama',
-    },
-    alternates: {
-      canonical: `https://moveirama.com.br/${categorySlug}/${subcategorySlug}`,
-    },
+      title: `${subcategoryData.name} | Moveirama`,
+      description: subcategoryData.description || undefined,
+    }
   }
 }
 
-async function getPageData(categorySlug: string, subcategorySlug: string, page: number, sortBy: string) {
-  // Busca categoria pai
-  const parentCategory = await getCategoryBySlug(categorySlug)
-  if (!parentCategory || parentCategory.parent_id !== null) {
-    return null
-  }
-
-  // Busca subcategoria
-  const subcategory = await getCategoryBySlug(subcategorySlug)
-  if (!subcategory || subcategory.parent_id !== parentCategory.id) {
-    return null
-  }
-
-  // Busca produtos
-  const { products, total } = await getProductsByCategory(subcategory.id, page, PRODUCTS_PER_PAGE, sortBy)
-
-  return {
-    parentCategory,
-    subcategory,
-    products,
-    total,
-    totalPages: Math.ceil(total / PRODUCTS_PER_PAGE)
-  }
-}
-
-// Componente de Skeleton para loading
-function ProductGridSkeleton() {
-  return (
-    <div className="product-grid">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="product-card-skeleton">
-          <div className="skeleton skeleton--image"></div>
-          <div className="product-card-skeleton__content">
-            <div className="skeleton skeleton--title"></div>
-            <div className="skeleton skeleton--text" style={{ width: '60%' }}></div>
-            <div className="skeleton skeleton--price"></div>
-            <div className="skeleton skeleton--text" style={{ width: '40%' }}></div>
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-// Componente principal da grid de produtos
-async function ProductGrid({ 
-  categorySlug, 
-  subcategorySlug, 
-  page, 
-  sortBy 
-}: { 
-  categorySlug: string
-  subcategorySlug: string
-  page: number
-  sortBy: string 
-}) {
-  const data = await getPageData(categorySlug, subcategorySlug, page, sortBy)
+export default async function SubcategoryPage({ params, searchParams }: PageProps) {
+  const { category, subcategory } = await params
+  const { page: pageParam, sort: sortParam } = await searchParams
   
-  if (!data) {
+  // Busca dados
+  const parentCategory = await getParentCategory(category)
+  const subcategoryData = await getSubcategory(category, subcategory)
+  
+  if (!parentCategory || !subcategoryData) {
     notFound()
   }
 
-  const { parentCategory, subcategory, products, total, totalPages } = data
+  // Paginação e ordenação
+  const currentPage = Math.max(1, parseInt(pageParam || '1', 10))
+  const currentSort = (sortParam as SortOption) || 'relevance'
+
+  // Busca produtos
+  const { products, total } = await getProductsByCategory(
+    subcategoryData.id,
+    currentPage,
+    PRODUCTS_PER_PAGE,
+    currentSort
+  )
+
+  const totalPages = Math.ceil(total / PRODUCTS_PER_PAGE)
+
+  // Breadcrumb
+  const breadcrumbItems = [
+    { label: 'Início', href: '/' },
+    { label: parentCategory.name, href: `/${category}` },
+    { label: subcategoryData.name }
+  ]
 
   // Schema.org ItemList
-  const schemaData = {
+  const itemListSchema = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    'name': subcategory.name,
-    'numberOfItems': total,
-    'itemListElement': products.map((product, index) => ({
+    name: subcategoryData.name,
+    numberOfItems: total,
+    itemListElement: products.map((product, index) => ({
       '@type': 'ListItem',
-      'position': (page - 1) * PRODUCTS_PER_PAGE + index + 1,
-      'url': `https://moveirama.com.br/produto/${product.slug}`
+      position: (currentPage - 1) * PRODUCTS_PER_PAGE + index + 1,
+      item: {
+        '@type': 'Product',
+        name: product.name,
+        url: `https://moveirama.com.br/produto/${product.slug}`,
+        offers: {
+          '@type': 'Offer',
+          price: product.price,
+          priceCurrency: 'BRL',
+          availability: 'https://schema.org/InStock'
+        }
+      }
     }))
   }
 
+  // URL base para paginação
+  const baseUrl = `/${category}/${subcategory}`
+  const searchParamsObj: Record<string, string> = {}
+  if (currentSort !== 'relevance') {
+    searchParamsObj.sort = currentSort
+  }
+
   return (
-    <>
-      {/* Schema.org */}
+    <main className="min-h-screen bg-[var(--color-warm-white)]">
+      {/* Schema.org ItemList */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
       />
 
-      {/* Header + Ordenação */}
-      <div className="category-header-row">
-        <header className="category-header">
-          <h1 className="category-header__title">{subcategory.name}</h1>
-          <p className="category-header__count">
-            {total} {total === 1 ? 'produto' : 'produtos'}
-          </p>
-        </header>
-        <div className="category-header__sort">
-          <SortControl currentSort={sortBy} />
-        </div>
-      </div>
+      <div className="max-w-[1280px] mx-auto px-4 lg:px-8">
+        {/* Breadcrumb */}
+        <Breadcrumb items={breadcrumbItems} />
 
-      {/* Grid de produtos ou estado vazio */}
-      {products.length > 0 ? (
-        <>
-          <div className="product-grid">
-            {products.map(product => (
-              <ProductCardListing key={product.id} product={product} />
-            ))}
+        {/* Header */}
+        <header className="pt-4 pb-2">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+            <div>
+              <h1 className="text-2xl md:text-[28px] lg:text-[32px] font-semibold text-[var(--color-graphite)] m-0 mb-1">
+                {subcategoryData.name}
+              </h1>
+              <p className="text-sm text-[var(--color-toffee)] m-0">
+                {total} {total === 1 ? 'produto' : 'produtos'}
+              </p>
+            </div>
           </div>
-          
-          <Pagination 
-            currentPage={page} 
-            totalPages={totalPages} 
-            totalItems={total} 
-          />
-        </>
-      ) : (
-        <EmptyState 
-          linkHref={`/${categorySlug}`}
-          linkText={`Ver ${parentCategory.name}`}
-        />
-      )}
+        </header>
 
-    </>
-  )
-}
+        {/* Ordenação */}
+        {total > 0 && (
+          <SortControl currentSort={currentSort} />
+        )}
 
-export default async function SubcategoryPage({ params, searchParams }: SubcategoryPageProps) {
-  const { category: categorySlug, subcategory: subcategorySlug } = await params
-  const { page: pageStr, sort } = await searchParams
-  
-  // Validação de rota
-  if (!VALID_ROUTES[categorySlug]?.includes(subcategorySlug)) {
-    notFound()
-  }
+        {/* Grid de Produtos ou Estado Vazio */}
+        {products.length > 0 ? (
+          <>
+            <section className="py-4">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4 lg:gap-6">
+                {products.map(product => (
+                  <ProductCardListing
+                    key={product.id}
+                    slug={product.slug}
+                    name={product.name}
+                    price={product.price}
+                    compareAtPrice={product.compare_at_price}
+                    imageUrl={product.image_url}
+                    avgRating={product.avg_rating}
+                    reviewCount={product.review_count}
+                  />
+                ))}
+              </div>
+            </section>
 
-  const page = Math.max(1, parseInt(pageStr || '1', 10) || 1)
-  const sortBy = sort || 'relevance'
-
-  // Busca dados para breadcrumb (fora do Suspense)
-  const parentCategory = await getCategoryBySlug(categorySlug)
-  const subcategory = await getCategoryBySlug(subcategorySlug)
-  
-  if (!parentCategory || !subcategory) {
-    notFound()
-  }
-
-  // Breadcrumb items
-  const breadcrumbItems = [
-    { label: 'Início', href: '/' },
-    { label: parentCategory.name, href: `/${categorySlug}` },
-    { label: subcategory.name }
-  ]
-
-  return (
-    <>
-      <Header />
-      
-      <main className="subcategory-page">
-        <div className="container">
-          {/* Breadcrumb */}
-          <Breadcrumb items={breadcrumbItems} />
-
-          {/* Conteúdo com Suspense para streaming */}
-          <Suspense fallback={<ProductGridSkeleton />}>
-            <ProductGrid 
-              categorySlug={categorySlug}
-              subcategorySlug={subcategorySlug}
-              page={page}
-              sortBy={sortBy}
+            {/* Paginação */}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              baseUrl={baseUrl}
+              searchParams={searchParamsObj}
             />
-          </Suspense>
-        </div>
-      </main>
-
-      <Footer />
-
-    </>
+          </>
+        ) : (
+          <EmptyState
+            ctaLabel="Ver outras categorias"
+            ctaHref={`/${category}`}
+          />
+        )}
+      </div>
+    </main>
   )
 }

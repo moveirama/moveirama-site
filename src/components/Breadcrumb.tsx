@@ -1,5 +1,3 @@
-'use client'
-
 import Link from 'next/link'
 
 export type BreadcrumbItem = {
@@ -7,20 +5,21 @@ export type BreadcrumbItem = {
   href?: string
 }
 
-type BreadcrumbProps = {
+interface BreadcrumbProps {
   items: BreadcrumbItem[]
+  className?: string
 }
 
-export default function Breadcrumb({ items }: BreadcrumbProps) {
-  // Schema.org BreadcrumbList
+export default function Breadcrumb({ items, className = '' }: BreadcrumbProps) {
+  // Gera Schema.org BreadcrumbList
   const schemaData = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    'itemListElement': items.map((item, index) => ({
+    itemListElement: items.map((item, index) => ({
       '@type': 'ListItem',
-      'position': index + 1,
-      'name': item.label,
-      ...(item.href && { 'item': `https://moveirama.com.br${item.href}` })
+      position: index + 1,
+      name: item.label,
+      ...(item.href && { item: `https://moveirama.com.br${item.href}` })
     }))
   }
 
@@ -31,36 +30,46 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
       />
-      
-      {/* Visual Breadcrumb */}
-      <nav aria-label="Navegação estrutural" className="breadcrumb">
-        <ol className="breadcrumb__list">
+
+      {/* Visual */}
+      <nav 
+        aria-label="Navegação estrutural" 
+        className={`py-4 ${className}`}
+      >
+        <ol className="flex flex-wrap items-center gap-1 text-sm list-none m-0 p-0">
           {items.map((item, index) => {
             const isLast = index === items.length - 1
             
             return (
-              <li 
-                key={index} 
-                className={`breadcrumb__item ${isLast ? 'breadcrumb__item--current' : ''}`}
-                {...(isLast && { 'aria-current': 'page' })}
-              >
+              <li key={index} className="flex items-center gap-1">
                 {item.href && !isLast ? (
                   <>
-                    <Link href={item.href} className="breadcrumb__link">
+                    <Link 
+                      href={item.href}
+                      className="text-[var(--color-toffee)] hover:text-[var(--color-sage-600)] hover:underline transition-colors duration-150"
+                    >
                       {item.label}
                     </Link>
-                    <span className="breadcrumb__separator" aria-hidden="true">›</span>
+                    <span 
+                      className="text-[var(--color-sand-light)]" 
+                      aria-hidden="true"
+                    >
+                      ›
+                    </span>
                   </>
                 ) : (
-                  item.label
+                  <span 
+                    className="text-[var(--color-graphite)] font-medium"
+                    aria-current={isLast ? 'page' : undefined}
+                  >
+                    {item.label}
+                  </span>
                 )}
               </li>
             )
           })}
         </ol>
       </nav>
-
-
     </>
   )
 }
