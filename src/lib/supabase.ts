@@ -235,7 +235,7 @@ export async function getProductsByCategory(
     .eq('category_id', categoryId)
     .eq('is_active', true)
 
-  // Busca produtos com paginação
+  // Busca produtos com paginação (LEFT JOIN para incluir produtos sem imagem)
   const { data, error } = await supabase
     .from('products')
     .select(`
@@ -244,11 +244,10 @@ export async function getProductsByCategory(
       name,
       price,
       compare_at_price,
-      product_images!inner(cloudinary_path)
+      product_images(cloudinary_path, image_type)
     `)
     .eq('category_id', categoryId)
     .eq('is_active', true)
-    .eq('product_images.image_type', 'principal')
     .order(orderColumn, { ascending: orderAscending })
     .range((page - 1) * perPage, page * perPage - 1)
 
@@ -256,17 +255,23 @@ export async function getProductsByCategory(
     return { products: [], total: 0 }
   }
 
-  // Mapeia para o formato esperado
-  const products: ProductForListing[] = data.map(p => ({
-    id: p.id,
-    slug: p.slug,
-    name: p.name,
-    price: p.price,
-    compare_at_price: p.compare_at_price,
-    image_url: p.product_images?.[0]?.cloudinary_path || null,
-    avg_rating: 0, // TODO: implementar quando tiver reviews
-    review_count: 0
-  }))
+  // Mapeia para o formato esperado (busca imagem principal ou primeira disponível)
+  const products: ProductForListing[] = data.map(p => {
+    const images = p.product_images || []
+    const principalImage = images.find((img: { image_type: string }) => img.image_type === 'principal')
+    const firstImage = images[0]
+    
+    return {
+      id: p.id,
+      slug: p.slug,
+      name: p.name,
+      price: p.price,
+      compare_at_price: p.compare_at_price,
+      image_url: principalImage?.cloudinary_path || firstImage?.cloudinary_path || null,
+      avg_rating: 0, // TODO: implementar quando tiver reviews
+      review_count: 0
+    }
+  })
 
   return { products, total: count || 0 }
 }
