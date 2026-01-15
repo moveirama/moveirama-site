@@ -12,7 +12,7 @@ export type Category = {
   name: string
   description: string | null
   parent_id: string | null
-  position: number
+  display_order: number
   is_active: boolean
   image_url?: string | null
 }
@@ -136,30 +136,40 @@ export async function getParentCategory(slug: string): Promise<Category | null> 
 }
 
 /**
- * Busca subcategorias de uma categoria pai
+ * Busca subcategorias de uma categoria pai com contagem de produtos
  */
 export async function getSubcategories(parentSlug: string): Promise<CategoryWithCount[]> {
   // Primeiro busca o ID do pai
   const parent = await getParentCategory(parentSlug)
   if (!parent) return []
 
-  const { data, error } = await supabase
+  // Busca subcategorias
+  const { data: categories, error } = await supabase
     .from('categories')
-    .select(`
-      *,
-      products:products(count)
-    `)
+    .select('*')
     .eq('parent_id', parent.id)
     .eq('is_active', true)
-    .order('position')
+    .order('display_order')
 
-  if (error || !data) return []
+  if (error || !categories) return []
 
-  // Mapeia para adicionar product_count
-  return data.map(cat => ({
-    ...cat,
-    product_count: cat.products?.[0]?.count || 0
-  }))
+  // Busca contagem de produtos para cada subcategoria
+  const categoriesWithCount = await Promise.all(
+    categories.map(async (cat) => {
+      const { count } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+        .eq('category_id', cat.id)
+        .eq('is_active', true)
+
+      return {
+        ...cat,
+        product_count: count || 0
+      }
+    })
+  )
+
+  return categoriesWithCount
 }
 
 /**
@@ -193,8 +203,8 @@ export async function getProductsByCategory(
 ): Promise<{ products: ProductForListing[], total: number }> {
   
   // Determina ordenação
-  let orderColumn = 'position'
-  let orderAscending = true
+  let orderColumn = 'created_at'
+  let orderAscending = false
   
   switch (sort) {
     case 'price-asc':
@@ -210,12 +220,12 @@ export async function getProductsByCategory(
       orderAscending = false
       break
     case 'bestseller':
-      orderColumn = 'position' // Por enquanto usa position
-      orderAscending = true
+      orderColumn = 'created_at' // Por enquanto usa created_at
+      orderAscending = false
       break
     default:
-      orderColumn = 'position'
-      orderAscending = true
+      orderColumn = 'created_at'
+      orderAscending = false
   }
 
   // Conta total

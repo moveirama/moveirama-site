@@ -16,10 +16,10 @@ export default function EmptyState({
   ctaHref = '/'
 }: EmptyStateProps) {
   return (
-    <div className="empty-state">
+    <div className="flex flex-col items-center text-center py-16 px-4">
       {/* Ícone */}
       <svg 
-        className="empty-state__icon"
+        className="w-16 h-16 text-[var(--color-sand-light)] mb-6"
         fill="none" 
         stroke="currentColor" 
         viewBox="0 0 24 24"
@@ -33,67 +33,22 @@ export default function EmptyState({
       </svg>
 
       {/* Título */}
-      <h2 className="empty-state__title">{title}</h2>
+      <h2 className="text-xl font-semibold text-[var(--color-graphite)] m-0 mb-2">
+        {title}
+      </h2>
 
       {/* Texto */}
-      <p className="empty-state__text">{text}</p>
+      <p className="text-base text-[var(--color-toffee)] m-0 mb-6 max-w-xs">
+        {text}
+      </p>
 
       {/* CTA */}
-      <Link href={ctaHref} className="empty-state__btn">
+      <Link 
+        href={ctaHref} 
+        className="inline-flex items-center justify-center min-w-[200px] min-h-[48px] px-6 py-3 text-base font-semibold text-[var(--color-graphite)] bg-transparent border-2 border-[var(--color-graphite)] rounded-lg no-underline transition-colors duration-150 hover:bg-[var(--color-cream)]"
+      >
         {ctaLabel}
       </Link>
-
-      <style jsx>{`
-        .empty-state {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          padding: 64px 16px;
-        }
-        
-        .empty-state__icon {
-          width: 64px;
-          height: 64px;
-          color: var(--color-sand-light);
-          margin-bottom: 24px;
-        }
-        
-        .empty-state__title {
-          font-size: 20px;
-          font-weight: 600;
-          color: var(--color-graphite);
-          margin: 0 0 8px 0;
-        }
-        
-        .empty-state__text {
-          font-size: 16px;
-          color: var(--color-toffee);
-          margin: 0 0 24px 0;
-          max-width: 320px;
-        }
-        
-        .empty-state__btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-width: 200px;
-          min-height: 48px;
-          padding: 12px 24px;
-          font-size: 16px;
-          font-weight: 600;
-          color: var(--color-graphite);
-          background: transparent;
-          border: 2px solid var(--color-graphite);
-          border-radius: 8px;
-          text-decoration: none;
-          transition: all 150ms ease-out;
-        }
-        
-        .empty-state__btn:hover {
-          background: var(--color-cream);
-        }
-      `}</style>
     </div>
   )
 }

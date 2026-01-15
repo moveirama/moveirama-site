@@ -78,33 +78,36 @@ export default function Pagination({
   const hasPrev = currentPage > 1
   const hasNext = currentPage < totalPages
 
+  const btnBaseStyles = "flex items-center justify-center px-4 py-2.5 text-sm font-medium text-[var(--color-graphite)] bg-white border border-[var(--color-sand-light)] rounded-lg no-underline min-h-[44px] transition-all duration-150 hover:bg-[var(--color-cream)] hover:border-[var(--color-toffee)]"
+  const btnDisabledStyles = "opacity-40 pointer-events-none"
+  const pageBaseStyles = "flex items-center justify-center w-10 h-10 text-sm font-medium text-[var(--color-graphite)] bg-white border border-[var(--color-sand-light)] rounded-lg no-underline transition-all duration-150 hover:bg-[var(--color-cream)] hover:border-[var(--color-toffee)]"
+  const pageCurrentStyles = "bg-[var(--color-sage-600)] text-white border-[var(--color-sage-600)]"
+
   return (
-    <nav aria-label="Paginação" className="pagination">
+    <nav aria-label="Paginação" className="flex justify-center items-center gap-2 py-8">
       {/* Anterior */}
       {hasPrev ? (
         <Link 
           href={getPageUrl(currentPage - 1)}
-          className="pagination__btn"
+          className={btnBaseStyles}
           aria-label="Página anterior"
         >
-          <span className="hidden md:inline">←</span>
           <span className="md:hidden">←</span>
-          <span className="hidden md:inline ml-1">Anterior</span>
+          <span className="hidden md:inline">← Anterior</span>
         </Link>
       ) : (
-        <span className="pagination__btn pagination__btn--disabled" aria-hidden="true">
-          <span className="hidden md:inline">←</span>
+        <span className={`${btnBaseStyles} ${btnDisabledStyles}`} aria-hidden="true">
           <span className="md:hidden">←</span>
-          <span className="hidden md:inline ml-1">Anterior</span>
+          <span className="hidden md:inline">← Anterior</span>
         </span>
       )}
 
       {/* Números das páginas */}
-      <div className="pagination__pages">
+      <div className="flex items-center gap-1">
         {pages.map((page, index) => {
           if (page === 'ellipsis') {
             return (
-              <span key={`ellipsis-${index}`} className="pagination__ellipsis">
+              <span key={`ellipsis-${index}`} className="px-2 text-[var(--color-toffee)]">
                 ...
               </span>
             )
@@ -115,7 +118,7 @@ export default function Pagination({
           return isCurrent ? (
             <span 
               key={page}
-              className="pagination__page pagination__page--current"
+              className={`${pageBaseStyles} ${pageCurrentStyles}`}
               aria-current="page"
             >
               {page}
@@ -124,7 +127,7 @@ export default function Pagination({
             <Link
               key={page}
               href={getPageUrl(page)}
-              className="pagination__page"
+              className={pageBaseStyles}
             >
               {page}
             </Link>
@@ -136,100 +139,18 @@ export default function Pagination({
       {hasNext ? (
         <Link 
           href={getPageUrl(currentPage + 1)}
-          className="pagination__btn"
+          className={btnBaseStyles}
           aria-label="Próxima página"
         >
-          <span className="hidden md:inline mr-1">Próxima</span>
-          <span className="hidden md:inline">→</span>
+          <span className="hidden md:inline">Próxima →</span>
           <span className="md:hidden">→</span>
         </Link>
       ) : (
-        <span className="pagination__btn pagination__btn--disabled" aria-hidden="true">
-          <span className="hidden md:inline mr-1">Próxima</span>
-          <span className="hidden md:inline">→</span>
+        <span className={`${btnBaseStyles} ${btnDisabledStyles}`} aria-hidden="true">
+          <span className="hidden md:inline">Próxima →</span>
           <span className="md:hidden">→</span>
         </span>
       )}
-
-      <style jsx>{`
-        .pagination {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          gap: 8px;
-          padding: 32px 0;
-        }
-        
-        .pagination__btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 10px 16px;
-          font-size: 14px;
-          font-weight: 500;
-          color: var(--color-graphite);
-          background: var(--color-white);
-          border: 1px solid var(--color-sand-light);
-          border-radius: 8px;
-          text-decoration: none;
-          min-height: 44px;
-          transition: all 150ms ease-out;
-        }
-        
-        .pagination__btn:hover:not(.pagination__btn--disabled) {
-          background: var(--color-cream);
-          border-color: var(--color-toffee);
-        }
-        
-        .pagination__btn--disabled {
-          opacity: 0.4;
-          pointer-events: none;
-        }
-        
-        @media (max-width: 767px) {
-          .pagination__btn {
-            padding: 10px 14px;
-          }
-        }
-        
-        .pagination__pages {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-        }
-        
-        .pagination__page {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 40px;
-          height: 40px;
-          font-size: 14px;
-          font-weight: 500;
-          color: var(--color-graphite);
-          background: var(--color-white);
-          border: 1px solid var(--color-sand-light);
-          border-radius: 8px;
-          text-decoration: none;
-          transition: all 150ms ease-out;
-        }
-        
-        .pagination__page:hover:not(.pagination__page--current) {
-          background: var(--color-cream);
-          border-color: var(--color-toffee);
-        }
-        
-        .pagination__page--current {
-          background: var(--color-sage-600);
-          color: var(--color-white);
-          border-color: var(--color-sage-600);
-        }
-        
-        .pagination__ellipsis {
-          padding: 0 8px;
-          color: var(--color-toffee);
-        }
-      `}</style>
     </nav>
   )
 }
