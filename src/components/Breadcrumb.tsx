@@ -60,48 +60,7 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
         </ol>
       </nav>
 
-      <style jsx>{`
-        .breadcrumb {
-          padding: var(--space-4) 0;
-        }
-        
-        .breadcrumb__list {
-          display: flex;
-          flex-wrap: wrap;
-          align-items: center;
-          gap: var(--space-1);
-          list-style: none;
-          margin: 0;
-          padding: 0;
-          font-size: 14px;
-        }
-        
-        .breadcrumb__item {
-          display: flex;
-          align-items: center;
-          gap: var(--space-1);
-        }
-        
-        .breadcrumb__link {
-          color: var(--color-toffee);
-          text-decoration: none;
-          transition: color 150ms ease-out;
-        }
-        
-        .breadcrumb__link:hover {
-          color: var(--color-sage-600);
-          text-decoration: underline;
-        }
-        
-        .breadcrumb__separator {
-          color: var(--color-sand-light);
-        }
-        
-        .breadcrumb__item--current {
-          color: var(--color-graphite);
-          font-weight: 500;
-        }
-      `}</style>
+
     </>
   )
 }

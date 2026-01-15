@@ -35,57 +35,6 @@ export default function EmptyState({
         {linkText}
       </Link>
 
-      <style jsx>{`
-        .empty-state {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          padding: 64px 16px;
-        }
-        
-        .empty-state__icon {
-          width: 64px;
-          height: 64px;
-          color: var(--color-sand-light);
-          margin-bottom: 24px;
-        }
-        
-        .empty-state__title {
-          font-size: 20px;
-          font-weight: 600;
-          color: var(--color-graphite);
-          margin: 0 0 8px 0;
-        }
-        
-        .empty-state__text {
-          font-size: 16px;
-          color: var(--color-toffee);
-          margin: 0 0 24px 0;
-          max-width: 320px;
-        }
-        
-        .empty-state__btn {
-          min-width: 200px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 48px;
-          padding: 12px 24px;
-          font-size: 1rem;
-          font-weight: 600;
-          color: var(--color-graphite);
-          background-color: transparent;
-          border: 2px solid var(--color-graphite);
-          border-radius: var(--radius-md);
-          text-decoration: none;
-          transition: background-color 150ms ease-out;
-        }
-        
-        .empty-state__btn:hover {
-          background-color: var(--color-cream);
-        }
-      `}</style>
     </div>
   )
 }
