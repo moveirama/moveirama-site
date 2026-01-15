@@ -141,23 +141,29 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       },
       "shippingDetails": {
         "@type": "OfferShippingDetails",
+        "shippingRate": {
+          "@type": "MonetaryAmount",
+          "value": "29.90",
+          "currency": "BRL"
+        },
         "shippingDestination": {
           "@type": "DefinedRegion",
           "addressCountry": "BR",
-          "addressRegion": "PR"
+          "addressRegion": "PR",
+          "addressLocality": ["Curitiba", "Colombo", "São José dos Pinhais", "Araucária", "Pinhais", "Fazenda Rio Grande"]
         },
         "deliveryTime": {
           "@type": "ShippingDeliveryTime",
           "handlingTime": {
             "@type": "QuantitativeValue",
-            "minValue": 1,
-            "maxValue": 2,
+            "minValue": 0,
+            "maxValue": 1,
             "unitCode": "DAY"
           },
           "transitTime": {
             "@type": "QuantitativeValue",
             "minValue": 1,
-            "maxValue": 3,
+            "maxValue": 2,
             "unitCode": "DAY"
           }
         }
@@ -313,6 +319,17 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 <span className="text-xs font-semibold text-[var(--color-sage-600)] bg-[var(--color-sage-500)]/20 px-2 py-0.5 rounded">
                   5% OFF
                 </span>
+              </div>
+              
+              {/* Badge Entrega Local - SEO/Conversão */}
+              <div className="flex items-center gap-2 mt-4 p-3 bg-[var(--color-cream)] border border-[var(--color-sand-light)] rounded-lg">
+                <svg className="w-5 h-5 text-[var(--color-sage-600)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <p className="text-sm text-[var(--color-graphite)]">
+                  <strong className="text-[var(--color-sage-700)]">Entrega em 1-2 dias úteis</strong>
+                  <span className="text-[var(--color-toffee)]"> • Curitiba e RMC • Frota própria</span>
+                </p>
               </div>
             </div>
 
@@ -565,81 +582,88 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </h2>
           <div className="bg-white rounded-lg border border-[var(--color-sand-light)] overflow-hidden">
             <table className="w-full text-sm">
+              <caption className="sr-only">Especificações técnicas do {product.name}</caption>
+              <thead className="sr-only">
+                <tr>
+                  <th scope="col">Característica</th>
+                  <th scope="col">Valor</th>
+                </tr>
+              </thead>
               <tbody>
                 <tr className="border-b border-[var(--color-sand-light)]">
-                  <td className="px-4 py-3 font-medium bg-[var(--color-cream)] w-1/3">Marca</td>
+                  <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] w-1/3 text-left">Marca</th>
                   <td className="px-4 py-3">{product.brand || '-'}</td>
                 </tr>
                 <tr className="border-b border-[var(--color-sand-light)]">
-                  <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Material</td>
+                  <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Material</th>
                   <td className="px-4 py-3">{product.main_material}{product.thickness_mm && ` ${product.thickness_mm}mm`}</td>
                 </tr>
                 {product.coating && (
                   <tr className="border-b border-[var(--color-sand-light)]">
-                    <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Revestimento</td>
+                    <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Revestimento</th>
                     <td className="px-4 py-3">{product.coating}</td>
                   </tr>
                 )}
                 <tr className="border-b border-[var(--color-sand-light)]">
-                  <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Dimensões (L×A×P)</td>
+                  <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Dimensões (L×A×P)</th>
                   <td className="px-4 py-3">{product.width_cm} × {product.height_cm} × {product.depth_cm} cm</td>
                 </tr>
                 <tr className="border-b border-[var(--color-sand-light)]">
-                  <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Peso</td>
+                  <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Peso</th>
                   <td className="px-4 py-3">{product.weight_kg} kg</td>
                 </tr>
                 {product.weight_capacity && (
                   <tr className="border-b border-[var(--color-sand-light)]">
-                    <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Peso suportado</td>
+                    <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Peso suportado</th>
                     <td className="px-4 py-3">Até {product.weight_capacity} kg distribuídos</td>
                   </tr>
                 )}
                 {product.num_drawers > 0 && (
                   <tr className="border-b border-[var(--color-sand-light)]">
-                    <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Gavetas</td>
+                    <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Gavetas</th>
                     <td className="px-4 py-3">{product.num_drawers} {product.num_drawers === 1 ? 'gaveta' : 'gavetas'}</td>
                   </tr>
                 )}
                 {product.num_shelves > 0 && (
                   <tr className="border-b border-[var(--color-sand-light)]">
-                    <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Prateleiras</td>
+                    <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Prateleiras</th>
                     <td className="px-4 py-3">{product.num_shelves} {product.num_shelves === 1 ? 'prateleira' : 'prateleiras'}</td>
                   </tr>
                 )}
                 {product.slide_type && (
                   <tr className="border-b border-[var(--color-sand-light)]">
-                    <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Corrediças</td>
+                    <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Corrediças</th>
                     <td className="px-4 py-3 capitalize">{product.slide_type === 'metalica' ? 'Metálicas' : product.slide_type}</td>
                   </tr>
                 )}
                 {product.has_wheels && (
                   <tr className="border-b border-[var(--color-sand-light)]">
-                    <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Rodízios</td>
+                    <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Rodízios</th>
                     <td className="px-4 py-3">Sim, com rodinhas</td>
                   </tr>
                 )}
                 {product.has_lock && (
                   <tr className="border-b border-[var(--color-sand-light)]">
-                    <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Tranca</td>
+                    <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Tranca</th>
                     <td className="px-4 py-3">Sim, com chave</td>
                   </tr>
                 )}
                 {product.tv_max_size && (
                   <tr className="border-b border-[var(--color-sand-light)]">
-                    <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">TV recomendada</td>
+                    <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">TV recomendada</th>
                     <td className="px-4 py-3">Até {product.tv_max_size} polegadas</td>
                   </tr>
                 )}
                 <tr className="border-b border-[var(--color-sand-light)]">
-                  <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Fixa na parede?</td>
+                  <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Fixa na parede?</th>
                   <td className="px-4 py-3">{product.requires_wall_mount ? 'Sim' : 'Não'}</td>
                 </tr>
                 <tr className="border-b border-[var(--color-sand-light)]">
-                  <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Dificuldade montagem</td>
+                  <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Dificuldade montagem</th>
                   <td className="px-4 py-3 capitalize">{product.assembly_difficulty}</td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-3 font-medium bg-[var(--color-cream)]">Tempo de montagem</td>
+                  <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Tempo de montagem</th>
                   <td className="px-4 py-3">~{product.assembly_time_minutes} minutos</td>
                 </tr>
               </tbody>
