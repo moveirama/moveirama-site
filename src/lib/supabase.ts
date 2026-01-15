@@ -6,25 +6,26 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Types para as tabelas principais
-export type Environment = {
+
+// Categoria com estrutura hierárquica (2 níveis)
+export type Category = {
   id: string
   slug: string
   name: string
   description: string | null
-  icon: string | null
-  display_order: number
+  parent_id: string | null
   is_active: boolean
 }
 
-export type Category = {
-  id: string
-  environment_id: string
-  slug: string
-  name: string
-  description: string | null
-  icon: string | null
-  display_order: number
-  is_active: boolean
+// Categoria com contagem de produtos (para listagem)
+export type CategoryWithCount = Category & {
+  product_count: number
+  image_url?: string
+}
+
+// Categoria com parent (para breadcrumb)
+export type CategoryWithParent = Category & {
+  parent?: Category | null
 }
 
 export type Supplier = {
@@ -90,7 +91,140 @@ export type ProductImage = {
 }
 
 export type ProductWithDetails = Product & {
-  category: Category
+  category: CategoryWithParent
   variants: ProductVariant[]
   images: ProductImage[]
+}
+
+// Produto para listagem (mais leve, sem detalhes completos)
+export type ProductForListing = {
+  id: string
+  slug: string
+  name: string
+  price: number
+  compare_at_price: number | null
+  image_url?: string
+  avg_rating?: number
+  review_count?: number
+}
+
+// Helpers para queries
+export async function getCategoryBySlug(slug: string): Promise<Category | null> {
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('slug', slug)
+    .eq('is_active', true)
+    .single()
+  
+  if (error) return null
+  return data
+}
+
+export async function getParentCategories(): Promise<Category[]> {
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .is('parent_id', null)
+    .eq('is_active', true)
+    .order('name')
+  
+  if (error) return []
+  return data || []
+}
+
+export async function getSubcategories(parentId: string): Promise<CategoryWithCount[]> {
+  const { data, error } = await supabase
+    .from('categories')
+    .select(`
+      *,
+      products:products(count)
+    `)
+    .eq('parent_id', parentId)
+    .eq('is_active', true)
+    .order('name')
+  
+  if (error) return []
+  
+  // Transform para incluir product_count
+  return (data || []).map(cat => ({
+    ...cat,
+    product_count: cat.products?.[0]?.count || 0
+  }))
+}
+
+export async function getProductsByCategory(
+  categoryId: string,
+  page: number = 1,
+  perPage: number = 12,
+  sortBy: string = 'relevance'
+): Promise<{ products: ProductForListing[], total: number }> {
+  // Determinar ordenação
+  let orderColumn = 'name'
+  let orderAsc = true
+  
+  switch (sortBy) {
+    case 'price-asc':
+      orderColumn = 'price'
+      orderAsc = true
+      break
+    case 'price-desc':
+      orderColumn = 'price'
+      orderAsc = false
+      break
+    case 'newest':
+      orderColumn = 'created_at'
+      orderAsc = false
+      break
+    case 'bestseller':
+      orderColumn = 'stock_quantity' // placeholder - futuramente será sales_count
+      orderAsc = false
+      break
+    default:
+      orderColumn = 'name'
+      orderAsc = true
+  }
+  
+  const from = (page - 1) * perPage
+  const to = from + perPage - 1
+  
+  // Query produtos (sem inner join para não excluir produtos sem imagem)
+  const { data, error, count } = await supabase
+    .from('products')
+    .select(`
+      id,
+      slug,
+      name,
+      price,
+      compare_at_price,
+      product_images(cloudinary_path, image_type)
+    `, { count: 'exact' })
+    .eq('category_id', categoryId)
+    .eq('is_active', true)
+    .order(orderColumn, { ascending: orderAsc })
+    .range(from, to)
+  
+  if (error) {
+    console.error('Error fetching products:', error)
+    return { products: [], total: 0 }
+  }
+  
+  // Transform para ProductForListing (busca imagem principal ou primeira disponível)
+  const products: ProductForListing[] = (data || []).map(p => {
+    // Tenta encontrar imagem principal, senão usa a primeira
+    const images = p.product_images || []
+    const principalImage = images.find((img: { image_type: string }) => img.image_type === 'principal')
+    const imageUrl = principalImage?.cloudinary_path || images[0]?.cloudinary_path
+    
+    return {
+      id: p.id,
+      slug: p.slug,
+      name: p.name,
+      price: p.price,
+      compare_at_price: p.compare_at_price,
+      image_url: imageUrl
+    }
+  })
+  
+  return { products, total: count || 0 }
 }
