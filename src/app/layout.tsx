@@ -70,9 +70,11 @@ export default function RootLayout({
         />
         <link rel="canonical" href="https://moveirama.com.br" />
       </head>
-      <body>
+      <body className="overflow-x-hidden">
         <Header />
-        {children}
+        <div className="overflow-x-hidden">
+          {children}
+        </div>
         <Footer />
       </body>
     </html>

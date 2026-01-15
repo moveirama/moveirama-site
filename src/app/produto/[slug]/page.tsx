@@ -252,11 +252,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       )}
 
       {/* Container */}
-      <div className="container mx-auto px-4 py-4 md:py-8">
+      <div className="product-container">
         
         {/* Breadcrumb */}
         <nav className="text-sm mb-4" aria-label="Breadcrumb">
-          <ol className="flex items-center gap-2 text-[var(--color-toffee)]">
+          <ol className="flex items-center gap-2 text-[var(--color-toffee)] flex-wrap">
             <li><Link href="/" className="hover:underline">Início</Link></li>
             <li>/</li>
             <li>
@@ -273,7 +273,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         <div className="grid md:grid-cols-2 gap-6 md:gap-10">
           
           {/* Coluna Esquerda: Galeria */}
-          <div>
+          <div className="min-w-0">
             <ProductGallery 
               images={product.images || []} 
               productName={product.name} 
@@ -281,14 +281,14 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </div>
 
           {/* Coluna Direita: Informações */}
-          <div>
+          <div className="min-w-0">
             {/* Título */}
             <h1 className="text-2xl md:text-3xl font-semibold text-[var(--color-graphite)] mb-2">
               {product.name}
             </h1>
             
             {/* Resumo IA-friendly (SEO/AIO) */}
-            <p className="text-sm text-[var(--color-toffee)] mb-3 leading-relaxed">
+            <p className="text-sm text-[var(--color-toffee)] mb-3 leading-relaxed break-words">
               <strong>{product.name}</strong> - rack de madeira para TV até {product.tv_max_size || 55} polegadas, {formatPrice(product.price)} à vista ou {parcelas}x {formatPrice(valorParcela)} sem juros. {product.main_material}{product.thickness_mm && ` ${product.thickness_mm}mm`}, montagem fácil (~{product.assembly_time_minutes}min). Entrega própria em Curitiba e região metropolitana em até 2 dias úteis.
             </p>
             
@@ -361,14 +361,14 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <label className="block text-sm font-medium text-[var(--color-graphite)] mb-2">
                 Calcular frete e prazo
               </label>
-              <div className="flex gap-2">
+              <div className="flex gap-2 w-full">
                 <input
                   type="text"
                   placeholder="Digite seu CEP"
                   maxLength={9}
-                  className="flex-1 px-4 py-3 text-base border border-[var(--color-sand-light)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-sage-500)]/40 focus:border-[var(--color-sage-500)]"
+                  className="flex-1 min-w-0 px-4 py-3 text-base border border-[var(--color-sand-light)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-sage-500)]/40 focus:border-[var(--color-sage-500)]"
                 />
-                <button className="px-4 py-3 text-sm font-semibold text-white bg-[var(--color-graphite)] rounded-lg hover:bg-[var(--color-espresso)] transition-colors">
+                <button className="flex-shrink-0 px-4 py-3 text-sm font-semibold text-white bg-[var(--color-graphite)] rounded-lg hover:bg-[var(--color-espresso)] transition-colors whitespace-nowrap">
                   Calcular
                 </button>
               </div>
@@ -391,27 +391,27 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             </div>
 
             {/* Trust Badges */}
-            <div className="grid grid-cols-2 gap-4 py-4 border-t border-b border-[var(--color-sand-light)]">
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-[var(--color-sage-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="grid grid-cols-2 gap-3 py-4 border-t border-b border-[var(--color-sand-light)]">
+              <div className="flex items-center gap-2 min-w-0">
+                <svg className="w-5 h-5 flex-shrink-0 text-[var(--color-sage-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
                 <span className="text-sm text-[var(--color-toffee)]">Produto novo</span>
               </div>
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-[var(--color-sage-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-center gap-2 min-w-0">
+                <svg className="w-5 h-5 flex-shrink-0 text-[var(--color-sage-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
-                <span className="text-sm text-[var(--color-toffee)]">3 meses de garantia</span>
+                <span className="text-sm text-[var(--color-toffee)]">3 meses garantia</span>
               </div>
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-[var(--color-sage-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-center gap-2 min-w-0">
+                <svg className="w-5 h-5 flex-shrink-0 text-[var(--color-sage-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
                 <span className="text-sm text-[var(--color-toffee)]">Peças completas</span>
               </div>
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-[var(--color-sage-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-center gap-2 min-w-0">
+                <svg className="w-5 h-5 flex-shrink-0 text-[var(--color-sage-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span className="text-sm text-[var(--color-toffee)]">Entrega rápida</span>

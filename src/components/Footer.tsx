@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export default function Footer() {
   return (
-    <footer className="bg-[var(--color-graphite)] text-white mt-16">
+    <footer className="bg-[var(--color-graphite)] text-white mt-16 overflow-x-hidden">
       {/* Schema.org LocalBusiness */}
       <script
         type="application/ld+json"
@@ -78,7 +78,7 @@ export default function Footer() {
         }}
       />
 
-      <div className="container mx-auto px-4 py-12">
+      <div className="max-w-[1280px] mx-auto px-4 py-12 overflow-x-hidden">
         <div className="grid md:grid-cols-4 gap-8">
           {/* Sobre */}
           <div>

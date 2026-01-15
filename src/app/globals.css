@@ -50,8 +50,14 @@
 }
 
 /* RESET BASE */
-* {
+*, *::before, *::after {
   box-sizing: border-box;
+}
+
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
 }
 
 html {
@@ -64,6 +70,24 @@ body {
   color: var(--color-graphite);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Previne overflow em grids - CRÍTICO */
+.grid > * {
+  min-width: 0;
+}
+
+/* Classe utilitária para conteúdo que não pode vazar */
+.no-overflow {
+  overflow: hidden;
+  max-width: 100%;
+}
+
+/* Texto que pode quebrar */
+.break-words {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 /* BOTÃO PRIMÁRIO */
@@ -123,10 +147,21 @@ body {
   padding-right: var(--space-4);
 }
 
+/* Container específico para página de produto */
+.product-container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: var(--space-4);
+}
+
 @media (min-width: 768px) {
   .container {
     padding-left: var(--space-6);
     padding-right: var(--space-6);
+  }
+  .product-container {
+    padding: var(--space-8) var(--space-6);
   }
 }
 
