@@ -452,7 +452,11 @@ export default function ProductPageContent({
                 </tr>
                 <tr className="border-b border-[var(--color-sand-light)]">
                   <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Material</th>
-                  <td className="px-4 py-3">{product.main_material}{product.thickness_mm && ` ${product.thickness_mm}mm`}</td>
+                  <td className="px-4 py-3">
+                    {product.material_description || (
+                      <>{product.main_material}{product.thickness_mm && ` ${product.thickness_mm}mm`}</>
+                    )}
+                  </td>
                 </tr>
                 <tr className="border-b border-[var(--color-sand-light)]">
                   <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Dimensões (L×A×P)</th>
@@ -462,6 +466,13 @@ export default function ProductPageContent({
                   <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Peso</th>
                   <td className="px-4 py-3">{product.weight_kg} kg</td>
                 </tr>
+                {/* Peso Suportado - exibe apenas se existir */}
+                {product.weight_capacity && product.weight_capacity > 0 && (
+                  <tr className="border-b border-[var(--color-sand-light)]">
+                    <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Peso suportado</th>
+                    <td className="px-4 py-3">Até {product.weight_capacity} kg</td>
+                  </tr>
+                )}
                 {product.tv_max_size && (
                   <tr className="border-b border-[var(--color-sand-light)]">
                     <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">TV recomendada</th>
