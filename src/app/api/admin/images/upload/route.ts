@@ -14,13 +14,17 @@ import {
 } from '@/lib/images';
 import { DEFAULT_IMAGE_CONFIG, UploadResponse } from '@/types/images';
 
-// Cliente Supabase com service role
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Função para criar cliente Supabase
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function POST(request: NextRequest): Promise<NextResponse<UploadResponse>> {
+  const supabase = getSupabase();
+  
   try {
     // Verificar se bucket existe
     const bucketReady = await ensureBucketExists();
