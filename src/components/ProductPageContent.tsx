@@ -2,6 +2,7 @@ import Link from 'next/link'
 import RecursosMontagem from '@/components/RecursosMontagem'
 import ProductGallery from '@/components/ProductGallery'
 import Breadcrumb from '@/components/Breadcrumb'
+import MedidasCompactas from '@/components/MedidasCompactas'
 
 // Types
 interface BreadcrumbItem {
@@ -212,6 +213,14 @@ export default function ProductPageContent({
                   5% OFF
                 </span>
               </div>
+
+              {/* Medidas Compactas - responde "vai caber?" antes do CTA */}
+              <MedidasCompactas
+                largura={product.width_cm}
+                altura={product.height_cm}
+                profundidade={product.depth_cm}
+                compatibilidadeTv={product.tv_max_size}
+              />
               
               {/* Badge Entrega Local */}
               <div className="flex items-center gap-2 mt-4 p-3 bg-[var(--color-cream)] border border-[var(--color-sand-light)] rounded-lg">
@@ -389,7 +398,7 @@ export default function ProductPageContent({
         </section>
 
         {/* Seção: Medidas */}
-        <section className="mt-8">
+        <section id="medidas-detalhadas" className="mt-8 scroll-mt-4">
           <h2 className="text-2xl font-semibold text-[var(--color-graphite)] mb-4">
             Medidas do produto
           </h2>
