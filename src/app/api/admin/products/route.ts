@@ -23,6 +23,10 @@ export async function GET(request: Request) {
         assembly_video_url,
         manual_pdf_url,
         medidas_image_url,
+        tv_max_size,
+        categories (
+          slug
+        ),
         product_images (
           id,
           cloudinary_path,
@@ -44,7 +48,13 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    let filteredProducts = products || []
+    // Formatar para incluir category_slug
+    const formattedProducts = (products || []).map(p => ({
+      ...p,
+      category_slug: (p.categories as any)?.slug || null
+    }))
+
+    let filteredProducts = formattedProducts
     
     if (filter === 'with-images') {
       filteredProducts = filteredProducts.filter(p => p.product_images && p.product_images.length > 0)
@@ -52,8 +62,8 @@ export async function GET(request: Request) {
       filteredProducts = filteredProducts.filter(p => !p.product_images || p.product_images.length === 0)
     }
 
-    const total = products?.length || 0
-    const withImages = products?.filter(p => p.product_images && p.product_images.length > 0).length || 0
+    const total = formattedProducts.length
+    const withImages = formattedProducts.filter(p => p.product_images && p.product_images.length > 0).length
     const withoutImages = total - withImages
 
     return NextResponse.json({
