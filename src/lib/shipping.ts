@@ -168,7 +168,7 @@ function calculateFeeByLocation(city: string, neighborhood: string): {
       fee: 0,
       needsConfirmation: false,
       notDeliverable: true,
-      message: 'Desculpe, não fazemos entregas para esta cidade.'
+      message: 'Poxa, ainda não chegamos aí'
     }
   }
 
@@ -240,7 +240,7 @@ function calculateFeeByLocation(city: string, neighborhood: string): {
         fee: 0,
         needsConfirmation: false,
         notDeliverable: true,
-        message: 'Desculpe, não fazemos entregas para este bairro.'
+        message: 'Poxa, ainda não chegamos aí'
       }
     }
     
