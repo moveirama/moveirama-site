@@ -61,6 +61,7 @@ export type Product = {
   weight_kg: number
   main_material: string
   thickness_mm: number | null
+  material_description: string | null
   assembly_difficulty: string
   assembly_time_minutes: number
   is_active: boolean
