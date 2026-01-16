@@ -59,8 +59,8 @@ export default function ProductCardListing({
   const placeholderSvg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect fill='%23F0E8DF' width='400' height='400'/%3E%3Ctext x='50%25' y='45%25' fill='%238B7355' font-family='sans-serif' font-size='48' text-anchor='middle'%3E📦%3C/text%3E%3Ctext x='50%25' y='60%25' fill='%238B7355' font-family='sans-serif' font-size='14' text-anchor='middle'%3EImagem em breve%3C/text%3E%3C/svg%3E`
   
   const imageSrc = imageUrl 
-    ? `https://res.cloudinary.com/moveirama/image/upload/c_fill,w_400,h_400,q_auto,f_auto/${imageUrl}`
-    : placeholderSvg
+  ? (imageUrl.startsWith('http') ? imageUrl : `https://res.cloudinary.com/moveirama/image/upload/c_fill,w_400,h_400,q_auto,f_auto/${imageUrl}`)
+  : placeholderSvg
 
   return (
     <article className="relative bg-white rounded-xl overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-all duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 group">
