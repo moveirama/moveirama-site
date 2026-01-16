@@ -16,10 +16,10 @@ const supabase = createClient(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse<DeleteResponse>> {
   try {
-    const imageId = params.id;
+    const { id: imageId } = await params;
 
     if (!imageId) {
       return NextResponse.json(
