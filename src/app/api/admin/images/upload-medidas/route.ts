@@ -4,15 +4,7 @@
 // ============================================
 
 import { createClient } from '@supabase/supabase-js'
-import { v2 as cloudinary } from 'cloudinary'
 import { NextResponse } from 'next/server'
-
-// Configurar Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-})
 
 export async function POST(request: Request) {
   const supabase = createClient(
@@ -37,30 +29,37 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Upload para Cloudinary
-    const uploadResult = await new Promise<any>((resolve, reject) => {
-      cloudinary.uploader.upload_stream(
-        {
-          folder: `moveirama/medidas`,
-          public_id: `${productSlug}-medidas`,
-          overwrite: true,
-          resource_type: 'image',
-          transformation: [
-            { quality: 'auto:good' },
-            { fetch_format: 'auto' }
-          ]
-        },
-        (error, result) => {
-          if (error) reject(error)
-          else resolve(result)
-        }
-      ).end(buffer)
-    })
+    // Definir nome do arquivo
+    const fileExt = file.name.split('.').pop() || 'jpg'
+    const fileName = `medidas/${productSlug}-medidas.${fileExt}`
+
+    // Upload para Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('product-images')
+      .upload(fileName, buffer, {
+        contentType: file.type,
+        upsert: true  // Substitui se já existir
+      })
+
+    if (uploadError) {
+      console.error('Erro no upload:', uploadError)
+      return NextResponse.json(
+        { success: false, error: 'Erro no upload: ' + uploadError.message },
+        { status: 500 }
+      )
+    }
+
+    // Gerar URL pública
+    const { data: urlData } = supabase.storage
+      .from('product-images')
+      .getPublicUrl(fileName)
+
+    const imageUrl = urlData.publicUrl
 
     // Salvar URL no banco
     const { error: updateError } = await supabase
       .from('products')
-      .update({ medidas_image_url: uploadResult.secure_url })
+      .update({ medidas_image_url: imageUrl })
       .eq('id', productId)
 
     if (updateError) {
@@ -73,7 +72,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      url: uploadResult.secure_url
+      url: imageUrl
     })
 
   } catch (error) {
