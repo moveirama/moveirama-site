@@ -118,6 +118,42 @@ const DELIVERED_CITIES = [
 const DELIVERY_DAYS_MIN = 1
 const DELIVERY_DAYS_MAX = 3
 
+// Faixas de CEP por cidade (para fallback quando ViaCEP não retorna)
+const CEP_RANGES: { start: number; end: number; city: string; fee: number }[] = [
+  // Curitiba - 80000-000 a 82999-999
+  { start: 80000000, end: 82999999, city: 'Curitiba', fee: CURITIBA_BASE },
+  
+  // São José dos Pinhais - 83000-000 a 83099-999
+  { start: 83000000, end: 83099999, city: 'São José dos Pinhais', fee: SJP_BASE },
+  
+  // Pinhais - 83320-000 a 83329-999
+  { start: 83320000, end: 83329999, city: 'Pinhais', fee: FIXED_PRICE_CITIES['pinhais'] },
+  
+  // Colombo - 83400-000 a 83419-999
+  { start: 83400000, end: 83419999, city: 'Colombo', fee: COLOMBO_BASE },
+  
+  // Campina Grande do Sul - 83430-000 a 83439-999
+  { start: 83430000, end: 83439999, city: 'Campina Grande do Sul', fee: CGS_BASE },
+  
+  // Almirante Tamandaré - 83500-000 a 83519-999
+  { start: 83500000, end: 83519999, city: 'Almirante Tamandaré', fee: TAMANDARE_BASE },
+  
+  // Campo Largo - 83600-000 a 83625-999 (NÃO ATENDEMOS)
+  // { start: 83600000, end: 83625999, city: 'Campo Largo', fee: 0 },
+  
+  // Araucária - 83700-000 a 83729-999 (NÃO ATENDEMOS)
+  // { start: 83700000, end: 83729999, city: 'Araucária', fee: 0 },
+  
+  // Fazenda Rio Grande - 83820-000 a 83829-999
+  { start: 83820000, end: 83829999, city: 'Fazenda Rio Grande', fee: FIXED_PRICE_CITIES['fazenda rio grande'] },
+  
+  // Piraquara - 83300-000 a 83309-999
+  { start: 83300000, end: 83309999, city: 'Piraquara', fee: FIXED_PRICE_CITIES['piraquara'] },
+  
+  // Quatro Barras - 83420-000 a 83429-999
+  { start: 83420000, end: 83429999, city: 'Quatro Barras', fee: FIXED_PRICE_CITIES['quatro barras'] },
+]
+
 // ============================================
 // FUNÇÕES AUXILIARES
 // ============================================
@@ -273,6 +309,25 @@ function calculateFeeByLocation(city: string, neighborhood: string): {
 }
 
 /**
+ * Fallback: identifica cidade pela faixa de CEP
+ * Usado quando ViaCEP não retorna dados (CEPs genéricos)
+ */
+function getCityFromCepRange(cep: string): { city: string; fee: number } | null {
+  const normalized = normalizeCep(cep)
+  if (!isValidCep(normalized)) return null
+  
+  const cepNumber = parseInt(normalized, 10)
+  
+  for (const range of CEP_RANGES) {
+    if (cepNumber >= range.start && cepNumber <= range.end) {
+      return { city: range.city, fee: range.fee }
+    }
+  }
+  
+  return null
+}
+
+/**
  * Consulta CEP na API ViaCEP
  */
 export async function fetchAddressFromCep(cep: string): Promise<ViaCepResponse | null> {
@@ -308,26 +363,50 @@ export async function fetchAddressFromCep(cep: string): Promise<ViaCepResponse |
 export async function calculateShipping(cep: string): Promise<ShippingResult | null> {
   const address = await fetchAddressFromCep(cep)
   
-  if (!address) {
-    return null  // CEP inválido ou não encontrado
+  // Se ViaCEP encontrou o endereço, usa os dados completos
+  if (address) {
+    const city = address.localidade
+    const neighborhood = address.bairro
+    const { fee, needsConfirmation, notDeliverable, message } = calculateFeeByLocation(city, neighborhood)
+
+    return {
+      city,
+      neighborhood,
+      fee,
+      deliveryDaysMin: DELIVERY_DAYS_MIN,
+      deliveryDaysMax: DELIVERY_DAYS_MAX,
+      needsConfirmation,
+      notDeliverable,
+      message
+    }
   }
-
-  const city = address.localidade
-  const neighborhood = address.bairro
-  const cityNorm = normalize(city)
-
-  const { fee, needsConfirmation, notDeliverable, message } = calculateFeeByLocation(city, neighborhood)
-
-  return {
-    city,
-    neighborhood,
-    fee,
-    deliveryDaysMin: DELIVERY_DAYS_MIN,
-    deliveryDaysMax: DELIVERY_DAYS_MAX,
-    needsConfirmation,
-    notDeliverable,
-    message
+  
+  // Fallback: ViaCEP não encontrou (CEP genérico/geral da cidade)
+  // Tenta identificar a cidade pela faixa de CEP
+  const cityFromRange = getCityFromCepRange(cep)
+  
+  if (cityFromRange) {
+    // Cidade identificada pela faixa - retorna com preço base
+    // Como não sabemos o bairro, pode precisar de confirmação para cidades com exceções
+    const cityNorm = normalize(cityFromRange.city)
+    const hasBairroExceptions = ['curitiba', 'sao jose dos pinhais', 'colombo', 'almirante tamandare', 'campina grande do sul'].includes(cityNorm)
+    
+    return {
+      city: cityFromRange.city,
+      neighborhood: '',
+      fee: cityFromRange.fee,
+      deliveryDaysMin: DELIVERY_DAYS_MIN,
+      deliveryDaysMax: DELIVERY_DAYS_MAX,
+      needsConfirmation: hasBairroExceptions,
+      notDeliverable: false,
+      message: hasBairroExceptions 
+        ? 'O valor pode variar conforme o bairro. Confirme no WhatsApp para valor exato.'
+        : undefined
+    }
   }
+  
+  // CEP não encontrado nem na ViaCEP nem nas faixas conhecidas
+  return null
 }
 
 /**
