@@ -160,7 +160,7 @@ export default function ShippingCalculator() {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              <span className="text-sm">Frota própria • Sem surpresa no valor</span>
+              <span className="text-sm">Nossa equipe entrega e confere com você</span>
             </div>
           </div>
         </div>
@@ -210,7 +210,7 @@ export default function ShippingCalculator() {
             </svg>
             <div>
               <p className="text-sm font-medium text-[var(--color-terracota-700)]">
-                {result.message || 'Desculpe, não fazemos entregas para esta região.'}
+                {result.message || 'Poxa, ainda não chegamos aí'}
               </p>
               {result.neighborhood && (
                 <p className="text-sm text-[var(--color-toffee)] mt-1">
@@ -221,7 +221,7 @@ export default function ShippingCalculator() {
           </div>
 
           <p className="text-sm text-[var(--color-toffee)] mb-3">
-            Entregamos apenas em: Curitiba, Pinhais, São José dos Pinhais, Piraquara, Quatro Barras, Campina Grande do Sul, Almirante Tamandaré, Colombo e Fazenda Rio Grande.
+            Por enquanto atendemos: Curitiba, Pinhais, São José dos Pinhais, Piraquara, Quatro Barras, Campina Grande do Sul, Almirante Tamandaré, Colombo e Fazenda Rio Grande.
           </p>
         </div>
       )}
