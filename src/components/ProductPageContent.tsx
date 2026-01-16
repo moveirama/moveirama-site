@@ -214,11 +214,12 @@ export default function ProductPageContent({
                 </span>
               </div>
 
-              {/* Medidas Compactas - responde "vai caber?" antes do CTA */}
+              {/* Medidas Compactas v1.2 - responde "vai caber?" antes do CTA */}
               <MedidasCompactas
                 largura={product.width_cm}
                 altura={product.height_cm}
                 profundidade={product.depth_cm}
+                categoria={subcategorySlug}
                 compatibilidadeTv={product.tv_max_size}
               />
               
