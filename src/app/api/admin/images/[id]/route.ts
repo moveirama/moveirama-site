@@ -13,7 +13,6 @@ export async function DELETE(
   )
 
   try {
-    // Busca a imagem para pegar o path
     const { data: image, error: fetchError } = await supabase
       .from('product_images')
       .select('*')
@@ -24,16 +23,13 @@ export async function DELETE(
       return NextResponse.json({ error: 'Imagem não encontrada' }, { status: 404 })
     }
 
-    // Extrai o path do storage da URL
     const url = image.cloudinary_path
     const storagePath = url.split('/product-images/')[1]
 
-    // Deleta do Storage
     if (storagePath) {
       await supabase.storage.from('product-images').remove([storagePath])
     }
 
-    // Deleta do banco
     const { error: deleteError } = await supabase
       .from('product_images')
       .delete()
@@ -46,6 +42,38 @@ export async function DELETE(
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Erro ao deletar:', error)
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
+  }
+}
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  const body = await request.json()
+  
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  try {
+    const { error } = await supabase
+      .from('product_images')
+      .update({
+        position: body.position,
+        image_type: body.image_type
+      })
+      .eq('id', id)
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Erro ao atualizar:', error)
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 }
