@@ -21,6 +21,7 @@ type Product = {
   slug: string
   assembly_video_url: string | null
   manual_pdf_url: string | null
+  medidas_image_url: string | null
   product_images: ProductImage[]
 }
 
@@ -68,9 +69,11 @@ export default function AdminImagensPage() {
   const [filter, setFilter] = useState<'all' | 'with-images' | 'without-images'>('all')
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [uploadingMedidas, setUploadingMedidas] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [dragOver, setDragOver] = useState(false)
+  const [dragOverMedidas, setDragOverMedidas] = useState(false)
   const [videoUrl, setVideoUrl] = useState('')
   const [manualUrl, setManualUrl] = useState('')
   const router = useRouter()
@@ -182,6 +185,58 @@ export default function AdminImagensPage() {
     }
   }
 
+  async function uploadMedidasImage(file: File) {
+    if (!selectedProduct) return
+    setUploadingMedidas(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('productId', selectedProduct.id)
+      formData.append('productSlug', selectedProduct.slug)
+      formData.append('imageType', 'medidas')
+      
+      const res = await fetch('/api/admin/images/upload-medidas', { method: 'POST', body: formData })
+      const data = await res.json()
+      
+      if (data.success) {
+        fetchProducts()
+        alert('Imagem das medidas salva!')
+      } else {
+        alert('Erro no upload: ' + data.error)
+      }
+    } catch (error) {
+      console.error('Erro no upload:', error)
+      alert('Erro ao fazer upload')
+    } finally {
+      setUploadingMedidas(false)
+    }
+  }
+
+  async function removeMedidasImage() {
+    if (!selectedProduct) return
+    if (!confirm('Tem certeza que deseja remover a imagem das medidas?')) return
+    
+    setUploadingMedidas(true)
+    try {
+      const res = await fetch(`/api/admin/products/${selectedProduct.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ medidas_image_url: null })
+      })
+      const data = await res.json()
+      if (data.success) {
+        fetchProducts()
+      } else {
+        alert('Erro ao remover: ' + data.error)
+      }
+    } catch (error) {
+      console.error('Erro ao remover:', error)
+      alert('Erro ao remover imagem')
+    } finally {
+      setUploadingMedidas(false)
+    }
+  }
+
   async function deleteImage(imageId: string) {
     if (!confirm('Tem certeza que deseja excluir esta imagem?')) return
     setDeleting(imageId)
@@ -256,6 +311,30 @@ export default function AdminImagensPage() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) uploadImage(file)
+    e.target.value = ''
+  }
+
+  const handleDragOverMedidas = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setDragOverMedidas(true)
+  }, [])
+
+  const handleDragLeaveMedidas = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setDragOverMedidas(false)
+  }, [])
+
+  const handleDropMedidas = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setDragOverMedidas(false)
+    const files = Array.from(e.dataTransfer.files)
+    const imageFile = files.find(f => f.type.startsWith('image/'))
+    if (imageFile) uploadMedidasImage(imageFile)
+  }, [selectedProduct])
+
+  const handleMedidasFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) uploadMedidasImage(file)
     e.target.value = ''
   }
 
@@ -347,9 +426,9 @@ export default function AdminImagensPage() {
                 <div>
                   <p className="text-sm text-[#8B7355] mb-4">SKU: {selectedProduct.sku}</p>
                   
-                  {/* Imagens */}
+                  {/* Imagens do Produto */}
                   <div className="mb-6">
-                    <h4 className="text-sm font-medium text-[#2D2D2D] mb-2">Imagens ({sortedImages.length}) <span className="font-normal text-[#8B7355]">— arraste para reordenar</span></h4>
+                    <h4 className="text-sm font-medium text-[#2D2D2D] mb-2">Imagens do Produto ({sortedImages.length}) <span className="font-normal text-[#8B7355]">— arraste para reordenar</span></h4>
                     {sortedImages.length > 0 ? (
                       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                         <SortableContext items={sortedImages.map(img => img.id)} strategy={rectSortingStrategy}>
@@ -365,7 +444,7 @@ export default function AdminImagensPage() {
                     )}
                   </div>
                   
-                  {/* Upload */}
+                  {/* Upload de Imagens do Produto */}
                   <div onDragOver={handleDragOverUpload} onDragLeave={handleDragLeaveUpload} onDrop={handleDropUpload} className={`border-2 border-dashed rounded-lg p-6 text-center mb-6 ${dragOver ? 'border-[#6B8E7A] bg-[#F0F5F2]' : 'border-[#E8DFD5] hover:border-[#6B8E7A]'}`}>
                     {uploading ? (
                       <p className="text-[#8B7355]">Enviando...</p>
@@ -376,6 +455,58 @@ export default function AdminImagensPage() {
                           Selecionar arquivo
                           <input type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
                         </label>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Imagem das Medidas */}
+                  <div className="border-t border-[#E8DFD5] pt-6 mb-6">
+                    <h4 className="text-sm font-medium text-[#2D2D2D] mb-2">
+                      📐 Imagem das Medidas
+                      <span className="font-normal text-[#8B7355] ml-2">— dimensões do produto (L x A x P)</span>
+                    </h4>
+                    
+                    {selectedProduct.medidas_image_url ? (
+                      <div className="relative">
+                        <div className="bg-[#F0E8DF] rounded-lg p-4">
+                          <img 
+                            src={selectedProduct.medidas_image_url} 
+                            alt="Medidas do produto" 
+                            className="max-h-48 mx-auto rounded"
+                          />
+                        </div>
+                        <div className="flex gap-2 mt-3">
+                          <label className="flex-1 px-4 py-2 bg-[#F0E8DF] text-[#2D2D2D] rounded-lg cursor-pointer hover:bg-[#E8DFD5] text-center text-sm font-medium">
+                            Trocar imagem
+                            <input type="file" accept="image/*" onChange={handleMedidasFileSelect} className="hidden" disabled={uploadingMedidas} />
+                          </label>
+                          <button 
+                            onClick={removeMedidasImage}
+                            disabled={uploadingMedidas}
+                            className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 text-sm font-medium disabled:opacity-50"
+                          >
+                            {uploadingMedidas ? '...' : 'Remover'}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div 
+                        onDragOver={handleDragOverMedidas} 
+                        onDragLeave={handleDragLeaveMedidas} 
+                        onDrop={handleDropMedidas} 
+                        className={`border-2 border-dashed rounded-lg p-6 text-center ${dragOverMedidas ? 'border-[#6B8E7A] bg-[#F0F5F2]' : 'border-[#E8DFD5] hover:border-[#6B8E7A]'}`}
+                      >
+                        {uploadingMedidas ? (
+                          <p className="text-[#8B7355]">Enviando...</p>
+                        ) : (
+                          <div>
+                            <p className="text-[#8B7355] mb-2">Arraste a imagem das medidas ou</p>
+                            <label className="inline-block px-4 py-2 bg-[#F0E8DF] text-[#2D2D2D] rounded-lg cursor-pointer hover:bg-[#E8DFD5] font-medium">
+                              Selecionar arquivo
+                              <input type="file" accept="image/*" onChange={handleMedidasFileSelect} className="hidden" />
+                            </label>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
