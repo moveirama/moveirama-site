@@ -25,6 +25,11 @@ export async function PATCH(
     if (body.medidas_image_url !== undefined) {
       updateData.medidas_image_url = body.medidas_image_url || null
     }
+    if (body.tv_max_size !== undefined) {
+      // Converte para número ou null
+      const tvSize = body.tv_max_size ? parseInt(body.tv_max_size, 10) : null
+      updateData.tv_max_size = isNaN(tvSize as number) ? null : tvSize
+    }
 
     const { error } = await supabase
       .from('products')
