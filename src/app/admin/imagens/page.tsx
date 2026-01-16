@@ -22,6 +22,8 @@ type Product = {
   assembly_video_url: string | null
   manual_pdf_url: string | null
   medidas_image_url: string | null
+  tv_max_size: number | null
+  category_slug: string | null
   product_images: ProductImage[]
 }
 
@@ -76,6 +78,7 @@ export default function AdminImagensPage() {
   const [dragOverMedidas, setDragOverMedidas] = useState(false)
   const [videoUrl, setVideoUrl] = useState('')
   const [manualUrl, setManualUrl] = useState('')
+  const [tvMaxSize, setTvMaxSize] = useState('')
   const router = useRouter()
   const supabase = createClient()
 
@@ -107,6 +110,7 @@ export default function AdminImagensPage() {
             setSelectedProduct(updated)
             setVideoUrl(updated.assembly_video_url || '')
             setManualUrl(updated.manual_pdf_url || '')
+            setTvMaxSize(updated.tv_max_size?.toString() || '')
           }
         }
       }
@@ -126,6 +130,7 @@ export default function AdminImagensPage() {
     if (selectedProduct) {
       setVideoUrl(selectedProduct.assembly_video_url || '')
       setManualUrl(selectedProduct.manual_pdf_url || '')
+      setTvMaxSize(selectedProduct.tv_max_size?.toString() || '')
     }
   }, [selectedProduct?.id])
 
@@ -143,7 +148,8 @@ export default function AdminImagensPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           assembly_video_url: videoUrl || null,
-          manual_pdf_url: manualUrl || null
+          manual_pdf_url: manualUrl || null,
+          tv_max_size: tvMaxSize || null
         })
       })
       const data = await res.json()
@@ -511,6 +517,33 @@ export default function AdminImagensPage() {
                     )}
                   </div>
 
+                  {/* Suporta TV até - só para racks e painéis */}
+                  {selectedProduct.category_slug && ['racks', 'paineis'].includes(selectedProduct.category_slug) && (
+                    <div className="border-t border-[#E8DFD5] pt-6 mb-6">
+                      <h4 className="text-sm font-medium text-[#2D2D2D] mb-2">
+                        📺 Compatibilidade TV
+                        <span className="font-normal text-[#8B7355] ml-2">— importante para racks e painéis</span>
+                      </h4>
+                      
+                      <div>
+                        <label className="block text-sm text-[#8B7355] mb-1">Suporta TV até (polegadas)</label>
+                        <div className="flex items-center gap-2">
+                          <input 
+                            type="number" 
+                            placeholder="Ex: 55"
+                            min="0"
+                            max="100"
+                            value={tvMaxSize} 
+                            onChange={(e) => setTvMaxSize(e.target.value)}
+                            className="w-32 px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
+                          />
+                          <span className="text-sm text-[#8B7355]">polegadas</span>
+                        </div>
+                        <p className="text-xs text-[#8B7355] mt-1">Deixe vazio se não souber. Aparece na página do produto.</p>
+                      </div>
+                    </div>
+                  )}
+
                   {/* URLs de Montagem */}
                   <div className="border-t border-[#E8DFD5] pt-6">
                     <h4 className="text-sm font-medium text-[#2D2D2D] mb-4">Montagem</h4>
@@ -543,7 +576,7 @@ export default function AdminImagensPage() {
                         disabled={saving}
                         className="w-full px-4 py-2 bg-[#6B8E7A] text-white rounded-lg hover:bg-[#5A7A68] disabled:opacity-50"
                       >
-                        {saving ? 'Salvando...' : 'Salvar URLs'}
+                        {saving ? 'Salvando...' : 'Salvar'}
                       </button>
                     </div>
                   </div>
