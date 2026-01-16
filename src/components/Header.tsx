@@ -141,7 +141,7 @@ export default function Header() {
               <LocationIcon className="w-4 h-4" />
               <span>Curitiba e Região Metropolitana</span>
               <span className="hidden md:inline">•</span>
-              <span className="hidden md:inline">Entrega rápida com frota própria</span>
+              <span className="hidden md:inline">Receba em até 3 dias úteis</span>
             </p>
             <a 
               href="https://wa.me/5541984209323" 
