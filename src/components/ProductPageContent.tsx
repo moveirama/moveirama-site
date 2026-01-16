@@ -224,14 +224,14 @@ export default function ProductPageContent({
               />
               
               {/* Badge Entrega Local */}
-              <div className="flex items-center gap-2 mt-4 p-3 bg-[var(--color-cream)] border border-[var(--color-sand-light)] rounded-lg">
-                <svg className="w-5 h-5 text-[var(--color-sage-600)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-start gap-2 mt-4 p-3 bg-[var(--color-cream)] border border-[var(--color-sand-light)] rounded-lg">
+                <svg className="w-5 h-5 text-[var(--color-sage-600)] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <p className="text-sm text-[var(--color-graphite)]">
-                  <strong className="text-[var(--color-sage-700)]">Entrega em 1-2 dias úteis</strong>
-                  <span className="text-[var(--color-toffee)]"> • Curitiba e RMC • Frota própria</span>
-                </p>
+                <div className="text-sm">
+                  <p className="font-semibold text-[var(--color-sage-700)]">Entrega em 1-3 dias úteis</p>
+                  <p className="text-[var(--color-toffee)]">Curitiba e Região Metropolitana</p>
+                </div>
               </div>
             </div>
 
