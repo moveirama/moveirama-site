@@ -3,6 +3,9 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase-browser'
 import { useRouter } from 'next/navigation'
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
+import { arrayMove, SortableContext, useSortable, rectSortingStrategy } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 type ProductImage = {
   id: string
@@ -25,6 +28,35 @@ type Stats = {
   withoutImages: number
 }
 
+function SortableImage({ img, idx, onDelete, deleting }: { 
+  img: ProductImage
+  idx: number
+  onDelete: (id: string) => void
+  deleting: string | null 
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: img.id })
+  const style = { transform: CSS.Transform.toString(transform), transition }
+
+  return (
+    <div ref={setNodeRef} style={style} className="relative aspect-square bg-[#F0E8DF] rounded overflow-hidden group">
+      <div {...attributes} {...listeners} className="absolute inset-0 cursor-grab active:cursor-grabbing">
+        <img src={img.cloudinary_path} alt="" className="w-full h-full object-cover pointer-events-none" />
+      </div>
+      {idx === 0 && <span className="absolute top-1 left-1 text-xs bg-[#6B8E7A] text-white px-2 py-0.5 rounded z-10">Principal</span>}
+      <div className="absolute bottom-1 right-1 z-10">
+        <button 
+          onClick={(e) => { e.stopPropagation(); onDelete(img.id); }} 
+          disabled={deleting === img.id} 
+          className="p-1.5 bg-white/90 rounded text-red-500 hover:bg-red-50 text-sm"
+          title="Excluir"
+        >
+          {deleting === img.id ? '...' : '🗑️'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function AdminImagensPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -38,6 +70,8 @@ export default function AdminImagensPage() {
   const [dragOver, setDragOver] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   useEffect(() => {
     async function getUser() {
@@ -124,41 +158,53 @@ export default function AdminImagensPage() {
     }
   }
 
-  async function setPrincipal(imageId: string) {
-    if (!selectedProduct) return
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id || !selectedProduct) return
+
+    const images = [...(selectedProduct.product_images || [])].sort((a, b) => a.position - b.position)
+    const oldIndex = images.findIndex(img => img.id === active.id)
+    const newIndex = images.findIndex(img => img.id === over.id)
+    
+    const reordered = arrayMove(images, oldIndex, newIndex)
+    
+    // Atualiza localmente primeiro (UI responsiva)
+    setSelectedProduct({
+      ...selectedProduct,
+      product_images: reordered.map((img, idx) => ({ ...img, position: idx }))
+    })
+
+    // Salva no banco
     try {
-      const images = selectedProduct.product_images || []
-      
-      for (const img of images) {
-        const isPrincipal = img.id === imageId
-        await fetch(`/api/admin/images/${img.id}`, {
+      for (let i = 0; i < reordered.length; i++) {
+        await fetch(`/api/admin/images/${reordered[i].id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            position: isPrincipal ? 0 : (images.indexOf(img) + 1),
-            image_type: isPrincipal ? 'principal' : 'galeria'
+            position: i,
+            image_type: i === 0 ? 'principal' : 'galeria'
           })
         })
       }
-      
       fetchProducts()
     } catch (error) {
-      console.error('Erro ao definir principal:', error)
-      alert('Erro ao definir imagem principal')
+      console.error('Erro ao reordenar:', error)
+      alert('Erro ao reordenar imagens')
+      fetchProducts()
     }
   }
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
+  const handleDragOverUpload = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setDragOver(true)
   }, [])
 
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
+  const handleDragLeaveUpload = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setDragOver(false)
   }, [])
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleDropUpload = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setDragOver(false)
     const files = Array.from(e.dataTransfer.files)
@@ -180,7 +226,7 @@ export default function AdminImagensPage() {
     )
   }
 
-  const sortedImages = selectedProduct?.product_images?.sort((a, b) => a.position - b.position) || []
+  const sortedImages = [...(selectedProduct?.product_images || [])].sort((a, b) => a.position - b.position)
 
   return (
     <div className="min-h-screen bg-[#FAF7F4]">
@@ -260,31 +306,22 @@ export default function AdminImagensPage() {
                 <div>
                   <p className="text-sm text-[#8B7355] mb-4">SKU: {selectedProduct.sku}</p>
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-[#2D2D2D] mb-2">Imagens ({sortedImages.length})</h4>
+                    <h4 className="text-sm font-medium text-[#2D2D2D] mb-2">Imagens ({sortedImages.length}) <span className="font-normal text-[#8B7355]">— arraste para reordenar</span></h4>
                     {sortedImages.length > 0 ? (
-                      <div className="grid grid-cols-2 gap-3">
-                        {sortedImages.map((img, idx) => (
-                          <div key={img.id} className="relative aspect-square bg-[#F0E8DF] rounded overflow-hidden group">
-                            <img src={img.cloudinary_path} alt="" className="w-full h-full object-cover" />
-                            {idx === 0 && <span className="absolute top-1 left-1 text-xs bg-[#6B8E7A] text-white px-2 py-0.5 rounded">Principal</span>}
-                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                              {idx !== 0 && (
-                                <button onClick={() => setPrincipal(img.id)} className="p-2 bg-white rounded-full text-[#6B8E7A] hover:bg-[#F0F5F2]" title="Tornar principal">
-                                  ⭐
-                                </button>
-                              )}
-                              <button onClick={() => deleteImage(img.id)} disabled={deleting === img.id} className="p-2 bg-white rounded-full text-red-500 hover:bg-red-50" title="Excluir">
-                                {deleting === img.id ? '...' : '🗑️'}
-                              </button>
-                            </div>
+                      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                        <SortableContext items={sortedImages.map(img => img.id)} strategy={rectSortingStrategy}>
+                          <div className="grid grid-cols-2 gap-3">
+                            {sortedImages.map((img, idx) => (
+                              <SortableImage key={img.id} img={img} idx={idx} onDelete={deleteImage} deleting={deleting} />
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                        </SortableContext>
+                      </DndContext>
                     ) : (
                       <p className="text-sm text-[#8B7355]">Nenhuma imagem cadastrada</p>
                     )}
                   </div>
-                  <div onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} className={`border-2 border-dashed rounded-lg p-6 text-center ${dragOver ? 'border-[#6B8E7A] bg-[#F0F5F2]' : 'border-[#E8DFD5] hover:border-[#6B8E7A]'}`}>
+                  <div onDragOver={handleDragOverUpload} onDragLeave={handleDragLeaveUpload} onDrop={handleDropUpload} className={`border-2 border-dashed rounded-lg p-6 text-center ${dragOver ? 'border-[#6B8E7A] bg-[#F0F5F2]' : 'border-[#E8DFD5] hover:border-[#6B8E7A]'}`}>
                     {uploading ? (
                       <p className="text-[#8B7355]">Enviando...</p>
                     ) : (
