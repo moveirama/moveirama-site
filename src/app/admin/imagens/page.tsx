@@ -19,6 +19,8 @@ type Product = {
   sku: string
   name: string
   slug: string
+  assembly_video_url: string | null
+  manual_pdf_url: string | null
   product_images: ProductImage[]
 }
 
@@ -67,7 +69,10 @@ export default function AdminImagensPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [uploading, setUploading] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
   const [dragOver, setDragOver] = useState(false)
+  const [videoUrl, setVideoUrl] = useState('')
+  const [manualUrl, setManualUrl] = useState('')
   const router = useRouter()
   const supabase = createClient()
 
@@ -95,7 +100,11 @@ export default function AdminImagensPage() {
         setStats(data.stats)
         if (selectedProduct) {
           const updated = data.products.find((p: Product) => p.id === selectedProduct.id)
-          if (updated) setSelectedProduct(updated)
+          if (updated) {
+            setSelectedProduct(updated)
+            setVideoUrl(updated.assembly_video_url || '')
+            setManualUrl(updated.manual_pdf_url || '')
+          }
         }
       }
     } catch (error) {
@@ -110,9 +119,43 @@ export default function AdminImagensPage() {
     }
   }, [search, filter])
 
+  useEffect(() => {
+    if (selectedProduct) {
+      setVideoUrl(selectedProduct.assembly_video_url || '')
+      setManualUrl(selectedProduct.manual_pdf_url || '')
+    }
+  }, [selectedProduct?.id])
+
   async function handleLogout() {
     await supabase.auth.signOut()
     router.push('/admin')
+  }
+
+  async function saveUrls() {
+    if (!selectedProduct) return
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/admin/products/${selectedProduct.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assembly_video_url: videoUrl || null,
+          manual_pdf_url: manualUrl || null
+        })
+      })
+      const data = await res.json()
+      if (data.success) {
+        fetchProducts()
+        alert('Salvo com sucesso!')
+      } else {
+        alert('Erro ao salvar: ' + data.error)
+      }
+    } catch (error) {
+      console.error('Erro ao salvar:', error)
+      alert('Erro ao salvar')
+    } finally {
+      setSaving(false)
+    }
   }
 
   async function uploadImage(file: File) {
@@ -168,13 +211,11 @@ export default function AdminImagensPage() {
     
     const reordered = arrayMove(images, oldIndex, newIndex)
     
-    // Atualiza localmente primeiro (UI responsiva)
     setSelectedProduct({
       ...selectedProduct,
       product_images: reordered.map((img, idx) => ({ ...img, position: idx }))
     })
 
-    // Salva no banco
     try {
       for (let i = 0; i < reordered.length; i++) {
         await fetch(`/api/admin/images/${reordered[i].id}`, {
@@ -268,7 +309,7 @@ export default function AdminImagensPage() {
             <div className="p-4 border-b border-[#E8DFD5]">
               <h3 className="font-semibold text-[#2D2D2D]">Produtos ({products.length})</h3>
             </div>
-            <div className="max-h-[600px] overflow-y-auto">
+            <div className="max-h-[700px] overflow-y-auto">
               {products.length === 0 ? (
                 <div className="p-8 text-center text-[#8B7355]">Nenhum produto encontrado</div>
               ) : (
@@ -286,7 +327,7 @@ export default function AdminImagensPage() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-[#2D2D2D] truncate">{product.name}</p>
-                            <p className="text-sm text-[#8B7355]">SKU: {product.sku} • {product.product_images?.length || 0} imagens</p>
+                            <p className="text-sm text-[#8B7355]">SKU: {product.sku} • {product.product_images?.length || 0} img</p>
                           </div>
                         </div>
                       </button>
@@ -301,11 +342,13 @@ export default function AdminImagensPage() {
             <div className="p-4 border-b border-[#E8DFD5]">
               <h3 className="font-semibold text-[#2D2D2D]">{selectedProduct ? selectedProduct.name : 'Selecione um produto'}</h3>
             </div>
-            <div className="p-4">
+            <div className="p-4 max-h-[700px] overflow-y-auto">
               {selectedProduct ? (
                 <div>
                   <p className="text-sm text-[#8B7355] mb-4">SKU: {selectedProduct.sku}</p>
-                  <div className="mb-4">
+                  
+                  {/* Imagens */}
+                  <div className="mb-6">
                     <h4 className="text-sm font-medium text-[#2D2D2D] mb-2">Imagens ({sortedImages.length}) <span className="font-normal text-[#8B7355]">— arraste para reordenar</span></h4>
                     {sortedImages.length > 0 ? (
                       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -321,7 +364,9 @@ export default function AdminImagensPage() {
                       <p className="text-sm text-[#8B7355]">Nenhuma imagem cadastrada</p>
                     )}
                   </div>
-                  <div onDragOver={handleDragOverUpload} onDragLeave={handleDragLeaveUpload} onDrop={handleDropUpload} className={`border-2 border-dashed rounded-lg p-6 text-center ${dragOver ? 'border-[#6B8E7A] bg-[#F0F5F2]' : 'border-[#E8DFD5] hover:border-[#6B8E7A]'}`}>
+                  
+                  {/* Upload */}
+                  <div onDragOver={handleDragOverUpload} onDragLeave={handleDragLeaveUpload} onDrop={handleDropUpload} className={`border-2 border-dashed rounded-lg p-6 text-center mb-6 ${dragOver ? 'border-[#6B8E7A] bg-[#F0F5F2]' : 'border-[#E8DFD5] hover:border-[#6B8E7A]'}`}>
                     {uploading ? (
                       <p className="text-[#8B7355]">Enviando...</p>
                     ) : (
@@ -331,14 +376,50 @@ export default function AdminImagensPage() {
                           Selecionar arquivo
                           <input type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
                         </label>
-                        <p className="text-xs text-[#8B7355] mt-2">JPG, PNG ou WebP</p>
                       </div>
                     )}
+                  </div>
+
+                  {/* URLs de Montagem */}
+                  <div className="border-t border-[#E8DFD5] pt-6">
+                    <h4 className="text-sm font-medium text-[#2D2D2D] mb-4">Montagem</h4>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm text-[#8B7355] mb-1">Vídeo de Montagem (YouTube)</label>
+                        <input 
+                          type="url" 
+                          placeholder="https://www.youtube.com/watch?v=..." 
+                          value={videoUrl} 
+                          onChange={(e) => setVideoUrl(e.target.value)}
+                          className="w-full px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm text-[#8B7355] mb-1">Manual PDF (URL)</label>
+                        <input 
+                          type="url" 
+                          placeholder="https://..." 
+                          value={manualUrl} 
+                          onChange={(e) => setManualUrl(e.target.value)}
+                          className="w-full px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
+                        />
+                      </div>
+                      
+                      <button 
+                        onClick={saveUrls}
+                        disabled={saving}
+                        className="w-full px-4 py-2 bg-[#6B8E7A] text-white rounded-lg hover:bg-[#5A7A68] disabled:opacity-50"
+                      >
+                        {saving ? 'Salvando...' : 'Salvar URLs'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : (
                 <div className="text-center py-12 text-[#8B7355]">
-                  <p>Clique em um produto para gerenciar suas imagens</p>
+                  <p>Clique em um produto para gerenciar</p>
                 </div>
               )}
             </div>
