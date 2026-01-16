@@ -411,9 +411,9 @@ export default function ProductPageContent({
 
         {/* Seção: Recursos de Montagem */}
         <RecursosMontagem
-          manualUrl={product.manual_url}
+          manualUrl={product.manual_pdf_url}
           medidasImagemUrl={product.medidas_image_url}
-          videoUrl={product.video_url}
+          videoUrl={product.assembly_video_url}
           datasheetUrl={product.datasheet_url}
           productName={product.name}
         />
