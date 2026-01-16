@@ -203,8 +203,11 @@ export async function getProductsByCategory(
 ): Promise<{ products: ProductForListing[], total: number }> {
   
   // Determina ordenação
-  let orderColumn = 'created_at'
-  let orderAscending = false
+  // NOTA: 'relevance' usa ordem alfabética para exibir todos os produtos de forma previsível
+  // Isso evita o problema de produtos "sumirem" nas últimas páginas por terem sido
+  // cadastrados antes de outros.
+  let orderColumn = 'name'
+  let orderAscending = true
   
   switch (sort) {
     case 'price-asc':
@@ -220,12 +223,13 @@ export async function getProductsByCategory(
       orderAscending = false
       break
     case 'bestseller':
-      orderColumn = 'created_at' // Por enquanto usa created_at
-      orderAscending = false
+      orderColumn = 'name' // TODO: implementar contagem de vendas
+      orderAscending = true
       break
+    case 'relevance':
     default:
-      orderColumn = 'created_at'
-      orderAscending = false
+      orderColumn = 'name'
+      orderAscending = true
   }
 
   // Conta total
