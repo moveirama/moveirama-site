@@ -100,7 +100,7 @@ export default function MedidasCompactas({
 
       {/* Compatibilidade TV - só para racks/painéis */}
       {mostrarTV && (
-        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#E0E0E0]">
+        <div className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-[#E0E0E0]">
           <svg 
             className="w-[18px] h-[18px] text-[#4A4A4A] shrink-0" 
             aria-hidden="true"
@@ -126,7 +126,7 @@ export default function MedidasCompactas({
       <a 
         href="#medidas-detalhadas" 
         onClick={handleClick}
-        className="inline-block mt-3 text-sm text-[#6B8E7A] underline underline-offset-2 hover:text-[#4A6B5A] transition-colors focus-visible:outline-2 focus-visible:outline-[#6B8E7A] focus-visible:outline-offset-2"
+        className="block mt-3 text-center text-sm text-[#6B8E7A] underline underline-offset-2 hover:text-[#4A6B5A] transition-colors focus-visible:outline-2 focus-visible:outline-[#6B8E7A] focus-visible:outline-offset-2"
       >
         Ver medidas detalhadas ↓
       </a>
