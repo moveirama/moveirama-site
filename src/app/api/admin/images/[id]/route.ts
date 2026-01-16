@@ -8,16 +8,20 @@ import { createClient } from '@supabase/supabase-js';
 import { deleteImage as deleteFromStorage } from '@/lib/images';
 import { DeleteResponse } from '@/types/images';
 
-// Cliente Supabase com service role
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Função para criar cliente Supabase
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse<DeleteResponse>> {
+  const supabase = getSupabase();
+  
   try {
     const { id: imageId } = await params;
 
@@ -56,7 +60,6 @@ export async function DELETE(
     
     if (!storageResult.success) {
       console.error('Erro ao excluir do storage:', storageResult.error);
-      // Continuar mesmo assim - pode ser que os arquivos não existam
     }
 
     // Excluir registro do banco
@@ -73,7 +76,7 @@ export async function DELETE(
       );
     }
 
-    // Reordenar imagens restantes para fechar gaps
+    // Reordenar imagens restantes
     const { data: remainingImages } = await supabase
       .from('product_images')
       .select('id')
