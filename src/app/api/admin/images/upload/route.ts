@@ -174,10 +174,3 @@ export async function POST(request: NextRequest): Promise<NextResponse<UploadRes
     );
   }
 }
-
-// Configuração para arquivos grandes
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
