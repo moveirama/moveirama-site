@@ -117,7 +117,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<UploadRes
           .from('product_images')
           .insert({
             product_id: productId,
-            url: urls.original, // URL principal para compatibilidade
+            url: urls.original,
             alt_text: altText,
             position: nextPosition,
             is_primary: nextPosition === 1,
