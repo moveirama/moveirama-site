@@ -127,19 +127,18 @@ export default function AdminImagensPage() {
   async function setPrincipal(imageId: string) {
     if (!selectedProduct) return
     try {
-      // Atualiza todas as imagens do produto: a selecionada vira position 0
       const images = selectedProduct.product_images || []
-      const updates = images.map((img, idx) => ({
-        id: img.id,
-        position: img.id === imageId ? 0 : idx + 1,
-        image_type: img.id === imageId ? 'principal' : 'galeria'
-      }))
       
-      for (const update of updates) {
-        await supabase
-          .from('product_images')
-          .update({ position: update.position, image_type: update.image_type })
-          .eq('id', update.id)
+      for (const img of images) {
+        const isPrincipal = img.id === imageId
+        await fetch(`/api/admin/images/${img.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            position: isPrincipal ? 0 : (images.indexOf(img) + 1),
+            image_type: isPrincipal ? 'principal' : 'galeria'
+          })
+        })
       }
       
       fetchProducts()
