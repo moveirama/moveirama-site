@@ -22,6 +22,9 @@ export async function PATCH(
     if (body.manual_pdf_url !== undefined) {
       updateData.manual_pdf_url = body.manual_pdf_url || null
     }
+    if (body.medidas_image_url !== undefined) {
+      updateData.medidas_image_url = body.medidas_image_url || null
+    }
 
     const { error } = await supabase
       .from('products')
