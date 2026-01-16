@@ -2,7 +2,6 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
-  // Cria cliente Supabase dentro da função (lazy)
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -13,7 +12,6 @@ export async function GET(request: Request) {
   const filter = searchParams.get('filter') || 'all'
 
   try {
-    // Busca produtos
     let query = supabase
       .from('products')
       .select(`
@@ -22,6 +20,9 @@ export async function GET(request: Request) {
         name,
         slug,
         is_active,
+        assembly_video_url,
+        manual_pdf_url,
+        medidas_image_url,
         product_images (
           id,
           cloudinary_path,
@@ -32,7 +33,6 @@ export async function GET(request: Request) {
       .eq('is_active', true)
       .order('name')
 
-    // Filtro de busca
     if (search) {
       query = query.or(`name.ilike.%${search}%,sku.ilike.%${search}%`)
     }
@@ -44,7 +44,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // Aplica filtro de imagens
     let filteredProducts = products || []
     
     if (filter === 'with-images') {
@@ -53,7 +52,6 @@ export async function GET(request: Request) {
       filteredProducts = filteredProducts.filter(p => !p.product_images || p.product_images.length === 0)
     }
 
-    // Estatísticas
     const total = products?.length || 0
     const withImages = products?.filter(p => p.product_images && p.product_images.length > 0).length || 0
     const withoutImages = total - withImages
@@ -66,7 +64,6 @@ export async function GET(request: Request) {
         withoutImages
       }
     })
-
   } catch (error) {
     console.error('Erro na API:', error)
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
