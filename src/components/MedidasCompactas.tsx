@@ -102,10 +102,10 @@ export default function MedidasCompactas({
       {mostrarTV && (
         <div className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-[#E0E0E0]">
           <svg 
-            className="w-[18px] h-[18px] text-[#4A4A4A] shrink-0" 
+            className="w-[22px] h-[22px] text-[#2D2D2D] shrink-0" 
             aria-hidden="true"
-            width="18" 
-            height="18" 
+            width="22" 
+            height="22" 
             viewBox="0 0 24 24" 
             fill="none" 
             stroke="currentColor" 
@@ -116,7 +116,7 @@ export default function MedidasCompactas({
             <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
             <polyline points="17 2 12 7 7 2"/>
           </svg>
-          <span className="text-base font-medium text-[#2D2D2D]">
+          <span className="text-xl font-bold text-[#2D2D2D]">
             TV até {compatibilidadeTv}&quot;
           </span>
         </div>
