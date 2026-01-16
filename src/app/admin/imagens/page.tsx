@@ -34,6 +34,7 @@ export default function AdminImagensPage() {
   const [filter, setFilter] = useState<'all' | 'with-images' | 'without-images'>('all')
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [deleting, setDeleting] = useState<string | null>(null)
   const [dragOver, setDragOver] = useState(false)
   const router = useRouter()
   const supabase = createClient()
@@ -42,9 +43,7 @@ export default function AdminImagensPage() {
     async function getUser() {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
-      if (user) {
-        fetchProducts()
-      }
+      if (user) fetchProducts()
       setLoading(false)
     }
     getUser()
@@ -60,6 +59,10 @@ export default function AdminImagensPage() {
       if (data.products) {
         setProducts(data.products)
         setStats(data.stats)
+        if (selectedProduct) {
+          const updated = data.products.find((p: Product) => p.id === selectedProduct.id)
+          if (updated) setSelectedProduct(updated)
+        }
       }
     } catch (error) {
       console.error('Erro ao buscar produtos:', error)
@@ -90,12 +93,6 @@ export default function AdminImagensPage() {
       const res = await fetch('/api/admin/images/upload', { method: 'POST', body: formData })
       const data = await res.json()
       if (data.success) {
-        const updatedProduct = {
-          ...selectedProduct,
-          product_images: [...(selectedProduct.product_images || []), data.image]
-        }
-        setSelectedProduct(updatedProduct)
-        setProducts(prev => prev.map(p => p.id === selectedProduct.id ? updatedProduct : p))
         fetchProducts()
       } else {
         alert('Erro no upload: ' + data.error)
@@ -105,6 +102,50 @@ export default function AdminImagensPage() {
       alert('Erro ao fazer upload')
     } finally {
       setUploading(false)
+    }
+  }
+
+  async function deleteImage(imageId: string) {
+    if (!confirm('Tem certeza que deseja excluir esta imagem?')) return
+    setDeleting(imageId)
+    try {
+      const res = await fetch(`/api/admin/images/${imageId}`, { method: 'DELETE' })
+      const data = await res.json()
+      if (data.success) {
+        fetchProducts()
+      } else {
+        alert('Erro ao excluir: ' + data.error)
+      }
+    } catch (error) {
+      console.error('Erro ao excluir:', error)
+      alert('Erro ao excluir imagem')
+    } finally {
+      setDeleting(null)
+    }
+  }
+
+  async function setPrincipal(imageId: string) {
+    if (!selectedProduct) return
+    try {
+      // Atualiza todas as imagens do produto: a selecionada vira position 0
+      const images = selectedProduct.product_images || []
+      const updates = images.map((img, idx) => ({
+        id: img.id,
+        position: img.id === imageId ? 0 : idx + 1,
+        image_type: img.id === imageId ? 'principal' : 'galeria'
+      }))
+      
+      for (const update of updates) {
+        await supabase
+          .from('product_images')
+          .update({ position: update.position, image_type: update.image_type })
+          .eq('id', update.id)
+      }
+      
+      fetchProducts()
+    } catch (error) {
+      console.error('Erro ao definir principal:', error)
+      alert('Erro ao definir imagem principal')
     }
   }
 
@@ -139,6 +180,8 @@ export default function AdminImagensPage() {
       </div>
     )
   }
+
+  const sortedImages = selectedProduct?.product_images?.sort((a, b) => a.position - b.position) || []
 
   return (
     <div className="min-h-screen bg-[#FAF7F4]">
@@ -218,13 +261,23 @@ export default function AdminImagensPage() {
                 <div>
                   <p className="text-sm text-[#8B7355] mb-4">SKU: {selectedProduct.sku}</p>
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-[#2D2D2D] mb-2">Imagens ({selectedProduct.product_images?.length || 0})</h4>
-                    {selectedProduct.product_images?.length > 0 ? (
-                      <div className="grid grid-cols-3 gap-2">
-                        {selectedProduct.product_images.map((img, idx) => (
-                          <div key={img.id} className="relative aspect-square bg-[#F0E8DF] rounded overflow-hidden">
+                    <h4 className="text-sm font-medium text-[#2D2D2D] mb-2">Imagens ({sortedImages.length})</h4>
+                    {sortedImages.length > 0 ? (
+                      <div className="grid grid-cols-2 gap-3">
+                        {sortedImages.map((img, idx) => (
+                          <div key={img.id} className="relative aspect-square bg-[#F0E8DF] rounded overflow-hidden group">
                             <img src={img.cloudinary_path} alt="" className="w-full h-full object-cover" />
-                            {idx === 0 && <span className="absolute top-1 left-1 text-xs bg-[#6B8E7A] text-white px-1 rounded">Principal</span>}
+                            {idx === 0 && <span className="absolute top-1 left-1 text-xs bg-[#6B8E7A] text-white px-2 py-0.5 rounded">Principal</span>}
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                              {idx !== 0 && (
+                                <button onClick={() => setPrincipal(img.id)} className="p-2 bg-white rounded-full text-[#6B8E7A] hover:bg-[#F0F5F2]" title="Tornar principal">
+                                  ⭐
+                                </button>
+                              )}
+                              <button onClick={() => deleteImage(img.id)} disabled={deleting === img.id} className="p-2 bg-white rounded-full text-red-500 hover:bg-red-50" title="Excluir">
+                                {deleting === img.id ? '...' : '🗑️'}
+                              </button>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -232,7 +285,7 @@ export default function AdminImagensPage() {
                       <p className="text-sm text-[#8B7355]">Nenhuma imagem cadastrada</p>
                     )}
                   </div>
-                  <div onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} className={`border-2 border-dashed rounded-lg p-8 text-center ${dragOver ? 'border-[#6B8E7A] bg-[#F0F5F2]' : 'border-[#E8DFD5] hover:border-[#6B8E7A]'}`}>
+                  <div onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} className={`border-2 border-dashed rounded-lg p-6 text-center ${dragOver ? 'border-[#6B8E7A] bg-[#F0F5F2]' : 'border-[#E8DFD5] hover:border-[#6B8E7A]'}`}>
                     {uploading ? (
                       <p className="text-[#8B7355]">Enviando...</p>
                     ) : (
