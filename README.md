@@ -9,7 +9,7 @@ Site de e-commerce para a Moveirama - loja de móveis em Curitiba e Região Metr
 - **Hospedagem:** Vercel
 - **Estilo:** Tailwind CSS + Design System Moveirama v2.0
 
-## Desenvolvimento Local
+## Desenvolvimento Localmente
 
 ```bash
 npm install
