@@ -3,6 +3,7 @@ import RecursosMontagem from '@/components/RecursosMontagem'
 import ProductGallery from '@/components/ProductGallery'
 import Breadcrumb from '@/components/Breadcrumb'
 import MedidasCompactas from '@/components/MedidasCompactas'
+import ShippingCalculator from '@/components/ShippingCalculator'
 
 // Types
 interface BreadcrumbItem {
@@ -259,24 +260,8 @@ export default function ProductPageContent({
             )}
 
             {/* Calculadora de Frete */}
-            <div className="mb-6 p-4 bg-[var(--color-cream)] rounded-lg">
-              <label className="block text-sm font-medium text-[var(--color-graphite)] mb-2">
-                Calcular frete e prazo
-              </label>
-              <div className="flex gap-2 w-full">
-                <input
-                  type="text"
-                  placeholder="Digite seu CEP"
-                  maxLength={9}
-                  className="flex-1 min-w-0 px-4 py-3 text-base border border-[var(--color-sand-light)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-sage-500)]/40 focus:border-[var(--color-sage-500)]"
-                />
-                <button className="flex-shrink-0 px-4 py-3 text-sm font-semibold text-white bg-[var(--color-graphite)] rounded-lg hover:bg-[var(--color-espresso)] transition-colors whitespace-nowrap">
-                  Calcular
-                </button>
-              </div>
-              <a href="https://buscacepinter.correios.com.br/" target="_blank" rel="noopener" className="text-sm text-[var(--color-sage-600)] hover:underline mt-2 inline-block">
-                Não sei meu CEP
-              </a>
+            <div className="mb-6">
+              <ShippingCalculator />
             </div>
 
             {/* Botões de Ação */}
