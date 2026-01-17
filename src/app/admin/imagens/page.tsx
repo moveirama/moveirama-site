@@ -23,6 +23,7 @@ type Product = {
   manual_pdf_url: string | null
   medidas_image_url: string | null
   tv_max_size: number | null
+  weight_capacity: number | null
   category_slug: string | null
   product_images: ProductImage[]
 }
@@ -79,6 +80,7 @@ export default function AdminImagensPage() {
   const [videoUrl, setVideoUrl] = useState('')
   const [manualUrl, setManualUrl] = useState('')
   const [tvMaxSize, setTvMaxSize] = useState('')
+  const [weightCapacity, setWeightCapacity] = useState('')
   const router = useRouter()
   const supabase = createClient()
 
@@ -111,6 +113,7 @@ export default function AdminImagensPage() {
             setVideoUrl(updated.assembly_video_url || '')
             setManualUrl(updated.manual_pdf_url || '')
             setTvMaxSize(updated.tv_max_size?.toString() || '')
+            setWeightCapacity(updated.weight_capacity?.toString() || '')
           }
         }
       }
@@ -131,6 +134,7 @@ export default function AdminImagensPage() {
       setVideoUrl(selectedProduct.assembly_video_url || '')
       setManualUrl(selectedProduct.manual_pdf_url || '')
       setTvMaxSize(selectedProduct.tv_max_size?.toString() || '')
+      setWeightCapacity(selectedProduct.weight_capacity?.toString() || '')
     }
   }, [selectedProduct?.id])
 
@@ -149,7 +153,8 @@ export default function AdminImagensPage() {
         body: JSON.stringify({
           assembly_video_url: videoUrl || null,
           manual_pdf_url: manualUrl || null,
-          tv_max_size: tvMaxSize || null
+          tv_max_size: tvMaxSize ? parseInt(tvMaxSize) : null,
+          weight_capacity: weightCapacity ? parseInt(weightCapacity) : null
         })
       })
       const data = await res.json()
@@ -543,6 +548,31 @@ export default function AdminImagensPage() {
                       </div>
                     </div>
                   )}
+
+                  {/* Peso Suportado */}
+                  <div className="border-t border-[#E8DFD5] pt-6 mb-6">
+                    <h4 className="text-sm font-medium text-[#2D2D2D] mb-2">
+                      ⚖️ Peso Suportado
+                      <span className="font-normal text-[#8B7355] ml-2">— quanto o móvel aguenta (total)</span>
+                    </h4>
+                    
+                    <div>
+                      <label className="block text-sm text-[#8B7355] mb-1">Peso máximo suportado (kg)</label>
+                      <div className="flex items-center gap-2">
+                        <input 
+                          type="number" 
+                          placeholder="Ex: 35"
+                          min="0"
+                          max="500"
+                          value={weightCapacity} 
+                          onChange={(e) => setWeightCapacity(e.target.value)}
+                          className="w-32 px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
+                        />
+                        <span className="text-sm text-[#8B7355]">kg</span>
+                      </div>
+                      <p className="text-xs text-[#8B7355] mt-1">Informação da ficha técnica. Aparece na página do produto como "Peso suportado: Até X kg".</p>
+                    </div>
+                  </div>
 
                   {/* URLs de Montagem */}
                   <div className="border-t border-[#E8DFD5] pt-6">
