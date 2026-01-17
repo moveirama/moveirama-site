@@ -88,7 +88,7 @@ export type ProductImage = {
   id: string
   product_id: string
   variant_id: string | null
-  cloudinary_path: string
+  image_url: string
   alt_text: string | null
   image_type: 'principal' | 'galeria' | 'ambientada' | 'dimensional'
   position: number
@@ -249,7 +249,7 @@ export async function getProductsByCategory(
       name,
       price,
       compare_at_price,
-      product_images(cloudinary_path, image_type)
+      product_images(image_url, image_type)
     `)
     .eq('category_id', categoryId)
     .eq('is_active', true)
@@ -272,7 +272,7 @@ export async function getProductsByCategory(
       name: p.name,
       price: p.price,
       compare_at_price: p.compare_at_price,
-      image_url: principalImage?.cloudinary_path || firstImage?.cloudinary_path || null,
+      image_url: principalImage?.image_url || firstImage?.image_url || null,
       avg_rating: 0, // TODO: implementar quando tiver reviews
       review_count: 0
     }
