@@ -9,7 +9,7 @@ import { CSS } from '@dnd-kit/utilities'
 
 type ProductImage = {
   id: string
-  cloudinary_path: string
+  image_url: string
   image_type: string
   position: number
 }
@@ -46,7 +46,7 @@ function SortableImage({ img, idx, onDelete, deleting }: {
   return (
     <div ref={setNodeRef} style={style} className="relative aspect-square bg-[#F0E8DF] rounded overflow-hidden group">
       <div {...attributes} {...listeners} className="absolute inset-0 cursor-grab active:cursor-grabbing">
-        <img src={img.cloudinary_path} alt="" className="w-full h-full object-cover pointer-events-none" />
+        <img src={img.image_url} alt="" className="w-full h-full object-cover pointer-events-none" />
       </div>
       {idx === 0 && <span className="absolute top-1 left-1 text-xs bg-[#6B8E7A] text-white px-2 py-0.5 rounded z-10">Principal</span>}
       <div className="absolute bottom-1 right-1 z-10">
@@ -410,7 +410,7 @@ export default function AdminImagensPage() {
                         <div className="flex items-center gap-3">
                           <div className="w-12 h-12 bg-[#F0E8DF] rounded flex-shrink-0 flex items-center justify-center overflow-hidden">
                             {product.product_images?.[0] ? (
-                              <img src={product.product_images[0].cloudinary_path} alt="" className="w-full h-full object-cover" />
+                              <img src={product.product_images[0].image_url} alt="" className="w-full h-full object-cover" />
                             ) : (
                               <span className="text-xs text-[#8B7355]">Sem foto</span>
                             )}
