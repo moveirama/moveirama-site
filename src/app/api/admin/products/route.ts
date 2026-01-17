@@ -30,7 +30,7 @@ export async function GET(request: Request) {
         ),
         product_images (
           id,
-          cloudinary_path,
+          image_url,
           image_type,
           position
         )
