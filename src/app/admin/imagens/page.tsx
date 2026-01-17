@@ -374,7 +374,7 @@ export default function AdminImagensPage() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-semibold text-[#2D2D2D]">Gestão de Imagens</h2>
+            <h2 className="text-2xl font-semibold text-[#2D2D2D]">Gestão de Produtos</h2>
             <p className="text-sm text-[#8B7355] mt-1">{stats.total} produtos • {stats.withImages} com imagens • {stats.withoutImages} sem imagens</p>
           </div>
         </div>
