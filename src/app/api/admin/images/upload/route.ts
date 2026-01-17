@@ -64,16 +64,17 @@ export async function POST(request: Request) {
 
     // Salva no banco de dados
     const { data: imageData, error: dbError } = await supabase
-      .from('product_images')
-      .insert({
-        product_id: productId,
-        cloudinary_path: urlData.publicUrl,
-        image_type: position === 0 ? 'principal' : 'galeria',
-        position: position,
-        is_active: true
-      })
-      .select()
-      .single()
+    .from('product_images')
+    .insert({
+    product_id: productId,
+    image_url: urlData.publicUrl,
+    alt_text: `${productSlug.replace(/-/g, ' ')} - imagem ${nextNumber}`,
+    image_type: position === 0 ? 'principal' : 'galeria',
+    position: position,
+    is_active: true
+    })
+   .select()
+   .single()
 
     if (dbError) {
       console.error('Erro ao salvar no banco:', dbError)
