@@ -82,6 +82,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       return { title: 'Produto não encontrado | Moveirama' }
     }
     
+    // CORREÇÃO: usar cloudinary_path em vez de image_url
     const mainImage = product.images?.find((img: { image_type: string }) => img.image_type === 'principal') || product.images?.[0]
     const canonicalUrl = `https://moveirama.com.br/${category}/${subcategory}`
     
@@ -95,7 +96,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         siteName: 'Moveirama',
         images: mainImage ? [
           {
-            url: mainImage.image_url,
+            url: mainImage.cloudinary_path,
             width: 800,
             height: 800,
             alt: product.name,
@@ -108,7 +109,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         card: 'summary_large_image',
         title: product.name,
         description: product.short_description,
-        images: mainImage ? [mainImage.image_url] : [],
+        images: mainImage ? [mainImage.cloudinary_path] : [],
       },
       alternates: {
         canonical: canonicalUrl,
