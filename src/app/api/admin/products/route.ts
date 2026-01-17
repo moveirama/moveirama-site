@@ -24,6 +24,7 @@ export async function GET(request: Request) {
         manual_pdf_url,
         medidas_image_url,
         tv_max_size,
+        weight_capacity,
         categories (
           slug
         ),
