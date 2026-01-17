@@ -20,6 +20,9 @@ import EmptyState from '@/components/EmptyState'
 // Componentes de Produto
 import ProductPageContent from '@/components/ProductPageContent'
 
+// FORÇA REVALIDAÇÃO A CADA REQUEST (resolve problema de cache)
+export const dynamic = 'force-dynamic'
+
 interface PageProps {
   params: Promise<{ category: string; subcategory: string }>
   searchParams: Promise<{ page?: string; sort?: string }>
