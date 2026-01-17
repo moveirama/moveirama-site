@@ -22,19 +22,26 @@ export async function POST(request: Request) {
       )
     }
 
+    // Busca quantas imagens o produto já tem para gerar número sequencial
+    const { count } = await supabase
+      .from('product_images')
+      .select('*', { count: 'exact', head: true })
+      .eq('product_id', productId)
+
+    const nextNumber = (count || 0) + 1
+
     // Converte arquivo para buffer
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
-    // Converte para WebP com sharp
+    // Converte para WebP com sharp (qualidade 82)
     const webpBuffer = await sharp(buffer)
       .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
-      .webp({ quality: 85 })
+      .webp({ quality: 82 })
       .toBuffer()
 
-    // Gera nome do arquivo: produto-slug-timestamp.webp
-    const timestamp = Date.now()
-    const fileName = `${productSlug}-${timestamp}.webp`
+    // Gera nome do arquivo: produto-slug-N.webp (sequencial)
+    const fileName = `${productSlug}-${nextNumber}.webp`
     const filePath = `${productId}/${fileName}`
 
     // Upload para Supabase Storage
