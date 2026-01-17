@@ -92,7 +92,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         siteName: 'Moveirama',
         images: mainImage ? [
           {
-            url: mainImage.cloudinary_path,
+            url: mainImage.image_url,
             width: 800,
             height: 800,
             alt: product.name,
@@ -105,7 +105,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         card: 'summary_large_image',
         title: product.name,
         description: product.short_description,
-        images: mainImage ? [mainImage.cloudinary_path] : [],
+        images: mainImage ? [mainImage.image_url] : [],
       },
       alternates: {
         canonical: canonicalUrl,
