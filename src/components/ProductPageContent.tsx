@@ -57,7 +57,7 @@ export default function ProductPageContent({
     "@type": "Product",
     "name": product.name,
     "description": product.short_description,
-    "image": product.images?.map((img: { cloudinary_path: string }) => img.cloudinary_path) || [],
+    "image": product.images?.map((img: { image_url: string }) => img.image_url) || [],
     "sku": product.sku,
     "brand": {
       "@type": "Brand",
