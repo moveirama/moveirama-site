@@ -1,48 +1,55 @@
 import { createClient } from '@supabase/supabase-js'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params
-  const body = await request.json()
-  
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-
   try {
-    const updateData: Record<string, any> = {}
+    const { id } = await params
+    const body = await request.json()
     
-    if (body.assembly_video_url !== undefined) {
-      updateData.assembly_video_url = body.assembly_video_url || null
+    // Campos permitidos para atualização
+    const allowedFields = [
+      'assembly_video_url',
+      'manual_pdf_url',
+      'medidas_image_url',
+      'tv_max_size',
+      'weight_capacity'
+    ]
+    
+    // Filtrar apenas campos permitidos
+    const updateData: Record<string, any> = {}
+    for (const field of allowedFields) {
+      if (field in body) {
+        updateData[field] = body[field]
+      }
     }
-    if (body.manual_pdf_url !== undefined) {
-      updateData.manual_pdf_url = body.manual_pdf_url || null
+    
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ success: false, error: 'Nenhum campo válido para atualizar' }, { status: 400 })
     }
-    if (body.medidas_image_url !== undefined) {
-      updateData.medidas_image_url = body.medidas_image_url || null
-    }
-    if (body.tv_max_size !== undefined) {
-      // Converte para número ou null
-      const tvSize = body.tv_max_size ? parseInt(body.tv_max_size, 10) : null
-      updateData.tv_max_size = isNaN(tvSize as number) ? null : tvSize
-    }
-
-    const { error } = await supabase
+    
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    
+    const { data, error } = await supabase
       .from('products')
       .update(updateData)
       .eq('id', id)
-
+      .select()
+      .single()
+    
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      console.error('Erro ao atualizar produto:', error)
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 })
     }
-
-    return NextResponse.json({ success: true })
+    
+    return NextResponse.json({ success: true, product: data })
   } catch (error) {
-    console.error('Erro ao atualizar produto:', error)
-    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
+    console.error('Erro na API:', error)
+    return NextResponse.json({ success: false, error: 'Erro interno' }, { status: 500 })
   }
 }
