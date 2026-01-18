@@ -8,6 +8,8 @@ import {
   getProductBySubcategoryAndSlug,
   getParentOfSubcategory,
   getSubcategories,
+  getCategoryBySlug,           // NOVA FUNÇÃO
+  getSubcategoryOfAnyParent,   // NOVA FUNÇÃO
   SortOption 
 } from '@/lib/supabase'
 
@@ -30,10 +32,9 @@ export const dynamic = 'force-dynamic'
 // ============================================
 
 // Linhas são categorias de nível 2 que têm subcategorias próprias
-// Diferente de subcategorias diretas que só têm produtos
 const LINHAS = ['home-office'] // Adicionar 'linha-executiva' quando entrar
 
-// Categorias pai conhecidas
+// Categorias pai conhecidas (nível 1)
 const PARENT_CATEGORIES = ['casa', 'escritorio']
 
 const PRODUCTS_PER_PAGE = 12
@@ -108,9 +109,8 @@ async function detectPageType(category: string, slug: string[]): Promise<Detecti
     
     // Verifica se primeiro é uma linha conhecida
     if (LINHAS.includes(linha)) {
-      // Busca a subcategoria como filha da LINHA (não do pai)
-      // Ex: escrivaninhas é filha de home-office, não de escritorio
-      const subcategoryData = await getSubcategory(linha, subcategory)
+      // USA A NOVA FUNÇÃO: busca subcategoria como filha da LINHA
+      const subcategoryData = await getSubcategoryOfAnyParent(linha, subcategory)
       if (subcategoryData) {
         return { type: 'linha-listing', linha, subcategory }
       }
@@ -147,9 +147,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
   
   if (detection.type === 'linha-listing' && detection.linha && detection.subcategory) {
-    // Subcategoria é filha da linha
-    const subcategoryData = await getSubcategory(detection.linha, detection.subcategory)
-    const linhaCategory = await getSubcategoryBySlug(detection.linha)
+    // USA A NOVA FUNÇÃO
+    const subcategoryData = await getSubcategoryOfAnyParent(detection.linha, detection.subcategory)
+    const linhaCategory = await getCategoryBySlug(detection.linha)
     if (!subcategoryData) {
       return { title: 'Categoria não encontrada | Moveirama' }
     }
@@ -357,8 +357,9 @@ async function LinhaListingPage({
   
   const parentCategory = await getParentCategory(category)
   const linhaCategory = await getSubcategory(category, linha)
-  // IMPORTANTE: subcategoria é filha da LINHA
-  const subcategoryData = await getSubcategory(linha, subcategory)
+  
+  // USA A NOVA FUNÇÃO: subcategoria é filha da LINHA
+  const subcategoryData = await getSubcategoryOfAnyParent(linha, subcategory)
   
   if (!parentCategory || !linhaCategory || !subcategoryData) {
     notFound()
