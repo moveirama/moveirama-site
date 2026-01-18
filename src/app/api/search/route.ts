@@ -278,6 +278,7 @@ function describeFilters(filters: SearchFilters): string[] {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const query = searchParams.get('q') || ''
+  const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100) // Max 100
   
   if (!query.trim()) {
     return NextResponse.json({ products: [], filters: [], total: 0 })
@@ -317,7 +318,7 @@ export async function GET(request: Request) {
       `)
       .eq('is_active', true)
       .order('name')
-      .limit(20)
+      .limit(limit)
     
     // =========================================
     // APLICAR FILTROS
