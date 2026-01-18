@@ -18,7 +18,8 @@ export async function PATCH(
       'manual_pdf_url',
       'medidas_image_url',
       'tv_max_size',
-      'weight_capacity'
+      'weight_capacity',
+      'price'
     ]
     
     // Filtrar apenas campos permitidos
