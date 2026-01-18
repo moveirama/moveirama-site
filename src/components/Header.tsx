@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import SearchModal from '@/components/search/SearchModal'
 
 // Estrutura de navegação (2 níveis)
 const NAVIGATION = {
@@ -95,6 +96,7 @@ function LocationIcon({ className }: { className?: string }) {
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
+  const [searchOpen, setSearchOpen] = useState(false) // ← NOVO: estado do modal de busca
   const pathname = usePathname()
   const mobileMenuRef = useRef<HTMLDivElement>(null)
 
@@ -114,6 +116,18 @@ export default function Header() {
     document.addEventListener('keydown', handleEscape)
     return () => document.removeEventListener('keydown', handleEscape)
   }, [mobileMenuOpen])
+
+  // ← NOVO: Atalho Ctrl+K / Cmd+K para abrir busca
+  useEffect(() => {
+    const handleSearchShortcut = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setSearchOpen(true)
+      }
+    }
+    document.addEventListener('keydown', handleSearchShortcut)
+    return () => document.removeEventListener('keydown', handleSearchShortcut)
+  }, [])
 
   // Bloquear scroll do body quando menu está aberto
   useEffect(() => {
@@ -212,10 +226,11 @@ export default function Header() {
 
             {/* Ações */}
             <div className="flex items-center gap-3">
-              {/* Busca */}
+              {/* ← MODIFICADO: Botão de Busca agora abre o modal */}
               <button 
+                onClick={() => setSearchOpen(true)}
                 className="flex items-center justify-center w-11 h-11 text-[var(--color-toffee)] hover:text-[var(--color-graphite)] hover:bg-[var(--color-gray-100)] rounded-lg transition-colors"
-                aria-label="Buscar"
+                aria-label="Buscar produtos (Ctrl+K)"
               >
                 <SearchIcon className="w-6 h-6" />
               </button>
@@ -350,6 +365,12 @@ export default function Header() {
           </div>
         </div>
       </div>
+
+      {/* ← NOVO: Modal de Busca Inteligente */}
+      <SearchModal 
+        isOpen={searchOpen} 
+        onClose={() => setSearchOpen(false)} 
+      />
     </>
   )
 }
