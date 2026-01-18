@@ -26,6 +26,15 @@ export async function GET(request: Request) {
         medidas_image_url,
         tv_max_size,
         weight_capacity,
+        num_doors,
+        num_drawers,
+        num_shelves,
+        num_niches,
+        has_wheels,
+        has_mirror,
+        has_lighting,
+        door_type,
+        feet_type,
         categories (
           slug
         ),
