@@ -19,6 +19,7 @@ type Product = {
   sku: string
   name: string
   slug: string
+  price: number
   assembly_video_url: string | null
   manual_pdf_url: string | null
   medidas_image_url: string | null
@@ -81,6 +82,7 @@ export default function AdminImagensPage() {
   const [manualUrl, setManualUrl] = useState('')
   const [tvMaxSize, setTvMaxSize] = useState('')
   const [weightCapacity, setWeightCapacity] = useState('')
+  const [price, setPrice] = useState('')
   const router = useRouter()
   const supabase = createClient()
 
@@ -114,6 +116,7 @@ export default function AdminImagensPage() {
             setManualUrl(updated.manual_pdf_url || '')
             setTvMaxSize(updated.tv_max_size?.toString() || '')
             setWeightCapacity(updated.weight_capacity?.toString() || '')
+            setPrice(updated.price?.toString() || '')
           }
         }
       }
@@ -135,6 +138,7 @@ export default function AdminImagensPage() {
       setManualUrl(selectedProduct.manual_pdf_url || '')
       setTvMaxSize(selectedProduct.tv_max_size?.toString() || '')
       setWeightCapacity(selectedProduct.weight_capacity?.toString() || '')
+      setPrice(selectedProduct.price?.toString() || '')
     }
   }, [selectedProduct?.id])
 
@@ -154,7 +158,8 @@ export default function AdminImagensPage() {
           assembly_video_url: videoUrl || null,
           manual_pdf_url: manualUrl || null,
           tv_max_size: tvMaxSize ? parseInt(tvMaxSize) : null,
-          weight_capacity: weightCapacity ? parseInt(weightCapacity) : null
+          weight_capacity: weightCapacity ? parseInt(weightCapacity) : null,
+          price: price ? parseFloat(price) : null
         })
       })
       const data = await res.json()
@@ -520,6 +525,31 @@ export default function AdminImagensPage() {
                         )}
                       </div>
                     )}
+                  </div>
+
+                  {/* Preço do Produto */}
+                  <div className="border-t border-[#E8DFD5] pt-6 mb-6">
+                    <h4 className="text-sm font-medium text-[#2D2D2D] mb-2">
+                      💰 Preço
+                      <span className="font-normal text-[#8B7355] ml-2">— valor de venda do produto</span>
+                    </h4>
+                    
+                    <div>
+                      <label className="block text-sm text-[#8B7355] mb-1">Preço (R$)</label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-[#8B7355]">R$</span>
+                        <input 
+                          type="number" 
+                          placeholder="Ex: 299.90"
+                          min="0"
+                          step="0.01"
+                          value={price} 
+                          onChange={(e) => setPrice(e.target.value)}
+                          className="w-40 px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
+                        />
+                      </div>
+                      <p className="text-xs text-[#8B7355] mt-1">Preço atual: <strong>R$ {selectedProduct.price?.toFixed(2) || '0.00'}</strong></p>
+                    </div>
                   </div>
 
                   {/* Suporta TV até - só para racks e painéis */}
