@@ -44,23 +44,51 @@ function parseSearchQuery(query: string): SearchFilters {
   // 1. LARGURA / MEDIDAS
   // =========================================
   
-  // Metros: 1,80m, 1.80m, 1,8 m
-  const metersMatch = cleanQuery.match(/(\d+)[,.](\d+)\s*m(?:etro)?s?(?:\s|$|,)/i)
-  if (metersMatch) {
-    const meters = parseFloat(`${metersMatch[1]}.${metersMatch[2]}`)
+  // Metros COM unidade: 1,80m, 1.80m, 1,8 m, 1,80 metros
+  const metersWithUnitMatch = cleanQuery.match(/(\d+)[,.](\d+)\s*m(?:etro)?s?(?:\s|$|,)/i)
+  if (metersWithUnitMatch) {
+    const meters = parseFloat(`${metersWithUnitMatch[1]}.${metersWithUnitMatch[2]}`)
     filters.width_cm = Math.round(meters * 100)
-    cleanQuery = cleanQuery.replace(metersMatch[0], ' ')
+    cleanQuery = cleanQuery.replace(metersWithUnitMatch[0], ' ')
   }
   
-  // Centímetros: 180cm
-  const cmMatch = cleanQuery.match(/(\d+)\s*cm(?:\s|$|,)/i)
-  if (cmMatch && !filters.width_cm) {
-    filters.width_cm = parseInt(cmMatch[1])
-    cleanQuery = cleanQuery.replace(cmMatch[0], ' ')
+  // Metros SEM unidade: "com 1,80", "de 1,80", "1,80" (assume metros se tem vírgula/ponto)
+  if (!filters.width_cm) {
+    const metersNoUnitMatch = cleanQuery.match(/(?:com|de|)?\s*(\d)[,.](\d{1,2})(?:\s|$|,)/i)
+    if (metersNoUnitMatch) {
+      const meters = parseFloat(`${metersNoUnitMatch[1]}.${metersNoUnitMatch[2]}`)
+      // Só considera metros se valor entre 0.5 e 3 (medidas razoáveis de móveis)
+      if (meters >= 0.5 && meters <= 3) {
+        filters.width_cm = Math.round(meters * 100)
+        cleanQuery = cleanQuery.replace(metersNoUnitMatch[0], ' ')
+      }
+    }
   }
   
-  // Faixa de largura: "entre 1m e 1,5m"
-  const rangeMatch = cleanQuery.match(/(?:entre|de)\s+(\d+)[,.]?(\d+)?\s*(?:m|cm)?\s+(?:e|a|até)\s+(\d+)[,.]?(\d+)?\s*(?:m|cm)?/i)
+  // Centímetros: 180cm, 180 cm
+  if (!filters.width_cm) {
+    const cmMatch = cleanQuery.match(/(\d+)\s*cm(?:\s|$|,)/i)
+    if (cmMatch) {
+      filters.width_cm = parseInt(cmMatch[1])
+      cleanQuery = cleanQuery.replace(cmMatch[0], ' ')
+    }
+  }
+  
+  // Número grande sozinho (assume cm): "rack 180" → 180cm
+  if (!filters.width_cm) {
+    const bigNumberMatch = cleanQuery.match(/(?:com|de|)?\s*(\d{3})(?:\s|$|,)/i)
+    if (bigNumberMatch) {
+      const num = parseInt(bigNumberMatch[1])
+      // Só considera se for medida razoável (50-300cm)
+      if (num >= 50 && num <= 300) {
+        filters.width_cm = num
+        cleanQuery = cleanQuery.replace(bigNumberMatch[0], ' ')
+      }
+    }
+  }
+  
+  // Faixa de largura: "entre 1m e 1,5m", "de 1,20 a 1,80"
+  const rangeMatch = cleanQuery.match(/(?:entre|de)\s+(\d+)[,.]?(\d+)?\s*(?:m|cm)?\s+(?:e|a|até|ate)\s+(\d+)[,.]?(\d+)?\s*(?:m|cm)?/i)
   if (rangeMatch) {
     let min = parseFloat(`${rangeMatch[1]}.${rangeMatch[2] || '0'}`)
     let max = parseFloat(`${rangeMatch[3]}.${rangeMatch[4] || '0'}`)
