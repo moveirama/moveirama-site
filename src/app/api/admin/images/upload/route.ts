@@ -67,7 +67,7 @@ export async function POST(request: Request) {
     .from('product_images')
     .insert({
     product_id: productId,
-    image_url: urlData.publicUrl,
+    cloudinary_path: urlData.publicUrl,
     alt_text: `${productSlug.replace(/-/g, ' ')} - imagem ${nextNumber}`,
     image_type: position === 0 ? 'principal' : 'galeria',
     position: position,
