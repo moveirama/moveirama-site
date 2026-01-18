@@ -19,6 +19,7 @@ export async function GET(request: Request) {
         sku,
         name,
         slug,
+        price,
         is_active,
         assembly_video_url,
         manual_pdf_url,
