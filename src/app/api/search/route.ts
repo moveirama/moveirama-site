@@ -283,7 +283,7 @@ export async function GET(request: Request) {
           slug
         ),
         product_images (
-          cloudinary_url,
+          cloudinary_path,
           position
         )
       `)
@@ -370,7 +370,7 @@ export async function GET(request: Request) {
     const formattedProducts = (products || []).map(p => {
       // Ordenar imagens por position e pegar a primeira
       const sortedImages = (p.product_images || []).sort((a: any, b: any) => a.position - b.position)
-      const firstImage = sortedImages[0]?.cloudinary_url || null
+      const firstImage = sortedImages[0]?.cloudinary_path || null
       
       return {
         id: p.id,
