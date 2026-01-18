@@ -31,7 +31,7 @@ export async function GET(request: Request) {
         ),
         product_images (
           id,
-          image_url,
+          cloudinary_path,
           image_type,
           position
         )
