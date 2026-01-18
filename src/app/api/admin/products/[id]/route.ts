@@ -19,7 +19,17 @@ export async function PATCH(
       'medidas_image_url',
       'tv_max_size',
       'weight_capacity',
-      'price'
+      'price',
+      // Características (NOVOS)
+      'num_doors',
+      'num_drawers',
+      'num_shelves',
+      'num_niches',
+      'has_wheels',
+      'has_mirror',
+      'has_lighting',
+      'door_type',
+      'feet_type',
     ]
     
     // Filtrar apenas campos permitidos
