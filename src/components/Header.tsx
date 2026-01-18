@@ -33,7 +33,7 @@ const MENU_ESCRITORIO = {
       subcategorias: [
         { label: 'Escrivaninhas', href: '/escritorio/home-office/escrivaninhas', count: 120 },
         { label: 'Gaveteiros', href: '/escritorio/home-office/gaveteiros', count: 19 },
-        { label: 'Estantes', href: '/escritorio/home-office/estantes', count: 18 },
+        { label: 'Estantes', href: '/escritorio/home-office/estantes-escritorio', count: 18 },
         { label: 'Mesas e Balcões', href: '/escritorio/home-office/mesas-balcoes', count: 8 },
       ],
     },
