@@ -121,7 +121,7 @@ export type SortOption = 'relevance' | 'price-asc' | 'price-desc' | 'newest' | '
 // ========================================
 
 /**
- * Busca categoria pai pelo slug
+ * Busca categoria pai pelo slug (apenas categorias raiz com parent_id = null)
  */
 export async function getParentCategory(slug: string): Promise<Category | null> {
   const { data, error } = await supabase
@@ -137,11 +137,30 @@ export async function getParentCategory(slug: string): Promise<Category | null> 
 }
 
 /**
+ * Busca qualquer categoria pelo slug (qualquer nível da hierarquia)
+ * Diferente de getParentCategory que só busca categorias raiz
+ * 
+ * NOVA FUNÇÃO - necessária para estrutura de 3 níveis
+ */
+export async function getCategoryBySlug(slug: string): Promise<Category | null> {
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('slug', slug)
+    .eq('is_active', true)
+    .single()
+  
+  if (error) return null
+  return data
+}
+
+/**
  * Busca subcategorias de uma categoria pai com contagem de produtos
+ * ATUALIZADA: agora usa getCategoryBySlug para funcionar com qualquer nível
  */
 export async function getSubcategories(parentSlug: string): Promise<CategoryWithCount[]> {
-  // Primeiro busca o ID do pai
-  const parent = await getParentCategory(parentSlug)
+  // Busca o pai (qualquer nível, não só raiz)
+  const parent = await getCategoryBySlug(parentSlug)
   if (!parent) return []
 
   // Busca subcategorias
@@ -174,13 +193,44 @@ export async function getSubcategories(parentSlug: string): Promise<CategoryWith
 }
 
 /**
- * Busca subcategoria pelo slug do pai e da subcategoria
+ * Busca subcategoria pelo slug do pai (APENAS RAIZ) e da subcategoria
+ * Mantida para compatibilidade com código existente
  */
 export async function getSubcategory(parentSlug: string, subcategorySlug: string): Promise<Category | null> {
-  // Primeiro busca o ID do pai
+  // Primeiro busca o ID do pai (apenas categorias raiz)
   const parent = await getParentCategory(parentSlug)
   if (!parent) return null
 
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('slug', subcategorySlug)
+    .eq('parent_id', parent.id)
+    .eq('is_active', true)
+    .single()
+  
+  if (error) return null
+  return data
+}
+
+/**
+ * Busca subcategoria como filha de qualquer categoria (não só raiz)
+ * 
+ * NOVA FUNÇÃO - necessária para estrutura de 3 níveis
+ * 
+ * Exemplo: getSubcategoryOfAnyParent('home-office', 'escrivaninhas')
+ * - Encontra 'home-office' (que é filha de 'escritorio')  
+ * - Busca 'escrivaninhas' como filha de 'home-office'
+ */
+export async function getSubcategoryOfAnyParent(
+  parentSlug: string, 
+  subcategorySlug: string
+): Promise<Category | null> {
+  // Busca o pai pelo slug (qualquer nível)
+  const parent = await getCategoryBySlug(parentSlug)
+  if (!parent) return null
+
+  // Busca a subcategoria como filha desse pai
   const { data, error } = await supabase
     .from('categories')
     .select('*')
