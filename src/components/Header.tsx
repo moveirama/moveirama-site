@@ -5,31 +5,57 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import SearchModal from '@/components/search/SearchModal'
 
-// Estrutura de navegação (2 níveis)
-const NAVIGATION = {
-  casa: {
-    label: 'Casa',
-    href: '/casa',
-    items: [
-      { label: 'Racks para TV', href: '/casa/racks' },
-      { label: 'Painéis para TV', href: '/casa/paineis' },
-      { label: 'Buffets', href: '/casa/buffets' },
-      { label: 'Penteadeiras', href: '/casa/penteadeiras' },
-    ],
-  },
-  escritorio: {
-    label: 'Escritório',
-    href: '/escritorio',
-    items: [
-      { label: 'Escrivaninhas', href: '/escritorio/escrivaninhas' },
-      { label: 'Gaveteiros', href: '/escritorio/gaveteiros' },
-      { label: 'Mesas para Escritório', href: '/escritorio/mesas' },
-      { label: 'Estações de Trabalho', href: '/escritorio/estacoes' },
-    ],
-  },
+// ============================================
+// ESTRUTURA DE NAVEGAÇÃO v1.2
+// ============================================
+
+// Casa: dropdown simples (sem linhas)
+const MENU_CASA = {
+  label: 'Casa',
+  href: '/casa',
+  subcategorias: [
+    { label: 'Racks para TV', href: '/casa/racks' },
+    { label: 'Painéis para TV', href: '/casa/paineis' },
+    { label: 'Buffets', href: '/casa/buffets' },
+    { label: 'Penteadeiras', href: '/casa/penteadeiras' },
+  ],
 }
 
-// Ícone Chevron
+// Escritório: dropdown 2 painéis (com linhas)
+const MENU_ESCRITORIO = {
+  label: 'Escritório',
+  href: '/escritorio',
+  linhas: [
+    {
+      id: 'home-office',
+      label: 'Home Office',
+      href: '/escritorio/home-office',
+      subcategorias: [
+        { label: 'Escrivaninhas', href: '/escritorio/home-office/escrivaninhas', count: 120 },
+        { label: 'Gaveteiros', href: '/escritorio/home-office/gaveteiros', count: 19 },
+        { label: 'Estantes', href: '/escritorio/home-office/estantes', count: 18 },
+        { label: 'Mesas e Balcões', href: '/escritorio/home-office/mesas-balcoes', count: 8 },
+      ],
+    },
+    // FUTURO: Descomentar quando Linha Executiva entrar
+    // {
+    //   id: 'linha-executiva',
+    //   label: 'Linha Executiva',
+    //   href: '/escritorio/linha-executiva',
+    //   subcategorias: [
+    //     { label: 'Mesas Executivas', href: '/escritorio/linha-executiva/mesas-executivas', count: 42 },
+    //     { label: 'Armários', href: '/escritorio/linha-executiva/armarios', count: 28 },
+    //     { label: 'Estantes', href: '/escritorio/linha-executiva/estantes', count: 15 },
+    //     { label: 'Gaveteiros', href: '/escritorio/linha-executiva/gaveteiros', count: 12 },
+    //   ],
+    // },
+  ],
+}
+
+// ============================================
+// ÍCONES
+// ============================================
+
 function ChevronDown({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -38,7 +64,14 @@ function ChevronDown({ className }: { className?: string }) {
   )
 }
 
-// Ícone WhatsApp
+function ChevronRight({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+    </svg>
+  )
+}
+
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="currentColor" viewBox="0 0 24 24">
@@ -47,7 +80,6 @@ function WhatsAppIcon({ className }: { className?: string }) {
   )
 }
 
-// Ícone Busca
 function SearchIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,7 +88,6 @@ function SearchIcon({ className }: { className?: string }) {
   )
 }
 
-// Ícone Hamburger
 function MenuIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,7 +96,6 @@ function MenuIcon({ className }: { className?: string }) {
   )
 }
 
-// Ícone X (fechar)
 function CloseIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -74,7 +104,6 @@ function CloseIcon({ className }: { className?: string }) {
   )
 }
 
-// Ícone Seta
 function ArrowRightIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,7 +112,6 @@ function ArrowRightIcon({ className }: { className?: string }) {
   )
 }
 
-// Ícone Localização
 function LocationIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,31 +121,217 @@ function LocationIcon({ className }: { className?: string }) {
   )
 }
 
+// ============================================
+// DROPDOWN SIMPLES (Casa)
+// ============================================
+
+function DropdownSimples({ 
+  data, 
+  isOpen 
+}: { 
+  data: typeof MENU_CASA
+  isOpen: boolean 
+}) {
+  return (
+    <div 
+      className={`
+        absolute top-full left-0 mt-1 min-w-[220px] 
+        bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.12)] p-2 
+        transition-all duration-200
+        ${isOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2 pointer-events-none'}
+      `}
+      role="menu"
+    >
+      <ul>
+        {data.subcategorias.map((sub) => (
+          <li key={sub.href} role="none">
+            <Link
+              href={sub.href}
+              className="block px-3 py-2.5 text-sm text-[var(--color-graphite)] hover:bg-[var(--color-sage-100)] hover:text-[var(--color-sage-700)] rounded-lg transition-colors duration-150 min-h-[44px] flex items-center"
+              role="menuitem"
+            >
+              {sub.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <div className="mt-2 pt-2 border-t border-[var(--color-sand-light)]">
+        <Link
+          href={data.href}
+          className="flex items-center gap-1 px-3 py-2.5 text-[13px] font-semibold text-[var(--color-sage-600)] hover:bg-[var(--color-sage-100)] rounded-lg transition-colors duration-150"
+          role="menuitem"
+        >
+          Ver todos
+          <ArrowRightIcon className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+// ============================================
+// DROPDOWN 2 PAINÉIS (Escritório)
+// ============================================
+
+function DropdownDoisPaineis({ 
+  data, 
+  isOpen,
+  activeLinha,
+  onLinhaHover,
+  onReset
+}: { 
+  data: typeof MENU_ESCRITORIO
+  isOpen: boolean
+  activeLinha: string | null
+  onLinhaHover: (linhaId: string) => void
+  onReset: () => void
+}) {
+  const activeLinhaData = activeLinha 
+    ? data.linhas.find(l => l.id === activeLinha) 
+    : null
+
+  return (
+    <div 
+      className={`
+        absolute top-full left-0 mt-1
+        bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.12)] overflow-hidden
+        transition-all duration-200
+        ${isOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2 pointer-events-none'}
+      `}
+      style={{ display: isOpen ? 'grid' : 'none', gridTemplateColumns: '180px 220px' }}
+      role="menu"
+      onMouseLeave={onReset}
+    >
+      {/* Painel Esquerdo: Linhas */}
+      <div className="p-4 border-r border-[var(--color-sand-light)] flex flex-col">
+        <span className="text-xs font-semibold text-[var(--color-toffee)] uppercase tracking-wider mb-3">
+          Linhas
+        </span>
+        
+        <ul className="flex-1 space-y-1">
+          {data.linhas.map((linha) => (
+            <li key={linha.id} role="none">
+              <button
+                onMouseEnter={() => onLinhaHover(linha.id)}
+                onFocus={() => onLinhaHover(linha.id)}
+                className={`
+                  w-full flex items-center justify-between px-3 py-3 rounded-lg text-left font-medium 
+                  transition-colors duration-150 min-h-[44px]
+                  ${activeLinha === linha.id 
+                    ? 'bg-[var(--color-sage-100)] text-[var(--color-sage-700)]' 
+                    : 'text-[var(--color-graphite)] hover:bg-[var(--color-gray-100)]'
+                  }
+                `}
+                aria-expanded={activeLinha === linha.id}
+                aria-controls={`panel-${linha.id}`}
+                role="menuitem"
+              >
+                <span>{linha.label}</span>
+                <ChevronRight className={`w-4 h-4 ${activeLinha === linha.id ? 'text-[var(--color-sage-600)]' : 'opacity-50'}`} />
+              </button>
+            </li>
+          ))}
+        </ul>
+        
+        <Link
+          href={data.href}
+          className="flex items-center gap-1 px-3 py-3 mt-3 border-t border-[var(--color-sand-light)] text-[13px] font-semibold text-[var(--color-sage-600)] hover:text-[var(--color-sage-700)] transition-colors"
+          role="menuitem"
+        >
+          Ver todos
+          <ArrowRightIcon className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+      
+      {/* Painel Direito: Subcategorias */}
+      <div className="p-4 bg-[var(--color-gray-50)] min-h-[240px] flex flex-col">
+        {!activeLinhaData ? (
+          // Estado vazio
+          <div className="flex-1 flex items-center justify-center" id="panel-empty">
+            <span className="text-sm text-[var(--color-toffee)]">Selecione uma linha</span>
+          </div>
+        ) : (
+          // Subcategorias da linha selecionada
+          <div id={`panel-${activeLinhaData.id}`} className="flex flex-col h-full">
+            <span className="text-xs font-semibold text-[var(--color-sage-600)] uppercase tracking-wider mb-3">
+              {activeLinhaData.label}
+            </span>
+            
+            <ul className="flex-1 space-y-0.5">
+              {activeLinhaData.subcategorias.map((sub) => (
+                <li key={sub.href} role="none">
+                  <Link
+                    href={sub.href}
+                    className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-white text-[var(--color-graphite)] hover:text-[var(--color-sage-700)] transition-colors min-h-[40px]"
+                    role="menuitem"
+                  >
+                    <span>{sub.label}</span>
+                    <span className="text-sm text-[var(--color-toffee)]">({sub.count})</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            
+            <Link
+              href={activeLinhaData.href}
+              className="flex items-center gap-1 px-3 py-3 mt-3 border-t border-[var(--color-sand-light)] text-[13px] font-semibold text-[var(--color-sage-600)] hover:text-[var(--color-sage-700)] transition-colors"
+              role="menuitem"
+            >
+              Ver {activeLinhaData.label}
+              <ArrowRightIcon className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ============================================
+// COMPONENTE PRINCIPAL
+// ============================================
+
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  
+  // Desktop: dropdown hover states
+  const [casaOpen, setCasaOpen] = useState(false)
+  const [escritorioOpen, setEscritorioOpen] = useState(false)
+  const [activeLinha, setActiveLinha] = useState<string | null>(null)
+  
+  // Mobile: accordion states
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
-  const [searchOpen, setSearchOpen] = useState(false) // ← NOVO: estado do modal de busca
+  const [expandedLinha, setExpandedLinha] = useState<string | null>(null)
+  
   const pathname = usePathname()
   const mobileMenuRef = useRef<HTMLDivElement>(null)
+  
+  // Timeouts para delay no fechar dropdown
+  const casaTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const escritorioTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Fechar menu mobile ao navegar
   useEffect(() => {
     setMobileMenuOpen(false)
     setExpandedCategory(null)
+    setExpandedLinha(null)
   }, [pathname])
 
   // Fechar menu com Escape
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && mobileMenuOpen) {
-        setMobileMenuOpen(false)
+      if (e.key === 'Escape') {
+        if (mobileMenuOpen) setMobileMenuOpen(false)
+        setCasaOpen(false)
+        setEscritorioOpen(false)
       }
     }
     document.addEventListener('keydown', handleEscape)
     return () => document.removeEventListener('keydown', handleEscape)
   }, [mobileMenuOpen])
 
-  // ← NOVO: Atalho Ctrl+K / Cmd+K para abrir busca
+  // Atalho Ctrl+K / Cmd+K para abrir busca
   useEffect(() => {
     const handleSearchShortcut = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -141,8 +355,40 @@ export default function Header() {
     }
   }, [mobileMenuOpen])
 
+  // Desktop: handlers para hover com delay
+  const handleCasaEnter = () => {
+    if (casaTimeoutRef.current) clearTimeout(casaTimeoutRef.current)
+    setCasaOpen(true)
+    setEscritorioOpen(false)
+  }
+  
+  const handleCasaLeave = () => {
+    casaTimeoutRef.current = setTimeout(() => {
+      setCasaOpen(false)
+    }, 150)
+  }
+  
+  const handleEscritorioEnter = () => {
+    if (escritorioTimeoutRef.current) clearTimeout(escritorioTimeoutRef.current)
+    setEscritorioOpen(true)
+    setCasaOpen(false)
+  }
+  
+  const handleEscritorioLeave = () => {
+    escritorioTimeoutRef.current = setTimeout(() => {
+      setEscritorioOpen(false)
+      setActiveLinha(null)
+    }, 150)
+  }
+
+  // Mobile: toggle accordion
   const toggleCategory = (key: string) => {
     setExpandedCategory(expandedCategory === key ? null : key)
+    setExpandedLinha(null) // Reset linha quando muda categoria
+  }
+  
+  const toggleLinha = (linhaId: string) => {
+    setExpandedLinha(expandedLinha === linhaId ? null : linhaId)
   }
 
   return (
@@ -184,49 +430,76 @@ export default function Header() {
             {/* Nav Desktop */}
             <nav className="hidden lg:block" aria-label="Menu principal">
               <ul className="flex items-center gap-2">
-                {Object.entries(NAVIGATION).map(([key, category]) => (
-                  <li key={key} className="relative group">
-                    <button
-                      className="flex items-center gap-1 px-4 py-3 text-[15px] font-medium text-[var(--color-graphite)] hover:bg-[var(--color-gray-100)] hover:text-[var(--color-sage-600)] rounded-lg transition-all duration-150"
-                      aria-expanded="false"
-                      aria-haspopup="true"
-                    >
-                      {category.label}
-                      <ChevronDown className="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" />
-                    </button>
-                    
-                    {/* Dropdown */}
-                    <div className="absolute top-full left-0 min-w-[220px] bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.12)] p-2 opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200">
-                      <ul>
-                        {category.items.map((item) => (
-                          <li key={item.href}>
-                            <Link
-                              href={item.href}
-                              className="block px-3 py-2.5 text-sm text-[var(--color-graphite)] hover:bg-[var(--color-sage-100)] hover:text-[var(--color-sage-700)] rounded-lg transition-colors duration-150"
-                            >
-                              {item.label}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                      <div className="mt-2 pt-2 border-t border-[var(--color-sand-light)]">
-                        <Link
-                          href={category.href}
-                          className="flex items-center gap-1 px-3 py-2.5 text-[13px] font-medium text-[var(--color-sage-600)] hover:bg-[var(--color-sage-100)] rounded-lg transition-colors duration-150"
-                        >
-                          Ver todos
-                          <ArrowRightIcon className="w-3.5 h-3.5" />
-                        </Link>
-                      </div>
-                    </div>
-                  </li>
-                ))}
+                
+                {/* Casa - Dropdown Simples */}
+                <li 
+                  className="relative"
+                  onMouseEnter={handleCasaEnter}
+                  onMouseLeave={handleCasaLeave}
+                >
+                  <button
+                    className={`
+                      flex items-center gap-1 px-4 py-3 text-[15px] font-medium rounded-lg transition-all duration-150
+                      ${casaOpen 
+                        ? 'text-[var(--color-sage-600)] bg-[var(--color-gray-100)]' 
+                        : 'text-[var(--color-graphite)] hover:bg-[var(--color-gray-100)] hover:text-[var(--color-sage-600)]'
+                      }
+                    `}
+                    aria-expanded={casaOpen}
+                    aria-haspopup="true"
+                  >
+                    {MENU_CASA.label}
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${casaOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  <DropdownSimples data={MENU_CASA} isOpen={casaOpen} />
+                </li>
+                
+                {/* Escritório - Dropdown 2 Painéis */}
+                <li 
+                  className="relative"
+                  onMouseEnter={handleEscritorioEnter}
+                  onMouseLeave={handleEscritorioLeave}
+                >
+                  <button
+                    className={`
+                      flex items-center gap-1 px-4 py-3 text-[15px] font-medium rounded-lg transition-all duration-150
+                      ${escritorioOpen 
+                        ? 'text-[var(--color-sage-600)] bg-[var(--color-gray-100)]' 
+                        : 'text-[var(--color-graphite)] hover:bg-[var(--color-gray-100)] hover:text-[var(--color-sage-600)]'
+                      }
+                    `}
+                    aria-expanded={escritorioOpen}
+                    aria-haspopup="true"
+                  >
+                    {MENU_ESCRITORIO.label}
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${escritorioOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  <DropdownDoisPaineis 
+                    data={MENU_ESCRITORIO} 
+                    isOpen={escritorioOpen}
+                    activeLinha={activeLinha}
+                    onLinhaHover={setActiveLinha}
+                    onReset={() => setActiveLinha(null)}
+                  />
+                </li>
+                
+                {/* Ofertas */}
+                <li>
+                  <Link
+                    href="/ofertas"
+                    className="flex items-center px-4 py-3 text-[15px] font-medium text-[var(--color-graphite)] hover:bg-[var(--color-gray-100)] hover:text-[var(--color-sage-600)] rounded-lg transition-all duration-150"
+                  >
+                    Ofertas
+                  </Link>
+                </li>
               </ul>
             </nav>
 
             {/* Ações */}
             <div className="flex items-center gap-3">
-              {/* ← MODIFICADO: Botão de Busca agora abre o modal */}
+              {/* Botão de Busca */}
               <button 
                 onClick={() => setSearchOpen(true)}
                 className="flex items-center justify-center w-11 h-11 text-[var(--color-toffee)] hover:text-[var(--color-graphite)] hover:bg-[var(--color-gray-100)] rounded-lg transition-colors"
@@ -261,7 +534,9 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Mobile Menu */}
+      {/* ============================================
+          MOBILE MENU
+          ============================================ */}
       <div
         id="mobile-menu"
         className={`fixed inset-0 z-[2000] ${mobileMenuOpen ? 'visible' : 'invisible'}`}
@@ -293,55 +568,146 @@ export default function Header() {
           {/* Nav Mobile */}
           <nav className="flex-1 overflow-y-auto py-4">
             <ul>
-              {Object.entries(NAVIGATION).map(([key, category]) => (
-                <li key={key}>
-                  <button
-                    className={`flex items-center justify-between w-full px-5 py-3.5 text-base font-medium text-left transition-colors ${expandedCategory === key ? 'text-[var(--color-sage-600)]' : 'text-[var(--color-graphite)]'} hover:bg-[var(--color-gray-100)]`}
-                    onClick={() => toggleCategory(key)}
-                    aria-expanded={expandedCategory === key}
-                    aria-controls={`submenu-${key}`}
-                  >
-                    {category.label}
-                    <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${expandedCategory === key ? 'rotate-180' : ''}`} />
-                  </button>
-                  
-                  {/* Submenu */}
-                  <ul
-                    id={`submenu-${key}`}
-                    className={`bg-[var(--color-gray-50)] ${expandedCategory === key ? 'block' : 'hidden'}`}
-                    aria-hidden={expandedCategory !== key}
-                  >
-                    {category.items.map((item) => (
-                      <li key={item.href}>
-                        <Link
-                          href={item.href}
-                          className="block px-5 py-3 pl-8 text-[15px] text-[var(--color-toffee)] hover:bg-[var(--color-sage-100)] hover:text-[var(--color-sage-700)] transition-colors"
-                        >
-                          {item.label}
-                        </Link>
-                      </li>
-                    ))}
-                    <li>
+              
+              {/* Casa - Acordeão Simples */}
+              <li className="border-b border-[var(--color-sand-light)]">
+                <button
+                  className={`
+                    flex items-center justify-between w-full px-5 py-3.5 text-base font-medium text-left transition-colors min-h-[56px]
+                    ${expandedCategory === 'casa' ? 'text-[var(--color-sage-600)]' : 'text-[var(--color-graphite)]'} 
+                    hover:bg-[var(--color-gray-100)]
+                  `}
+                  onClick={() => toggleCategory('casa')}
+                  aria-expanded={expandedCategory === 'casa'}
+                  aria-controls="submenu-casa"
+                >
+                  {MENU_CASA.label}
+                  <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${expandedCategory === 'casa' ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {/* Submenu Casa */}
+                <ul
+                  id="submenu-casa"
+                  className={`bg-[var(--color-gray-50)] ${expandedCategory === 'casa' ? 'block' : 'hidden'}`}
+                  aria-hidden={expandedCategory !== 'casa'}
+                >
+                  {MENU_CASA.subcategorias.map((sub) => (
+                    <li key={sub.href}>
                       <Link
-                        href={category.href}
-                        className="block px-5 py-3 pl-8 text-sm font-medium text-[var(--color-sage-600)] hover:bg-[var(--color-sage-100)] transition-colors"
+                        href={sub.href}
+                        className="block px-5 py-3 pl-8 text-[15px] text-[var(--color-toffee)] hover:bg-[var(--color-sage-100)] hover:text-[var(--color-sage-700)] transition-colors min-h-[44px]"
                       >
-                        Ver todos →
+                        {sub.label}
                       </Link>
                     </li>
+                  ))}
+                  <li>
+                    <Link
+                      href={MENU_CASA.href}
+                      className="block px-5 py-3 pl-8 text-sm font-medium text-[var(--color-sage-600)] hover:bg-[var(--color-sage-100)] transition-colors border-t border-[var(--color-sand-light)] mt-2"
+                    >
+                      Ver todos em Casa →
+                    </Link>
+                  </li>
+                </ul>
+              </li>
+              
+              {/* Escritório - Acordeão Aninhado */}
+              <li className="border-b border-[var(--color-sand-light)]">
+                <button
+                  className={`
+                    flex items-center justify-between w-full px-5 py-3.5 text-base font-medium text-left transition-colors min-h-[56px]
+                    ${expandedCategory === 'escritorio' ? 'text-[var(--color-sage-600)]' : 'text-[var(--color-graphite)]'} 
+                    hover:bg-[var(--color-gray-100)]
+                  `}
+                  onClick={() => toggleCategory('escritorio')}
+                  aria-expanded={expandedCategory === 'escritorio'}
+                  aria-controls="submenu-escritorio"
+                >
+                  {MENU_ESCRITORIO.label}
+                  <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${expandedCategory === 'escritorio' ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {/* Submenu Escritório (com linhas) */}
+                <div
+                  id="submenu-escritorio"
+                  className={`bg-[var(--color-gray-50)] ${expandedCategory === 'escritorio' ? 'block' : 'hidden'}`}
+                  aria-hidden={expandedCategory !== 'escritorio'}
+                >
+                  <ul className="py-2">
+                    {MENU_ESCRITORIO.linhas.map((linha) => (
+                      <li key={linha.id}>
+                        {/* Botão da Linha (expandível) */}
+                        <button
+                          className={`
+                            w-full flex items-center justify-between py-3 px-6 font-medium transition-colors min-h-[52px]
+                            ${expandedLinha === linha.id ? 'text-[var(--color-sage-600)]' : 'text-[var(--color-graphite)]'}
+                            hover:text-[var(--color-sage-700)]
+                          `}
+                          onClick={() => toggleLinha(linha.id)}
+                          aria-expanded={expandedLinha === linha.id}
+                          aria-controls={`submenu-linha-${linha.id}`}
+                        >
+                          <span>{linha.label}</span>
+                          <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${expandedLinha === linha.id ? 'rotate-90' : ''}`} />
+                        </button>
+                        
+                        {/* Subcategorias da Linha */}
+                        <div
+                          id={`submenu-linha-${linha.id}`}
+                          className={`bg-white border-l-[3px] border-[var(--color-sage-500)] ml-6 ${expandedLinha === linha.id ? 'block' : 'hidden'}`}
+                          aria-hidden={expandedLinha !== linha.id}
+                        >
+                          <ul className="py-2">
+                            {linha.subcategorias.map((sub) => (
+                              <li key={sub.href}>
+                                <Link
+                                  href={sub.href}
+                                  className="flex items-center justify-between py-3 px-4 text-[var(--color-graphite)] hover:text-[var(--color-sage-700)] transition-colors min-h-[44px]"
+                                >
+                                  <span>{sub.label}</span>
+                                  <span className="text-sm text-[var(--color-toffee)]">({sub.count})</span>
+                                </Link>
+                              </li>
+                            ))}
+                            <li>
+                              <Link
+                                href={linha.href}
+                                className="block py-3 px-4 text-sm font-semibold text-[var(--color-sage-600)] border-t border-[var(--color-sand-light)] mt-2"
+                              >
+                                Ver {linha.label} →
+                              </Link>
+                            </li>
+                          </ul>
+                        </div>
+                      </li>
+                    ))}
                   </ul>
-                </li>
-              ))}
+                  
+                  {/* Ver todos em Escritório */}
+                  <Link
+                    href={MENU_ESCRITORIO.href}
+                    className="block px-6 py-3 text-sm font-medium text-[var(--color-sage-600)] hover:bg-[var(--color-sage-100)] transition-colors border-t border-[var(--color-sand-light)]"
+                  >
+                    Ver todos em Escritório →
+                  </Link>
+                </div>
+              </li>
+              
+              {/* Ofertas */}
+              <li>
+                <Link
+                  href="/ofertas"
+                  className="flex items-center justify-between px-5 py-3.5 text-base font-medium text-[var(--color-graphite)] hover:bg-[var(--color-gray-100)] transition-colors min-h-[56px]"
+                >
+                  <span>Ofertas</span>
+                  <ArrowRightIcon className="w-5 h-5 text-[var(--color-toffee)]" />
+                </Link>
+              </li>
             </ul>
 
             {/* Links Secundários */}
             <div className="mt-4 pt-4 border-t border-[var(--color-sand-light)]">
-              <Link
-                href="/ofertas"
-                className="block px-5 py-3.5 text-[15px] text-[var(--color-toffee)] hover:bg-[var(--color-gray-100)] transition-colors"
-              >
-                Ofertas
-              </Link>
               <Link
                 href="/contato"
                 className="block px-5 py-3.5 text-[15px] text-[var(--color-toffee)] hover:bg-[var(--color-gray-100)] transition-colors"
@@ -366,7 +732,7 @@ export default function Header() {
         </div>
       </div>
 
-      {/* ← NOVO: Modal de Busca Inteligente */}
+      {/* Modal de Busca Inteligente */}
       <SearchModal 
         isOpen={searchOpen} 
         onClose={() => setSearchOpen(false)} 
