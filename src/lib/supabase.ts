@@ -5,7 +5,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-// Types para categorias (estrutura 2 níveis)
+// Types para categorias (estrutura 2-3 níveis)
 export type Category = {
   id: string
   slug: string
@@ -139,8 +139,6 @@ export async function getParentCategory(slug: string): Promise<Category | null> 
 /**
  * Busca qualquer categoria pelo slug (qualquer nível da hierarquia)
  * Diferente de getParentCategory que só busca categorias raiz
- * 
- * NOVA FUNÇÃO - necessária para estrutura de 3 níveis
  */
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {
   const { data, error } = await supabase
@@ -156,7 +154,8 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
 
 /**
  * Busca subcategorias de uma categoria pai com contagem de produtos
- * ATUALIZADA: agora usa getCategoryBySlug para funcionar com qualquer nível
+ * ATUALIZADA: soma produtos de sub-subcategorias (para linhas como home-office)
+ * ATUALIZADA: busca imagem de produto como fallback quando categoria não tem imagem
  */
 export async function getSubcategories(parentSlug: string): Promise<CategoryWithCount[]> {
   // Busca o pai (qualquer nível, não só raiz)
@@ -176,15 +175,66 @@ export async function getSubcategories(parentSlug: string): Promise<CategoryWith
   // Busca contagem de produtos para cada subcategoria
   const categoriesWithCount = await Promise.all(
     categories.map(async (cat) => {
-      const { count } = await supabase
+      // Primeiro, conta produtos diretos desta categoria
+      const { count: directCount } = await supabase
         .from('products')
         .select('*', { count: 'exact', head: true })
         .eq('category_id', cat.id)
         .eq('is_active', true)
 
+      let totalCount = directCount || 0
+      let categoryIds = [cat.id]
+
+      // Se não tem produtos diretos, pode ser uma "linha" (categoria intermediária)
+      // Nesse caso, soma produtos de todas as subcategorias
+      if (totalCount === 0) {
+        // Busca subcategorias desta categoria
+        const { data: subCategories } = await supabase
+          .from('categories')
+          .select('id')
+          .eq('parent_id', cat.id)
+          .eq('is_active', true)
+
+        if (subCategories && subCategories.length > 0) {
+          // Soma produtos de todas as subcategorias
+          const subCategoryIds = subCategories.map(sc => sc.id)
+          categoryIds = [...categoryIds, ...subCategoryIds]
+          
+          const { count: subCount } = await supabase
+            .from('products')
+            .select('*', { count: 'exact', head: true })
+            .in('category_id', subCategoryIds)
+            .eq('is_active', true)
+          
+          totalCount = subCount || 0
+        }
+      }
+
+      // Busca imagem de um produto da categoria (fallback quando não tem image_url)
+      let categoryImage: string | null = null
+      if (totalCount > 0) {
+        const { data: productWithImage } = await supabase
+          .from('products')
+          .select(`
+            id,
+            product_images(cloudinary_path, image_type)
+          `)
+          .in('category_id', categoryIds)
+          .eq('is_active', true)
+          .limit(1)
+          .single()
+
+        if (productWithImage?.product_images) {
+          const images = productWithImage.product_images as { cloudinary_path: string; image_type: string }[]
+          const principalImage = images.find(img => img.image_type === 'principal')
+          categoryImage = principalImage?.cloudinary_path || images[0]?.cloudinary_path || null
+        }
+      }
+
       return {
         ...cat,
-        product_count: count || 0
+        product_count: totalCount,
+        image_url: cat.image_url || categoryImage
       }
     })
   )
@@ -215,8 +265,6 @@ export async function getSubcategory(parentSlug: string, subcategorySlug: string
 
 /**
  * Busca subcategoria como filha de qualquer categoria (não só raiz)
- * 
- * NOVA FUNÇÃO - necessária para estrutura de 3 níveis
  * 
  * Exemplo: getSubcategoryOfAnyParent('home-office', 'escrivaninhas')
  * - Encontra 'home-office' (que é filha de 'escritorio')  
@@ -254,9 +302,6 @@ export async function getProductsByCategory(
 ): Promise<{ products: ProductForListing[], total: number }> {
   
   // Determina ordenação
-  // NOTA: 'relevance' usa ordem alfabética para exibir todos os produtos de forma previsível
-  // Isso evita o problema de produtos "sumirem" nas últimas páginas por terem sido
-  // cadastrados antes de outros.
   let orderColumn = 'name'
   let orderAscending = true
   
@@ -274,7 +319,7 @@ export async function getProductsByCategory(
       orderAscending = false
       break
     case 'bestseller':
-      orderColumn = 'name' // TODO: implementar contagem de vendas
+      orderColumn = 'name'
       orderAscending = true
       break
     case 'relevance':
@@ -290,8 +335,7 @@ export async function getProductsByCategory(
     .eq('category_id', categoryId)
     .eq('is_active', true)
 
-  // Busca produtos com paginação (LEFT JOIN para incluir produtos sem imagem)
-  // CORREÇÃO: usar cloudinary_path em vez de image_url
+  // Busca produtos com paginação
   const { data, error } = await supabase
     .from('products')
     .select(`
@@ -311,8 +355,7 @@ export async function getProductsByCategory(
     return { products: [], total: 0 }
   }
 
-  // Mapeia para o formato esperado (busca imagem principal ou primeira disponível)
-  // CORREÇÃO: usar cloudinary_path em vez de image_url
+  // Mapeia para o formato esperado
   const products: ProductForListing[] = data.map(p => {
     const images = p.product_images || []
     const principalImage = images.find((img: { image_type: string }) => img.image_type === 'principal')
@@ -325,7 +368,7 @@ export async function getProductsByCategory(
       price: p.price,
       compare_at_price: p.compare_at_price,
       image_url: principalImage?.cloudinary_path || firstImage?.cloudinary_path || null,
-      avg_rating: 0, // TODO: implementar quando tiver reviews
+      avg_rating: 0,
       review_count: 0
     }
   })
@@ -341,7 +384,7 @@ export async function getSubcategoryBySlug(slug: string): Promise<Category | nul
     .from('categories')
     .select('*')
     .eq('slug', slug)
-    .not('parent_id', 'is', null) // Só subcategorias (que têm parent_id)
+    .not('parent_id', 'is', null)
     .eq('is_active', true)
     .single()
   
@@ -356,7 +399,6 @@ export async function getProductBySubcategoryAndSlug(
   subcategorySlug: string, 
   productSlug: string
 ): Promise<ProductWithDetails | null> {
-  // Primeiro verifica se a subcategoria existe
   const subcategory = await getSubcategoryBySlug(subcategorySlug)
   if (!subcategory) return null
 
@@ -376,7 +418,6 @@ export async function getProductBySubcategoryAndSlug(
 
   if (error || !product) return null
   
-  // Ordenar FAQs por position
   if (product.faqs) {
     product.faqs = product.faqs
       .filter((faq: { is_active?: boolean }) => faq.is_active !== false)
