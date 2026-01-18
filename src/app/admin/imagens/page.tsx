@@ -27,6 +27,16 @@ type Product = {
   weight_capacity: number | null
   category_slug: string | null
   product_images: ProductImage[]
+  // Características
+  num_doors: number | null
+  num_drawers: number | null
+  num_shelves: number | null
+  num_niches: number | null
+  has_wheels: boolean | null
+  has_mirror: boolean | null
+  has_lighting: boolean | null
+  door_type: string | null
+  feet_type: string | null
 }
 
 type Stats = {
@@ -78,11 +88,28 @@ export default function AdminImagensPage() {
   const [saving, setSaving] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const [dragOverMedidas, setDragOverMedidas] = useState(false)
+  
+  // Campos existentes
   const [videoUrl, setVideoUrl] = useState('')
   const [manualUrl, setManualUrl] = useState('')
   const [tvMaxSize, setTvMaxSize] = useState('')
   const [weightCapacity, setWeightCapacity] = useState('')
   const [price, setPrice] = useState('')
+  
+  // Campos de características (NOVOS)
+  const [numDoors, setNumDoors] = useState('')
+  const [numDrawers, setNumDrawers] = useState('')
+  const [numShelves, setNumShelves] = useState('')
+  const [numNiches, setNumNiches] = useState('')
+  const [hasWheels, setHasWheels] = useState(false)
+  const [hasMirror, setHasMirror] = useState(false)
+  const [hasLighting, setHasLighting] = useState(false)
+  const [doorType, setDoorType] = useState('')
+  const [feetType, setFeetType] = useState('')
+  
+  // Controle de abas
+  const [activeTab, setActiveTab] = useState<'imagens' | 'caracteristicas'>('imagens')
+  
   const router = useRouter()
   const supabase = createClient()
 
@@ -112,17 +139,32 @@ export default function AdminImagensPage() {
           const updated = data.products.find((p: Product) => p.id === selectedProduct.id)
           if (updated) {
             setSelectedProduct(updated)
-            setVideoUrl(updated.assembly_video_url || '')
-            setManualUrl(updated.manual_pdf_url || '')
-            setTvMaxSize(updated.tv_max_size?.toString() || '')
-            setWeightCapacity(updated.weight_capacity?.toString() || '')
-            setPrice(updated.price?.toString() || '')
+            updateFormFields(updated)
           }
         }
       }
     } catch (error) {
       console.error('Erro ao buscar produtos:', error)
     }
+  }
+
+  // Função para atualizar todos os campos do formulário
+  function updateFormFields(product: Product) {
+    setVideoUrl(product.assembly_video_url || '')
+    setManualUrl(product.manual_pdf_url || '')
+    setTvMaxSize(product.tv_max_size?.toString() || '')
+    setWeightCapacity(product.weight_capacity?.toString() || '')
+    setPrice(product.price?.toString() || '')
+    // Características
+    setNumDoors(product.num_doors?.toString() || '')
+    setNumDrawers(product.num_drawers?.toString() || '')
+    setNumShelves(product.num_shelves?.toString() || '')
+    setNumNiches(product.num_niches?.toString() || '')
+    setHasWheels(product.has_wheels || false)
+    setHasMirror(product.has_mirror || false)
+    setHasLighting(product.has_lighting || false)
+    setDoorType(product.door_type || '')
+    setFeetType(product.feet_type || '')
   }
 
   useEffect(() => {
@@ -134,11 +176,7 @@ export default function AdminImagensPage() {
 
   useEffect(() => {
     if (selectedProduct) {
-      setVideoUrl(selectedProduct.assembly_video_url || '')
-      setManualUrl(selectedProduct.manual_pdf_url || '')
-      setTvMaxSize(selectedProduct.tv_max_size?.toString() || '')
-      setWeightCapacity(selectedProduct.weight_capacity?.toString() || '')
-      setPrice(selectedProduct.price?.toString() || '')
+      updateFormFields(selectedProduct)
     }
   }, [selectedProduct?.id])
 
@@ -147,7 +185,7 @@ export default function AdminImagensPage() {
     router.push('/admin')
   }
 
-  async function saveUrls() {
+  async function saveProduct() {
     if (!selectedProduct) return
     setSaving(true)
     try {
@@ -159,7 +197,17 @@ export default function AdminImagensPage() {
           manual_pdf_url: manualUrl || null,
           tv_max_size: tvMaxSize ? parseInt(tvMaxSize) : null,
           weight_capacity: weightCapacity ? parseInt(weightCapacity) : null,
-          price: price ? parseFloat(price) : null
+          price: price ? parseFloat(price) : null,
+          // Características
+          num_doors: numDoors ? parseInt(numDoors) : null,
+          num_drawers: numDrawers ? parseInt(numDrawers) : null,
+          num_shelves: numShelves ? parseInt(numShelves) : null,
+          num_niches: numNiches ? parseInt(numNiches) : null,
+          has_wheels: hasWheels,
+          has_mirror: hasMirror,
+          has_lighting: hasLighting,
+          door_type: doorType || null,
+          feet_type: feetType || null,
         })
       })
       const data = await res.json()
@@ -436,211 +484,358 @@ export default function AdminImagensPage() {
           <div className="bg-white rounded-lg border border-[#E8DFD5]">
             <div className="p-4 border-b border-[#E8DFD5]">
               <h3 className="font-semibold text-[#2D2D2D]">{selectedProduct ? selectedProduct.name : 'Selecione um produto'}</h3>
+              {selectedProduct && (
+                <p className="text-sm text-[#8B7355] mt-1">SKU: {selectedProduct.sku}</p>
+              )}
             </div>
-            <div className="p-4 max-h-[700px] overflow-y-auto">
+            
+            {/* Abas */}
+            {selectedProduct && (
+              <div className="flex border-b border-[#E8DFD5]">
+                <button
+                  onClick={() => setActiveTab('imagens')}
+                  className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                    activeTab === 'imagens'
+                      ? 'text-[#6B8E7A] border-b-2 border-[#6B8E7A] bg-[#F0F5F2]'
+                      : 'text-[#8B7355] hover:text-[#2D2D2D] hover:bg-[#F0E8DF]'
+                  }`}
+                >
+                  📷 Imagens
+                </button>
+                <button
+                  onClick={() => setActiveTab('caracteristicas')}
+                  className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                    activeTab === 'caracteristicas'
+                      ? 'text-[#6B8E7A] border-b-2 border-[#6B8E7A] bg-[#F0F5F2]'
+                      : 'text-[#8B7355] hover:text-[#2D2D2D] hover:bg-[#F0E8DF]'
+                  }`}
+                >
+                  📋 Características
+                </button>
+              </div>
+            )}
+            
+            <div className="p-4 max-h-[650px] overflow-y-auto">
               {selectedProduct ? (
-                <div>
-                  <p className="text-sm text-[#8B7355] mb-4">SKU: {selectedProduct.sku}</p>
-                  
-                  {/* Imagens do Produto */}
-                  <div className="mb-6">
-                    <h4 className="text-sm font-medium text-[#2D2D2D] mb-2">Imagens do Produto ({sortedImages.length}) <span className="font-normal text-[#8B7355]">— arraste para reordenar</span></h4>
-                    {sortedImages.length > 0 ? (
-                      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                        <SortableContext items={sortedImages.map(img => img.id)} strategy={rectSortingStrategy}>
-                          <div className="grid grid-cols-2 gap-3">
-                            {sortedImages.map((img, idx) => (
-                              <SortableImage key={img.id} img={img} idx={idx} onDelete={deleteImage} deleting={deleting} />
-                            ))}
-                          </div>
-                        </SortableContext>
-                      </DndContext>
-                    ) : (
-                      <p className="text-sm text-[#8B7355]">Nenhuma imagem cadastrada</p>
-                    )}
-                  </div>
-                  
-                  {/* Upload de Imagens do Produto */}
-                  <div onDragOver={handleDragOverUpload} onDragLeave={handleDragLeaveUpload} onDrop={handleDropUpload} className={`border-2 border-dashed rounded-lg p-6 text-center mb-6 ${dragOver ? 'border-[#6B8E7A] bg-[#F0F5F2]' : 'border-[#E8DFD5] hover:border-[#6B8E7A]'}`}>
-                    {uploading ? (
-                      <p className="text-[#8B7355]">Enviando...</p>
-                    ) : (
-                      <div>
-                        <p className="text-[#8B7355] mb-2">Arraste uma imagem ou</p>
-                        <label className="inline-block px-4 py-2 bg-[#6B8E7A] text-white rounded-lg cursor-pointer hover:bg-[#5A7A68]">
-                          Selecionar arquivo
-                          <input type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
-                        </label>
+                <>
+                  {/* ========== ABA IMAGENS ========== */}
+                  {activeTab === 'imagens' && (
+                    <div>
+                      {/* Imagens do Produto */}
+                      <div className="mb-6">
+                        <h4 className="text-sm font-medium text-[#2D2D2D] mb-2">Imagens do Produto ({sortedImages.length}) <span className="font-normal text-[#8B7355]">— arraste para reordenar</span></h4>
+                        {sortedImages.length > 0 ? (
+                          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                            <SortableContext items={sortedImages.map(img => img.id)} strategy={rectSortingStrategy}>
+                              <div className="grid grid-cols-2 gap-3">
+                                {sortedImages.map((img, idx) => (
+                                  <SortableImage key={img.id} img={img} idx={idx} onDelete={deleteImage} deleting={deleting} />
+                                ))}
+                              </div>
+                            </SortableContext>
+                          </DndContext>
+                        ) : (
+                          <p className="text-sm text-[#8B7355]">Nenhuma imagem cadastrada</p>
+                        )}
                       </div>
-                    )}
-                  </div>
-
-                  {/* Imagem das Medidas */}
-                  <div className="border-t border-[#E8DFD5] pt-6 mb-6">
-                    <h4 className="text-sm font-medium text-[#2D2D2D] mb-2">
-                      📐 Imagem das Medidas
-                      <span className="font-normal text-[#8B7355] ml-2">— dimensões do produto (L x A x P)</span>
-                    </h4>
-                    
-                    {selectedProduct.medidas_image_url ? (
-                      <div className="relative">
-                        <div className="bg-[#F0E8DF] rounded-lg p-4">
-                          <img 
-                            src={selectedProduct.medidas_image_url} 
-                            alt="Medidas do produto" 
-                            className="max-h-48 mx-auto rounded"
-                          />
-                        </div>
-                        <div className="flex gap-2 mt-3">
-                          <label className="flex-1 px-4 py-2 bg-[#F0E8DF] text-[#2D2D2D] rounded-lg cursor-pointer hover:bg-[#E8DFD5] text-center text-sm font-medium">
-                            Trocar imagem
-                            <input type="file" accept="image/*" onChange={handleMedidasFileSelect} className="hidden" disabled={uploadingMedidas} />
-                          </label>
-                          <button 
-                            onClick={removeMedidasImage}
-                            disabled={uploadingMedidas}
-                            className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 text-sm font-medium disabled:opacity-50"
-                          >
-                            {uploadingMedidas ? '...' : 'Remover'}
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div 
-                        onDragOver={handleDragOverMedidas} 
-                        onDragLeave={handleDragLeaveMedidas} 
-                        onDrop={handleDropMedidas} 
-                        className={`border-2 border-dashed rounded-lg p-6 text-center ${dragOverMedidas ? 'border-[#6B8E7A] bg-[#F0F5F2]' : 'border-[#E8DFD5] hover:border-[#6B8E7A]'}`}
-                      >
-                        {uploadingMedidas ? (
+                      
+                      {/* Upload de Imagens do Produto */}
+                      <div onDragOver={handleDragOverUpload} onDragLeave={handleDragLeaveUpload} onDrop={handleDropUpload} className={`border-2 border-dashed rounded-lg p-6 text-center mb-6 ${dragOver ? 'border-[#6B8E7A] bg-[#F0F5F2]' : 'border-[#E8DFD5] hover:border-[#6B8E7A]'}`}>
+                        {uploading ? (
                           <p className="text-[#8B7355]">Enviando...</p>
                         ) : (
                           <div>
-                            <p className="text-[#8B7355] mb-2">Arraste a imagem das medidas ou</p>
-                            <label className="inline-block px-4 py-2 bg-[#F0E8DF] text-[#2D2D2D] rounded-lg cursor-pointer hover:bg-[#E8DFD5] font-medium">
+                            <p className="text-[#8B7355] mb-2">Arraste uma imagem ou</p>
+                            <label className="inline-block px-4 py-2 bg-[#6B8E7A] text-white rounded-lg cursor-pointer hover:bg-[#5A7A68]">
                               Selecionar arquivo
-                              <input type="file" accept="image/*" onChange={handleMedidasFileSelect} className="hidden" />
+                              <input type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
                             </label>
                           </div>
                         )}
                       </div>
-                    )}
-                  </div>
 
-                  {/* Preço do Produto */}
-                  <div className="border-t border-[#E8DFD5] pt-6 mb-6">
-                    <h4 className="text-sm font-medium text-[#2D2D2D] mb-2">
-                      💰 Preço
-                      <span className="font-normal text-[#8B7355] ml-2">— valor de venda do produto</span>
-                    </h4>
-                    
-                    <div>
-                      <label className="block text-sm text-[#8B7355] mb-1">Preço (R$)</label>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-[#8B7355]">R$</span>
-                        <input 
-                          type="number" 
-                          placeholder="Ex: 299.90"
-                          min="0"
-                          step="0.01"
-                          value={price} 
-                          onChange={(e) => setPrice(e.target.value)}
-                          className="w-40 px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
-                        />
+                      {/* Imagem das Medidas */}
+                      <div className="border-t border-[#E8DFD5] pt-6 mb-6">
+                        <h4 className="text-sm font-medium text-[#2D2D2D] mb-2">
+                          📐 Imagem das Medidas
+                          <span className="font-normal text-[#8B7355] ml-2">— dimensões do produto (L x A x P)</span>
+                        </h4>
+                        
+                        {selectedProduct.medidas_image_url ? (
+                          <div className="relative">
+                            <div className="bg-[#F0E8DF] rounded-lg p-4">
+                              <img 
+                                src={selectedProduct.medidas_image_url} 
+                                alt="Medidas do produto" 
+                                className="max-h-48 mx-auto rounded"
+                              />
+                            </div>
+                            <div className="flex gap-2 mt-3">
+                              <label className="flex-1 px-4 py-2 bg-[#F0E8DF] text-[#2D2D2D] rounded-lg cursor-pointer hover:bg-[#E8DFD5] text-center text-sm font-medium">
+                                Trocar imagem
+                                <input type="file" accept="image/*" onChange={handleMedidasFileSelect} className="hidden" disabled={uploadingMedidas} />
+                              </label>
+                              <button 
+                                onClick={removeMedidasImage}
+                                disabled={uploadingMedidas}
+                                className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 text-sm font-medium disabled:opacity-50"
+                              >
+                                {uploadingMedidas ? '...' : 'Remover'}
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div 
+                            onDragOver={handleDragOverMedidas} 
+                            onDragLeave={handleDragLeaveMedidas} 
+                            onDrop={handleDropMedidas} 
+                            className={`border-2 border-dashed rounded-lg p-6 text-center ${dragOverMedidas ? 'border-[#6B8E7A] bg-[#F0F5F2]' : 'border-[#E8DFD5] hover:border-[#6B8E7A]'}`}
+                          >
+                            {uploadingMedidas ? (
+                              <p className="text-[#8B7355]">Enviando...</p>
+                            ) : (
+                              <div>
+                                <p className="text-[#8B7355] mb-2">Arraste a imagem das medidas ou</p>
+                                <label className="inline-block px-4 py-2 bg-[#F0E8DF] text-[#2D2D2D] rounded-lg cursor-pointer hover:bg-[#E8DFD5] font-medium">
+                                  Selecionar arquivo
+                                  <input type="file" accept="image/*" onChange={handleMedidasFileSelect} className="hidden" />
+                                </label>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      <p className="text-xs text-[#8B7355] mt-1">Preço atual: <strong>R$ {selectedProduct.price?.toFixed(2) || '0.00'}</strong></p>
-                    </div>
-                  </div>
 
-                  {/* Suporta TV até - só para racks e painéis */}
-                  {selectedProduct.category_slug && ['racks', 'paineis'].includes(selectedProduct.category_slug) && (
-                    <div className="border-t border-[#E8DFD5] pt-6 mb-6">
-                      <h4 className="text-sm font-medium text-[#2D2D2D] mb-2">
-                        📺 Compatibilidade TV
-                        <span className="font-normal text-[#8B7355] ml-2">— importante para racks e painéis</span>
-                      </h4>
-                      
-                      <div>
-                        <label className="block text-sm text-[#8B7355] mb-1">Suporta TV até (polegadas)</label>
-                        <div className="flex items-center gap-2">
-                          <input 
-                            type="number" 
-                            placeholder="Ex: 55"
-                            min="0"
-                            max="100"
-                            value={tvMaxSize} 
-                            onChange={(e) => setTvMaxSize(e.target.value)}
-                            className="w-32 px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
-                          />
-                          <span className="text-sm text-[#8B7355]">polegadas</span>
+                      {/* URLs de Montagem */}
+                      <div className="border-t border-[#E8DFD5] pt-6">
+                        <h4 className="text-sm font-medium text-[#2D2D2D] mb-4">🔧 Montagem</h4>
+                        
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm text-[#8B7355] mb-1">Vídeo de Montagem (YouTube)</label>
+                            <input 
+                              type="url" 
+                              placeholder="https://www.youtube.com/watch?v=..." 
+                              value={videoUrl} 
+                              onChange={(e) => setVideoUrl(e.target.value)}
+                              className="w-full px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm text-[#8B7355] mb-1">Manual PDF (URL)</label>
+                            <input 
+                              type="url" 
+                              placeholder="https://..." 
+                              value={manualUrl} 
+                              onChange={(e) => setManualUrl(e.target.value)}
+                              className="w-full px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
+                            />
+                          </div>
+                          
+                          <button 
+                            onClick={saveProduct}
+                            disabled={saving}
+                            className="w-full px-4 py-2 bg-[#6B8E7A] text-white rounded-lg hover:bg-[#5A7A68] disabled:opacity-50"
+                          >
+                            {saving ? 'Salvando...' : 'Salvar'}
+                          </button>
                         </div>
-                        <p className="text-xs text-[#8B7355] mt-1">Deixe vazio se não souber. Aparece na página do produto.</p>
                       </div>
                     </div>
                   )}
 
-                  {/* Peso Suportado */}
-                  <div className="border-t border-[#E8DFD5] pt-6 mb-6">
-                    <h4 className="text-sm font-medium text-[#2D2D2D] mb-2">
-                      ⚖️ Peso Suportado
-                      <span className="font-normal text-[#8B7355] ml-2">— quanto o móvel aguenta (total)</span>
-                    </h4>
-                    
-                    <div>
-                      <label className="block text-sm text-[#8B7355] mb-1">Peso máximo suportado (kg)</label>
-                      <div className="flex items-center gap-2">
-                        <input 
-                          type="number" 
-                          placeholder="Ex: 35"
-                          min="0"
-                          max="500"
-                          value={weightCapacity} 
-                          onChange={(e) => setWeightCapacity(e.target.value)}
-                          className="w-32 px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
-                        />
-                        <span className="text-sm text-[#8B7355]">kg</span>
+                  {/* ========== ABA CARACTERÍSTICAS ========== */}
+                  {activeTab === 'caracteristicas' && (
+                    <div className="space-y-6">
+                      
+                      {/* Preço */}
+                      <div>
+                        <h4 className="text-sm font-medium text-[#2D2D2D] mb-3">💰 Preço</h4>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-[#8B7355]">R$</span>
+                          <input 
+                            type="number" 
+                            placeholder="Ex: 299.90"
+                            min="0"
+                            step="0.01"
+                            value={price} 
+                            onChange={(e) => setPrice(e.target.value)}
+                            className="w-40 px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
+                          />
+                        </div>
                       </div>
-                      <p className="text-xs text-[#8B7355] mt-1">Informação da ficha técnica. Aparece na página do produto como "Peso suportado: Até X kg".</p>
-                    </div>
-                  </div>
 
-                  {/* URLs de Montagem */}
-                  <div className="border-t border-[#E8DFD5] pt-6">
-                    <h4 className="text-sm font-medium text-[#2D2D2D] mb-4">Montagem</h4>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm text-[#8B7355] mb-1">Vídeo de Montagem (YouTube)</label>
-                        <input 
-                          type="url" 
-                          placeholder="https://www.youtube.com/watch?v=..." 
-                          value={videoUrl} 
-                          onChange={(e) => setVideoUrl(e.target.value)}
-                          className="w-full px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
-                        />
+                      {/* Compatibilidade TV - só para racks e painéis */}
+                      {selectedProduct.category_slug && ['racks', 'paineis'].includes(selectedProduct.category_slug) && (
+                        <div className="border-t border-[#E8DFD5] pt-6">
+                          <h4 className="text-sm font-medium text-[#2D2D2D] mb-3">📺 Compatibilidade TV</h4>
+                          <div className="flex items-center gap-2">
+                            <input 
+                              type="number" 
+                              placeholder="Ex: 55"
+                              min="0"
+                              max="100"
+                              value={tvMaxSize} 
+                              onChange={(e) => setTvMaxSize(e.target.value)}
+                              className="w-24 px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
+                            />
+                            <span className="text-sm text-[#8B7355]">polegadas</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Peso Suportado */}
+                      <div className="border-t border-[#E8DFD5] pt-6">
+                        <h4 className="text-sm font-medium text-[#2D2D2D] mb-3">⚖️ Peso Suportado</h4>
+                        <div className="flex items-center gap-2">
+                          <input 
+                            type="number" 
+                            placeholder="Ex: 35"
+                            min="0"
+                            max="500"
+                            value={weightCapacity} 
+                            onChange={(e) => setWeightCapacity(e.target.value)}
+                            className="w-24 px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
+                          />
+                          <span className="text-sm text-[#8B7355]">kg</span>
+                        </div>
                       </div>
-                      
-                      <div>
-                        <label className="block text-sm text-[#8B7355] mb-1">Manual PDF (URL)</label>
-                        <input 
-                          type="url" 
-                          placeholder="https://..." 
-                          value={manualUrl} 
-                          onChange={(e) => setManualUrl(e.target.value)}
-                          className="w-full px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
-                        />
+
+                      {/* Quantidades */}
+                      <div className="border-t border-[#E8DFD5] pt-6">
+                        <h4 className="text-sm font-medium text-[#2D2D2D] mb-3">🗄️ Estrutura do Móvel</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm text-[#8B7355] mb-1">Portas</label>
+                            <input 
+                              type="number" 
+                              placeholder="0"
+                              min="0"
+                              value={numDoors} 
+                              onChange={(e) => setNumDoors(e.target.value)}
+                              className="w-full px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm text-[#8B7355] mb-1">Gavetas</label>
+                            <input 
+                              type="number" 
+                              placeholder="0"
+                              min="0"
+                              value={numDrawers} 
+                              onChange={(e) => setNumDrawers(e.target.value)}
+                              className="w-full px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm text-[#8B7355] mb-1">Prateleiras</label>
+                            <input 
+                              type="number" 
+                              placeholder="0"
+                              min="0"
+                              value={numShelves} 
+                              onChange={(e) => setNumShelves(e.target.value)}
+                              className="w-full px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm text-[#8B7355] mb-1">Nichos</label>
+                            <input 
+                              type="number" 
+                              placeholder="0"
+                              min="0"
+                              value={numNiches} 
+                              onChange={(e) => setNumNiches(e.target.value)}
+                              className="w-full px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
+                            />
+                          </div>
+                        </div>
                       </div>
-                      
-                      <button 
-                        onClick={saveUrls}
-                        disabled={saving}
-                        className="w-full px-4 py-2 bg-[#6B8E7A] text-white rounded-lg hover:bg-[#5A7A68] disabled:opacity-50"
-                      >
-                        {saving ? 'Salvando...' : 'Salvar'}
-                      </button>
+
+                      {/* Tipo de Porta e Pés */}
+                      <div className="border-t border-[#E8DFD5] pt-6">
+                        <h4 className="text-sm font-medium text-[#2D2D2D] mb-3">🚪 Detalhes</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm text-[#8B7355] mb-1">Tipo de Porta</label>
+                            <select 
+                              value={doorType} 
+                              onChange={(e) => setDoorType(e.target.value)}
+                              className="w-full px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm bg-white"
+                            >
+                              <option value="">Nenhuma / N/A</option>
+                              <option value="abrir">De abrir</option>
+                              <option value="deslizante">Deslizante</option>
+                              <option value="basculante">Basculante</option>
+                              <option value="metal">Metal</option>
+                              <option value="vidro">Vidro</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm text-[#8B7355] mb-1">Tipo de Pés</label>
+                            <select 
+                              value={feetType} 
+                              onChange={(e) => setFeetType(e.target.value)}
+                              className="w-full px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm bg-white"
+                            >
+                              <option value="">Nenhum / N/A</option>
+                              <option value="metalico">Metálico</option>
+                              <option value="madeira">Madeira</option>
+                              <option value="plastico">Plástico</option>
+                              <option value="rodizio">Rodízio</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Checkboxes */}
+                      <div className="border-t border-[#E8DFD5] pt-6">
+                        <h4 className="text-sm font-medium text-[#2D2D2D] mb-3">✨ Recursos Especiais</h4>
+                        <div className="space-y-3">
+                          <label className="flex items-center gap-3 cursor-pointer">
+                            <input 
+                              type="checkbox" 
+                              checked={hasWheels}
+                              onChange={(e) => setHasWheels(e.target.checked)}
+                              className="w-5 h-5 rounded border-[#E8DFD5] text-[#6B8E7A] focus:ring-[#6B8E7A]"
+                            />
+                            <span className="text-sm text-[#2D2D2D]">🛞 Com Rodinhas</span>
+                          </label>
+                          <label className="flex items-center gap-3 cursor-pointer">
+                            <input 
+                              type="checkbox" 
+                              checked={hasMirror}
+                              onChange={(e) => setHasMirror(e.target.checked)}
+                              className="w-5 h-5 rounded border-[#E8DFD5] text-[#6B8E7A] focus:ring-[#6B8E7A]"
+                            />
+                            <span className="text-sm text-[#2D2D2D]">🪞 Com Espelho</span>
+                          </label>
+                          <label className="flex items-center gap-3 cursor-pointer">
+                            <input 
+                              type="checkbox" 
+                              checked={hasLighting}
+                              onChange={(e) => setHasLighting(e.target.checked)}
+                              className="w-5 h-5 rounded border-[#E8DFD5] text-[#6B8E7A] focus:ring-[#6B8E7A]"
+                            />
+                            <span className="text-sm text-[#2D2D2D]">💡 Com LED / Iluminação</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* Botão Salvar */}
+                      <div className="border-t border-[#E8DFD5] pt-6">
+                        <button 
+                          onClick={saveProduct}
+                          disabled={saving}
+                          className="w-full px-4 py-3 bg-[#6B8E7A] text-white rounded-lg hover:bg-[#5A7A68] disabled:opacity-50 font-medium"
+                        >
+                          {saving ? 'Salvando...' : '💾 Salvar Características'}
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  )}
+                </>
               ) : (
                 <div className="text-center py-12 text-[#8B7355]">
                   <p>Clique em um produto para gerenciar</p>
