@@ -295,14 +295,24 @@ export async function GET(request: Request) {
     // APLICAR FILTROS
     // =========================================
     
-    // Texto (nome do produto) - inclui busca por cor no nome
+    // Texto (nome do produto)
     if (filters.textQuery) {
-      dbQuery = dbQuery.ilike('name', `%${filters.textQuery}%`)
+      const searchTerm = filters.textQuery.trim()
+      
+      // Para termos curtos (< 4 chars), buscar apenas no INÍCIO do nome
+      // Para evitar "rac" encontrar "Terracota"
+      // Para termos maiores, buscar em qualquer posição
+      if (searchTerm.length < 4) {
+        // Busca no início do nome apenas
+        dbQuery = dbQuery.ilike('name', `${searchTerm}%`)
+      } else {
+        // Busca em qualquer lugar
+        dbQuery = dbQuery.ilike('name', `%${searchTerm}%`)
+      }
     }
     
     // Cor (busca no nome do produto) - V1 via texto
-    if (filters.color && !filters.textQuery.toLowerCase().includes(filters.color.toLowerCase())) {
-      // Se cor não está já na textQuery, adiciona como filtro
+    if (filters.color && !filters.textQuery?.toLowerCase().includes(filters.color.toLowerCase())) {
       dbQuery = dbQuery.ilike('name', `%${filters.color}%`)
     }
     
