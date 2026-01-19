@@ -4,7 +4,10 @@
  * Moveirama SEO Utilities
  * Funções para gerar H1, meta description, schema.org e FAQ
  * 
- * Versão: 2.2 — Supremacia SEO Local (+ funções de categoria)
+ * Versão: 2.3 — Taxonomia v2 (novos slugs de categoria)
+ * Changelog:
+ *   - v2.3: Atualizado mapeamentos para nova estrutura de URLs
+ *           (racks-tv, paineis-tv, escrivaninha-home-office, etc.)
  */
 
 // ============================================
@@ -483,15 +486,26 @@ export function generateGMCTitle(product: ProductForH1): string {
 /**
  * Infere o tipo de categoria pelo slug ou nome do produto
  * Use isso se não tiver o campo category_type no banco
+ * 
+ * v2.3: Atualizado para reconhecer novos slugs (racks-tv, paineis-tv, etc.)
  */
 export function inferCategoryType(slug: string, categorySlug?: string): ProductForH1['category_type'] {
   const slugLower = slug.toLowerCase()
   const catLower = (categorySlug || '').toLowerCase()
   
+  // Racks (novo slug: racks-tv)
   if (slugLower.includes('rack') || catLower.includes('rack')) return 'rack'
+  
+  // Painéis (novo slug: paineis-tv)
   if (slugLower.includes('painel') || catLower.includes('painel')) return 'painel'
+  
+  // Escrivaninhas (novos slugs: escrivaninha-home-office, escrivaninha-l-home-office)
   if (slugLower.includes('escrivaninha') || catLower.includes('escrivaninha')) return 'escrivaninha'
+  
+  // Penteadeiras
   if (slugLower.includes('penteadeira') || catLower.includes('penteadeira')) return 'penteadeira'
+  
+  // Mesas (mesa-reta, mesa-em-l, mesa-reuniao, mesa-balcao-home-office, mesas-centro, mesas-apoio)
   if (slugLower.includes('mesa') || catLower.includes('mesa')) return 'mesa'
   
   return null
@@ -544,36 +558,60 @@ export function generateProductFAQs(product: {
 }
 
 // ============================================
-// SEO PARA CATEGORIAS (LISTAGEM) — v2.2
-// Foco em Supremacia Local (Curitiba/RMC)
+// SEO PARA CATEGORIAS (LISTAGEM) — v2.3
+// Atualizado para nova taxonomia de URLs
 // ============================================
 
 /**
  * Mapeamento de slugs de categoria para nomes SEO-friendly
- * Algumas categorias precisam de ajuste no nome para melhor SEO
+ * 
+ * v2.3: Atualizado com novos slugs da migração
  */
 const CATEGORY_SEO_NAMES: Record<string, string> = {
-  // Casa
-  'racks': 'Racks para TV',
-  'paineis': 'Painéis para TV',
-  'mesas-de-centro': 'Mesas de Centro',
+  // ========================================
+  // MÓVEIS PARA CASA
+  // ========================================
+  'racks-tv': 'Racks para TV',
+  'paineis-tv': 'Painéis para TV',
+  'mesas-centro': 'Mesas de Centro',
+  'mesas-apoio': 'Mesas de Apoio',
+  'buffets': 'Buffets',
   'estantes': 'Estantes',
-  'sapateiras': 'Sapateiras',
-  'criados-mudos': 'Criados-Mudos',
-  'comodas': 'Cômodas',
+  'aparadores': 'Aparadores',
+  'cantinhos': 'Cantinhos',
+  'bares': 'Bares',
+  'carrinhos': 'Carrinhos',
+  'cristaleiras': 'Cristaleiras',
+  'espelhos': 'Espelhos',
+  'prateleiras': 'Prateleiras',
   'penteadeiras': 'Penteadeiras',
-  'guarda-roupas': 'Guarda-Roupas',
   
-  // Escritório / Home Office
-  'escrivaninhas': 'Escrivaninhas',
-  'mesas-para-computador': 'Mesas para Computador',
-  'estantes-para-escritorio': 'Estantes para Escritório',
-  'gaveteiros': 'Gaveteiros',
-  'armarios-para-escritorio': 'Armários para Escritório',
+  // ========================================
+  // MÓVEIS PARA ESCRITÓRIO — Home Office
+  // ========================================
+  'escrivaninha-home-office': 'Escrivaninhas para Home Office',
+  'escrivaninha-l-home-office': 'Escrivaninhas em L para Home Office',
+  'estante-home-office': 'Estantes para Home Office',
+  'gaveteiro-home-office': 'Gaveteiros para Home Office',
+  'mesa-balcao-home-office': 'Mesas e Balcões para Home Office',
   
-  // Linhas
-  'home-office': 'Móveis para Home Office',
-  'linha-profissional': 'Móveis para Escritório Profissional',
+  // ========================================
+  // MÓVEIS PARA ESCRITÓRIO — Linha Profissional
+  // ========================================
+  'mesa-reta': 'Mesas Retas para Escritório',
+  'mesa-em-l': 'Mesas em L para Escritório',
+  'mesa-reuniao': 'Mesas de Reunião',
+  'balcao-profissional': 'Balcões Profissionais',
+  'balcao-atendimento': 'Balcões de Atendimento',
+  'armario-profissional': 'Armários para Escritório',
+  'prateleira-profissional': 'Prateleiras para Escritório',
+  'estante-profissional': 'Estantes Profissionais',
+  
+  // ========================================
+  // CATEGORIAS PAI (para breadcrumb/navegação)
+  // ========================================
+  'moveis-para-casa': 'Móveis para Casa',
+  'moveis-para-escritorio': 'Móveis para Escritório',
 }
 
 /**
@@ -581,7 +619,7 @@ const CATEGORY_SEO_NAMES: Record<string, string> = {
  * Foco em SEO Local para dominar buscas em Curitiba/RMC
  * 
  * @example
- * generateCategoryH1('Painéis', 'paineis')
+ * generateCategoryH1('Painéis para TV', 'paineis-tv')
  * // → "Painéis para TV em Curitiba e Região Metropolitana"
  */
 export function generateCategoryH1(
@@ -621,9 +659,11 @@ export function generateCategoryMetaDescription(
   const seoNameLower = seoName.toLowerCase()
   
   // Variações baseadas no tipo de categoria
-  const isRackOrPainel = ['racks', 'paineis'].includes(categorySlug)
-  const isEscrivaninha = ['escrivaninhas', 'mesas-para-computador'].includes(categorySlug)
-  const isHomeOffice = categorySlug === 'home-office'
+  const isRackOrPainel = ['racks-tv', 'paineis-tv'].includes(categorySlug)
+  const isEscrivaninha = categorySlug.includes('escrivaninha')
+  const isHomeOffice = categorySlug.includes('home-office')
+  const isProfissional = categorySlug.includes('profissional') || 
+                         ['mesa-reta', 'mesa-em-l', 'mesa-reuniao', 'balcao-atendimento'].includes(categorySlug)
   
   if (isRackOrPainel) {
     return `Confira ${seoNameLower} em Curitiba e Região Metropolitana. Modelos para TV de 32" a 75", compactos e modernos. Entrega própria em até 2 dias úteis. Compre móveis na caixa sem dor de cabeça.`
@@ -631,6 +671,10 @@ export function generateCategoryMetaDescription(
   
   if (isEscrivaninha || isHomeOffice) {
     return `${seoName} em Curitiba e RMC com entrega rápida. Modelos compactos ideais para apartamentos pequenos. Frota própria, entrega em até 2 dias úteis. Monte seu home office sem stress.`
+  }
+  
+  if (isProfissional) {
+    return `${seoName} em Curitiba e Região Metropolitana. Móveis robustos para escritórios e empresas. Entrega própria em até 2 dias úteis. Qualidade profissional com preço justo.`
   }
   
   // Descrição genérica para outras categorias
@@ -641,6 +685,8 @@ export function generateCategoryMetaDescription(
 /**
  * Gera FAQs para páginas de categoria (foco em logística e confiança)
  * Diferente das FAQs de produto que são técnicas
+ * 
+ * v2.3: Atualizado para novos slugs
  */
 export function generateCategoryFAQs(
   categoryName: string,
@@ -673,12 +719,36 @@ export function generateCategoryFAQs(
   ]
   
   // Adiciona FAQ específica para racks/painéis
-  if (['racks', 'paineis'].includes(categorySlug)) {
+  if (['racks-tv', 'paineis-tv'].includes(categorySlug)) {
     faqs.splice(2, 0, {
       question: `Os ${seoNameLower} acompanham suporte de TV?`,
       answer: `A maioria dos modelos não inclui o suporte de TV. Cada página de produto informa se o suporte está incluso. Painéis geralmente precisam de suporte articulado (vendido separadamente).`
     })
   }
   
+  // Adiciona FAQ específica para escrivaninhas
+  if (categorySlug.includes('escrivaninha')) {
+    faqs.splice(2, 0, {
+      question: `As ${seoNameLower} cabem em apartamentos pequenos?`,
+      answer: `Sim! Temos modelos compactos ideais para apartamentos. Cada página mostra as medidas exatas. Dica: meça seu espaço antes de comprar e, se tiver dúvida, chama no WhatsApp.`
+    })
+  }
+  
+  // Adiciona FAQ específica para linha profissional
+  if (categorySlug.includes('profissional') || ['mesa-reta', 'mesa-em-l', 'mesa-reuniao', 'balcao-atendimento'].includes(categorySlug)) {
+    faqs.splice(2, 0, {
+      question: `Vocês vendem para empresas e escritórios?`,
+      answer: `Sim! Atendemos tanto pessoas físicas quanto empresas. Para pedidos maiores ou orçamentos personalizados, entre em contato pelo WhatsApp.`
+    })
+  }
+  
   return faqs
+}
+
+/**
+ * Retorna o nome SEO-friendly de uma categoria pelo slug
+ * Útil para breadcrumbs e navegação
+ */
+export function getCategorySeoName(categorySlug: string): string {
+  return CATEGORY_SEO_NAMES[categorySlug] || categorySlug
 }
