@@ -466,7 +466,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="O que você procura?"
-                  className="w-full pl-12 pr-16 py-3 text-base border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] focus:border-transparent bg-[#FAF7F4]"
+                  className="w-full pl-12 pr-4 md:pr-16 py-3 text-base border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] focus:border-transparent bg-[#FAF7F4]"
                   autoComplete="off"
                   aria-describedby="search-hint"
                 />
