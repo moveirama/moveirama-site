@@ -5,6 +5,15 @@ import Breadcrumb from '@/components/Breadcrumb'
 import MedidasCompactas from '@/components/MedidasCompactas'
 import ShippingCalculator from '@/components/ShippingCalculator'
 
+// SEO V2: Imports das funções de SEO
+import { 
+  generateProductH1, 
+  generateProductFAQs, 
+  generateProductSchema,
+  generateFAQSchema,
+  inferCategoryType 
+} from '@/lib/seo'
+
 // Types
 interface BreadcrumbItem {
   label: string
@@ -51,81 +60,48 @@ export default function ProductPageContent({
   // URL canônica (nova estrutura)
   const canonicalUrl = `https://moveirama.com.br/${subcategorySlug}/${product.slug}`
 
-  // Schema.org Product
-  const productSchema = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "name": product.name,
-    "description": product.short_description,
-    "image": product.images?.map((img: { image_url: string }) => img.image_url) || [],
-    "sku": product.sku,
-    "brand": {
-      "@type": "Brand",
-      "name": product.brand || "Moveirama"
-    },
-    "offers": {
-      "@type": "Offer",
-      "url": canonicalUrl,
-      "priceCurrency": "BRL",
-      "price": product.price,
-      "priceValidUntil": new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
-      "availability": product.stock_quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-      "itemCondition": "https://schema.org/NewCondition",
-      "seller": {
-        "@type": "Organization",
-        "name": "Moveirama"
-      },
-      "shippingDetails": {
-        "@type": "OfferShippingDetails",
-        "shippingRate": {
-          "@type": "MonetaryAmount",
-          "value": "29.90",
-          "currency": "BRL"
-        },
-        "shippingDestination": {
-          "@type": "DefinedRegion",
-          "addressCountry": "BR",
-          "addressRegion": "PR",
-          "addressLocality": ["Curitiba", "Colombo", "São José dos Pinhais", "Araucária", "Pinhais", "Fazenda Rio Grande"]
-        },
-        "deliveryTime": {
-          "@type": "ShippingDeliveryTime",
-          "handlingTime": {
-            "@type": "QuantitativeValue",
-            "minValue": 0,
-            "maxValue": 1,
-            "unitCode": "DAY"
-          },
-          "transitTime": {
-            "@type": "QuantitativeValue",
-            "minValue": 1,
-            "maxValue": 2,
-            "unitCode": "DAY"
-          }
-        }
-      }
-    },
-    "additionalProperty": [
-      { "@type": "PropertyValue", "name": "Material", "value": product.main_material },
-      { "@type": "PropertyValue", "name": "Largura", "value": `${product.width_cm} cm` },
-      { "@type": "PropertyValue", "name": "Altura", "value": `${product.height_cm} cm` },
-      { "@type": "PropertyValue", "name": "Profundidade", "value": `${product.depth_cm} cm` }
-    ]
-  }
+  // ============================================
+  // SEO V2: H1 otimizado e FAQs dinâmicas
+  // ============================================
+  const categoryType = inferCategoryType(product.slug, subcategorySlug)
 
-  // Schema.org FAQPage
-  const faqSchema = product.faqs && product.faqs.length > 0 ? {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": product.faqs.map((faq: { question: string; answer: string }) => ({
-      "@type": "Question",
-      "name": faq.question,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": faq.answer
-      }
-    }))
-  } : null
+  const h1Title = generateProductH1({
+    name: product.name,
+    tv_max_size: product.tv_max_size,
+    category_type: categoryType,
+    variant_name: defaultVariant?.name
+  })
+
+  // FAQs: usa do banco se existir, senão gera automaticamente
+  const faqs = product.faqs?.length > 0 
+    ? product.faqs 
+    : generateProductFAQs(product, subcategorySlug)
+
+  // ============================================
+  // SEO V2: Schema.org Product (com shippingDetails)
+  // ============================================
+  const productSchema = generateProductSchema({
+    name: product.name,
+    price: product.price,
+    tv_max_size: product.tv_max_size,
+    assembly_time_minutes: product.assembly_time_minutes,
+    category_type: categoryType,
+    sku: product.sku,
+    slug: product.slug,
+    brand: product.brand,
+    main_material: product.main_material,
+    width: product.width_cm,
+    height: product.height_cm,
+    depth: product.depth_cm,
+    stock_quantity: product.stock_quantity || 10,
+    images: product.images?.map((img: { image_url: string }) => ({ url: img.image_url })),
+    variants: product.variants
+  }, canonicalUrl)
+
+  // ============================================
+  // SEO V2: Schema.org FAQPage (dinâmico)
+  // ============================================
+  const faqSchema = faqs.length > 0 ? generateFAQSchema(faqs) : null
 
   // Schema.org BreadcrumbList
   const breadcrumbSchema = {
@@ -176,9 +152,9 @@ export default function ProductPageContent({
 
           {/* Coluna Direita: Informações */}
           <div className="min-w-0">
-            {/* Título */}
+            {/* Título - SEO V2: H1 otimizado */}
             <h1 className="text-2xl md:text-3xl font-semibold text-[var(--color-graphite)] mb-2">
-              {product.name}
+              {h1Title}
             </h1>
             
             {/* Resumo IA-friendly (SEO/AIO) */}
@@ -496,15 +472,15 @@ export default function ProductPageContent({
           </div>
         </section>
 
-        {/* Seção: FAQ */}
-        {product.faqs && product.faqs.length > 0 && (
+        {/* Seção: FAQ - SEO V2: Usa FAQs dinâmicas */}
+        {faqs && faqs.length > 0 && (
           <section className="mt-8">
             <h2 className="text-2xl font-semibold text-[var(--color-graphite)] mb-4">
               Perguntas frequentes sobre o {product.name}
             </h2>
             <div className="bg-white rounded-lg border border-[var(--color-sand-light)] divide-y divide-[var(--color-sand-light)]">
-              {product.faqs.map((faq: { id: string; question: string; answer: string }) => (
-                <details key={faq.id} className="group">
+              {faqs.map((faq: { id?: string; question: string; answer: string }, index: number) => (
+                <details key={faq.id || index} className="group">
                   <summary className="flex justify-between items-center cursor-pointer p-4 hover:bg-[var(--color-cream)]/50 transition-colors">
                     <span className="font-medium text-[var(--color-graphite)]">{faq.question}</span>
                     <svg className="w-5 h-5 text-[var(--color-toffee)] group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
