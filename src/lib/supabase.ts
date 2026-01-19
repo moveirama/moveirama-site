@@ -1,3 +1,14 @@
+// src/lib/supabase.ts
+
+/**
+ * Moveirama — Cliente Supabase e funções de acesso ao banco
+ * 
+ * v2.3: Simplificado para estrutura de 2 níveis (sem linhas intermediárias)
+ * Changelog:
+ *   - Removida função getSubcategoryOfAnyParent() (não usada)
+ *   - Simplificada getSubcategories() (sem lógica de sub-subcategorias)
+ */
+
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -5,7 +16,10 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-// Types para categorias (estrutura 2-3 níveis)
+// ========================================
+// TYPES
+// ========================================
+
 export type Category = {
   id: string
   slug: string
@@ -19,25 +33,6 @@ export type Category = {
 
 export type CategoryWithCount = Category & {
   product_count: number
-}
-
-// Types legados (mantidos para compatibilidade)
-export type Environment = {
-  id: string
-  slug: string
-  name: string
-  description: string | null
-  icon: string | null
-  display_order: number
-  is_active: boolean
-}
-
-export type Supplier = {
-  id: string
-  slug: string
-  name: string
-  website: string | null
-  is_active: boolean
 }
 
 export type Product = {
@@ -101,7 +96,6 @@ export type ProductWithDetails = Product & {
   images: ProductImage[]
 }
 
-// Types para listagem de produtos
 export type ProductForListing = {
   id: string
   slug: string
@@ -111,14 +105,13 @@ export type ProductForListing = {
   image_url: string | null
   avg_rating: number
   review_count: number
-  tv_max_size: number | null  // ✅ ADICIONADO para SEO nos cards
+  tv_max_size: number | null
 }
 
-// Tipos de ordenação
 export type SortOption = 'relevance' | 'price-asc' | 'price-desc' | 'newest' | 'bestseller'
 
 // ========================================
-// FUNÇÕES HELPER PARA CATEGORIAS
+// FUNÇÕES DE CATEGORIA
 // ========================================
 
 /**
@@ -139,7 +132,6 @@ export async function getParentCategory(slug: string): Promise<Category | null> 
 
 /**
  * Busca qualquer categoria pelo slug (qualquer nível da hierarquia)
- * Diferente de getParentCategory que só busca categorias raiz
  */
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {
   const { data, error } = await supabase
@@ -155,15 +147,15 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
 
 /**
  * Busca subcategorias de uma categoria pai com contagem de produtos
- * ATUALIZADA: soma produtos de sub-subcategorias (para linhas como home-office)
- * ATUALIZADA: busca imagem de produto como fallback quando categoria não tem imagem
+ * 
+ * v2.3: Simplificado para estrutura de 2 níveis (sem sub-subcategorias)
  */
 export async function getSubcategories(parentSlug: string): Promise<CategoryWithCount[]> {
-  // Busca o pai (qualquer nível, não só raiz)
+  // Busca o pai
   const parent = await getCategoryBySlug(parentSlug)
   if (!parent) return []
 
-  // Busca subcategorias
+  // Busca subcategorias diretas
   const { data: categories, error } = await supabase
     .from('categories')
     .select('*')
@@ -173,54 +165,28 @@ export async function getSubcategories(parentSlug: string): Promise<CategoryWith
 
   if (error || !categories) return []
 
-  // Busca contagem de produtos para cada subcategoria
+  // Busca contagem de produtos e imagem para cada subcategoria
   const categoriesWithCount = await Promise.all(
     categories.map(async (cat) => {
-      // Primeiro, conta produtos diretos desta categoria
-      const { count: directCount } = await supabase
+      // Conta produtos desta categoria
+      const { count } = await supabase
         .from('products')
         .select('*', { count: 'exact', head: true })
         .eq('category_id', cat.id)
         .eq('is_active', true)
 
-      let totalCount = directCount || 0
-      let categoryIds = [cat.id]
-
-      // Se não tem produtos diretos, pode ser uma "linha" (categoria intermediária)
-      // Nesse caso, soma produtos de todas as subcategorias
-      if (totalCount === 0) {
-        // Busca subcategorias desta categoria
-        const { data: subCategories } = await supabase
-          .from('categories')
-          .select('id')
-          .eq('parent_id', cat.id)
-          .eq('is_active', true)
-
-        if (subCategories && subCategories.length > 0) {
-          // Soma produtos de todas as subcategorias
-          const subCategoryIds = subCategories.map(sc => sc.id)
-          categoryIds = [...categoryIds, ...subCategoryIds]
-          
-          const { count: subCount } = await supabase
-            .from('products')
-            .select('*', { count: 'exact', head: true })
-            .in('category_id', subCategoryIds)
-            .eq('is_active', true)
-          
-          totalCount = subCount || 0
-        }
-      }
+      const totalCount = count || 0
 
       // Busca imagem de um produto da categoria (fallback quando não tem image_url)
       let categoryImage: string | null = null
-      if (totalCount > 0) {
+      if (totalCount > 0 && !cat.image_url) {
         const { data: productWithImage } = await supabase
           .from('products')
           .select(`
             id,
             product_images(cloudinary_path, image_type)
           `)
-          .in('category_id', categoryIds)
+          .eq('category_id', cat.id)
           .eq('is_active', true)
           .limit(1)
           .single()
@@ -244,11 +210,10 @@ export async function getSubcategories(parentSlug: string): Promise<CategoryWith
 }
 
 /**
- * Busca subcategoria pelo slug do pai (APENAS RAIZ) e da subcategoria
- * Mantida para compatibilidade com código existente
+ * Busca subcategoria pelo slug do pai e da subcategoria
  */
 export async function getSubcategory(parentSlug: string, subcategorySlug: string): Promise<Category | null> {
-  // Primeiro busca o ID do pai (apenas categorias raiz)
+  // Busca o pai
   const parent = await getParentCategory(parentSlug)
   if (!parent) return null
 
@@ -265,26 +230,14 @@ export async function getSubcategory(parentSlug: string, subcategorySlug: string
 }
 
 /**
- * Busca subcategoria como filha de qualquer categoria (não só raiz)
- * 
- * Exemplo: getSubcategoryOfAnyParent('home-office', 'escrivaninhas')
- * - Encontra 'home-office' (que é filha de 'escritorio')  
- * - Busca 'escrivaninhas' como filha de 'home-office'
+ * Busca subcategoria pelo slug (sem precisar do pai)
  */
-export async function getSubcategoryOfAnyParent(
-  parentSlug: string, 
-  subcategorySlug: string
-): Promise<Category | null> {
-  // Busca o pai pelo slug (qualquer nível)
-  const parent = await getCategoryBySlug(parentSlug)
-  if (!parent) return null
-
-  // Busca a subcategoria como filha desse pai
+export async function getSubcategoryBySlug(slug: string): Promise<Category | null> {
   const { data, error } = await supabase
     .from('categories')
     .select('*')
-    .eq('slug', subcategorySlug)
-    .eq('parent_id', parent.id)
+    .eq('slug', slug)
+    .not('parent_id', 'is', null)
     .eq('is_active', true)
     .single()
   
@@ -293,7 +246,28 @@ export async function getSubcategoryOfAnyParent(
 }
 
 /**
- * Busca produtos de uma subcategoria com paginação e ordenação
+ * Busca categoria pai de uma subcategoria
+ */
+export async function getParentOfSubcategory(subcategorySlug: string): Promise<Category | null> {
+  const subcategory = await getSubcategoryBySlug(subcategorySlug)
+  if (!subcategory || !subcategory.parent_id) return null
+
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('id', subcategory.parent_id)
+    .single()
+  
+  if (error) return null
+  return data
+}
+
+// ========================================
+// FUNÇÕES DE PRODUTO
+// ========================================
+
+/**
+ * Busca produtos de uma categoria com paginação e ordenação
  */
 export async function getProductsByCategory(
   categoryId: string,
@@ -337,7 +311,6 @@ export async function getProductsByCategory(
     .eq('is_active', true)
 
   // Busca produtos com paginação
-  // ✅ ADICIONADO tv_max_size no SELECT para SEO nos cards
   const { data, error } = await supabase
     .from('products')
     .select(`
@@ -373,27 +346,11 @@ export async function getProductsByCategory(
       image_url: principalImage?.cloudinary_path || firstImage?.cloudinary_path || null,
       avg_rating: 0,
       review_count: 0,
-      tv_max_size: p.tv_max_size  // ✅ ADICIONADO
+      tv_max_size: p.tv_max_size
     }
   })
 
   return { products, total: count || 0 }
-}
-
-/**
- * Busca subcategoria pelo slug (sem precisar do pai)
- */
-export async function getSubcategoryBySlug(slug: string): Promise<Category | null> {
-  const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('slug', slug)
-    .not('parent_id', 'is', null)
-    .eq('is_active', true)
-    .single()
-  
-  if (error) return null
-  return data
 }
 
 /**
@@ -422,6 +379,7 @@ export async function getProductBySubcategoryAndSlug(
 
   if (error || !product) return null
   
+  // Filtra e ordena FAQs
   if (product.faqs) {
     product.faqs = product.faqs
       .filter((faq: { is_active?: boolean }) => faq.is_active !== false)
@@ -431,22 +389,9 @@ export async function getProductBySubcategoryAndSlug(
   return product
 }
 
-/**
- * Busca categoria pai de uma subcategoria
- */
-export async function getParentOfSubcategory(subcategorySlug: string): Promise<Category | null> {
-  const subcategory = await getSubcategoryBySlug(subcategorySlug)
-  if (!subcategory || !subcategory.parent_id) return null
-
-  const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('id', subcategory.parent_id)
-    .single()
-  
-  if (error) return null
-  return data
-}
+// ========================================
+// FUNÇÕES AUXILIARES
+// ========================================
 
 /**
  * Verifica se uma rota é uma categoria válida
