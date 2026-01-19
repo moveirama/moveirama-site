@@ -2,10 +2,9 @@
 
 /**
  * Moveirama SEO Utilities
- * Funções para gerar H1, meta description e schema.org otimizados
+ * Funções para gerar H1, meta description, schema.org e FAQ
  * 
- * Baseado na curadoria técnica da PDP
- * Versão: 1.0
+ * Versão: 2.1 — Supremacia SEO & FAQ (fix H1)
  */
 
 // ============================================
@@ -45,15 +44,21 @@ interface ProductForSchema {
   variants?: Array<{ name: string }> | null
 }
 
+// FAQ Types
+export interface FAQItem {
+  question: string
+  answer: string
+}
+
 // ============================================
-// H1 OTIMIZADO
+// H1 OTIMIZADO (v2.1 - fix ordem tvPart/colorPart)
 // ============================================
 
 /**
  * Gera H1 otimizado para SEO
  * 
  * Para racks/painéis: inclui compatibilidade TV no título
- * Exemplo: "Rack Theo para TV até 60 polegadas - Cinamomo/Off White"
+ * Exemplo: "Rack Charlotte para TV até 75 polegadas - Carvalho C / Off White"
  * 
  * Para outros produtos: nome + variante
  * Exemplo: "Escrivaninha Home - Carvalho"
@@ -92,16 +97,11 @@ export function generateProductH1(product: ProductForH1): string {
 /**
  * Gera meta description otimizada para CTR
  * 
- * Inclui:
- * - Nome + compatibilidade TV (se rack/painel)
- * - Preço à vista
- * - Parcelamento sem juros
- * - Tempo de montagem
- * - Entrega em Curitiba (diferencial local)
+ * V2: Inclui "Região Metropolitana" e "Sem Juros" (gatilhos de confiança local)
  * 
  * Exemplo:
  * "Rack Theo para TV até 60". R$ 269,00 à vista ou 5x R$ 53,80 sem juros. 
- * Montagem em ~45min. Entrega em Curitiba e região em até 2 dias úteis."
+ * Montagem em ~45min. Entrega em Curitiba e Região Metropolitana em até 2 dias."
  */
 export function generateProductMetaDescription(product: ProductForMeta): string {
   const { name, price, tv_max_size, assembly_time_minutes, category_type } = product
@@ -126,7 +126,7 @@ export function generateProductMetaDescription(product: ProductForMeta): string 
     parts.push(`${name}.`)
   }
   
-  // Parte 2: Preço e parcelamento
+  // Parte 2: Preço e parcelamento (V2: "sem juros" explícito)
   parts.push(`R$ ${priceFormatted} à vista ou ${parcelas}x R$ ${valorParcela} sem juros.`)
   
   // Parte 3: Montagem (se disponível)
@@ -134,8 +134,8 @@ export function generateProductMetaDescription(product: ProductForMeta): string 
     parts.push(`Montagem em ~${assembly_time_minutes}min.`)
   }
   
-  // Parte 4: Entrega local (sempre — é diferencial)
-  parts.push(`Entrega em Curitiba e região em até 2 dias úteis.`)
+  // Parte 4: Entrega local (V2: "Região Metropolitana" para SEO local)
+  parts.push(`Entrega em Curitiba e Região Metropolitana em até 2 dias.`)
   
   // Junta e limita a 160 caracteres (limite do Google)
   let description = parts.join(' ')
@@ -163,7 +163,7 @@ export function generateProductSchema(product: ProductForSchema, canonicalUrl: s
   const h1Title = generateProductH1({
     name: product.name,
     tv_max_size: product.tv_max_size,
-    category_type: product.category_type as any,
+    category_type: product.category_type as ProductForH1['category_type'],
     variant_name: product.variants?.[0]?.name
   })
 
@@ -180,7 +180,7 @@ export function generateProductSchema(product: ProductForSchema, canonicalUrl: s
   priceValidUntil.setFullYear(priceValidUntil.getFullYear() + 1)
 
   // Schema base
-  const schema: Record<string, any> = {
+  const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Product",
     "name": h1Title,
@@ -275,14 +275,201 @@ export function generateProductSchema(product: ProductForSchema, canonicalUrl: s
 }
 
 // ============================================
+// FAQ SCHEMA
+// ============================================
+
+/**
+ * Gera Schema.org FAQPage
+ * 
+ * Obrigatório para aparecer como rich snippet de FAQ no Google
+ * O Google exibirá as perguntas diretamente nos resultados de busca
+ * 
+ * @param faqs Array de perguntas e respostas
+ * @returns Schema FAQPage formatado para JSON-LD
+ */
+export function generateFAQSchema(faqs: FAQItem[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(faq => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  }
+}
+
+// ============================================
+// FAQ TEMPLATES POR CATEGORIA
+// ============================================
+
+/**
+ * Gera FAQs dinâmicas para racks/painéis
+ * Baseado no VOC (Voice of Customer) de Curitiba
+ */
+export function generateRackFAQs(product: {
+  name: string
+  tv_max_size?: number | null
+  width?: number | null
+  height?: number | null
+  depth?: number | null
+  assembly_time_minutes?: number | null
+  assembly_difficulty?: string | null
+  main_material?: string | null
+  weight_capacity?: number | null
+  requires_wall_mount?: boolean | null
+}): FAQItem[] {
+  const faqs: FAQItem[] = []
+  
+  // Extrai nome base (sem cor)
+  const baseName = product.name.includes(' - ') ? product.name.split(' - ')[0] : product.name
+  
+  // 1. Compatibilidade TV (dúvida #1 do público)
+  if (product.tv_max_size) {
+    faqs.push({
+      question: `O ${baseName} serve para TV de quantas polegadas?`,
+      answer: `Serve para TV de até ${product.tv_max_size} polegadas.${product.width ? ` Largura total de ${product.width}cm.` : ''} Antes de comprar, confira se a base da sua TV cabe no tampo.`
+    })
+  }
+  
+  // 2. Medidas (dúvida #2 — "vai caber?")
+  if (product.width && product.height && product.depth) {
+    faqs.push({
+      question: `Quais são as medidas do ${baseName}?`,
+      answer: `As dimensões são: ${product.width}cm de largura × ${product.height}cm de altura × ${product.depth}cm de profundidade. Meça o espaço antes de comprar — se precisar de ajuda, chama no WhatsApp.`
+    })
+  }
+  
+  // 3. Montagem (dúvida #3 — medo de não conseguir)
+  const difficultyText = product.assembly_difficulty === 'facil' ? 'Fácil' : 
+                         product.assembly_difficulty === 'medio' ? 'Médio' : 
+                         product.assembly_difficulty === 'dificil' ? 'Difícil' : 'Médio'
+  if (product.assembly_time_minutes) {
+    faqs.push({
+      question: `É difícil montar o ${baseName}?`,
+      answer: `Nível ${difficultyText} (~${product.assembly_time_minutes}min). Acompanha manual ilustrado e kit completo de ferragens. Se travar em algum passo, manda foto no WhatsApp que a gente ajuda.`
+    })
+  }
+  
+  // 4. Material (dúvida sobre qualidade)
+  if (product.main_material) {
+    faqs.push({
+      question: `Qual o material do ${baseName}?`,
+      answer: `${product.main_material} de alta durabilidade. Material resistente à umidade de Curitiba e fácil de limpar — só passar pano úmido.`
+    })
+  }
+  
+  // 5. Peso suportado
+  if (product.weight_capacity) {
+    faqs.push({
+      question: `Quanto peso o ${baseName} aguenta?`,
+      answer: `Suporta até ${product.weight_capacity}kg no tampo. Suficiente para a maioria das TVs LED/OLED do mercado.`
+    })
+  }
+  
+  // 6. Precisa furar parede?
+  faqs.push({
+    question: `Precisa furar a parede para instalar o ${baseName}?`,
+    answer: product.requires_wall_mount 
+      ? `Sim, recomendamos fixar na parede por segurança. Buchas e parafusos de fixação acompanham o produto.`
+      : `Não precisa furar. O rack fica apoiado no chão, sem necessidade de fixação na parede.`
+  })
+  
+  // 7. Entrega (diferencial local — SEMPRE incluir)
+  faqs.push({
+    question: `Qual o prazo de entrega para Curitiba?`,
+    answer: `Entrega própria em Curitiba e Região Metropolitana em até 2 dias úteis. Frota própria — a gente conhece as ruas da cidade e cuida do seu móvel.`
+  })
+  
+  // 8. Garantia e troca
+  faqs.push({
+    question: `E se chegar com defeito ou eu me arrepender?`,
+    answer: `Garantia do fabricante + 7 dias para arrependimento (direito do consumidor). Chegou com problema? Manda foto no WhatsApp com número do pedido que a gente resolve rápido.`
+  })
+  
+  return faqs
+}
+
+/**
+ * Gera FAQs dinâmicas para escrivaninhas
+ */
+export function generateEscrivaninhaFAQs(product: {
+  name: string
+  width?: number | null
+  height?: number | null
+  depth?: number | null
+  assembly_time_minutes?: number | null
+  assembly_difficulty?: string | null
+  main_material?: string | null
+  weight_capacity?: number | null
+}): FAQItem[] {
+  const faqs: FAQItem[] = []
+  
+  // Extrai nome base (sem cor)
+  const baseName = product.name.includes(' - ') ? product.name.split(' - ')[0] : product.name
+  
+  // 1. Medidas
+  if (product.width && product.height && product.depth) {
+    faqs.push({
+      question: `Quais são as medidas da ${baseName}?`,
+      answer: `${product.width}cm de largura × ${product.height}cm de altura × ${product.depth}cm de profundidade. Ideal para cantinhos de home office em apartamento.`
+    })
+  }
+  
+  // 2. Cabe notebook + monitor?
+  if (product.width) {
+    const cabeMonitor = product.width >= 90
+    faqs.push({
+      question: `Cabe notebook e monitor na ${baseName}?`,
+      answer: cabeMonitor 
+        ? `Sim! Com ${product.width}cm de largura, cabe notebook + monitor lado a lado tranquilamente.`
+        : `Para notebook, cabe bem. Se quiser adicionar monitor externo, pode precisar de um suporte articulado.`
+    })
+  }
+  
+  // 3. Montagem
+  const difficultyText = product.assembly_difficulty === 'facil' ? 'Fácil' : 
+                         product.assembly_difficulty === 'medio' ? 'Médio' : 'Médio'
+  if (product.assembly_time_minutes) {
+    faqs.push({
+      question: `É difícil montar a ${baseName}?`,
+      answer: `Nível ${difficultyText} (~${product.assembly_time_minutes}min). Vem com manual e ferragens. Dúvida na montagem? WhatsApp.`
+    })
+  }
+  
+  // 4. Material
+  if (product.main_material) {
+    faqs.push({
+      question: `Qual o material da ${baseName}?`,
+      answer: `${product.main_material}. Resistente e fácil de limpar.`
+    })
+  }
+  
+  // 5. Entrega
+  faqs.push({
+    question: `Qual o prazo de entrega para Curitiba?`,
+    answer: `Entrega própria em Curitiba e Região Metropolitana em até 2 dias úteis.`
+  })
+  
+  // 6. Garantia
+  faqs.push({
+    question: `E se chegar com defeito?`,
+    answer: `Garantia do fabricante + 7 dias para arrependimento. Problema? WhatsApp.`
+  })
+  
+  return faqs
+}
+
+// ============================================
 // GOOGLE MERCHANT CENTER
 // ============================================
 
 /**
  * Gera título para Google Merchant Center
  * Formato: [H1 otimizado] - Moveirama
- * 
- * Exemplo: "Rack Theo para TV até 60 polegadas - Cinamomo/Off White - Moveirama"
  */
 export function generateGMCTitle(product: ProductForH1): string {
   const h1 = generateProductH1(product)
@@ -308,4 +495,50 @@ export function inferCategoryType(slug: string, categorySlug?: string): ProductF
   if (slugLower.includes('mesa') || catLower.includes('mesa')) return 'mesa'
   
   return null
+}
+
+/**
+ * Gera FAQs automáticas baseado no tipo de produto
+ */
+export function generateProductFAQs(product: {
+  name: string
+  slug: string
+  tv_max_size?: number | null
+  width?: number | null
+  height?: number | null
+  depth?: number | null
+  assembly_time_minutes?: number | null
+  assembly_difficulty?: string | null
+  main_material?: string | null
+  weight_capacity?: number | null
+  requires_wall_mount?: boolean | null
+}, categorySlug?: string): FAQItem[] {
+  const categoryType = inferCategoryType(product.slug, categorySlug)
+  
+  // Extrai nome base (sem cor)
+  const baseName = product.name.includes(' - ') ? product.name.split(' - ')[0] : product.name
+  
+  if (categoryType === 'rack' || categoryType === 'painel') {
+    return generateRackFAQs(product)
+  }
+  
+  if (categoryType === 'escrivaninha') {
+    return generateEscrivaninhaFAQs(product)
+  }
+  
+  // Fallback: FAQs genéricas
+  return [
+    {
+      question: `Qual o prazo de entrega do ${baseName}?`,
+      answer: `Entrega própria em Curitiba e Região Metropolitana em até 2 dias úteis.`
+    },
+    {
+      question: `É difícil montar o ${baseName}?`,
+      answer: `Vem com manual e ferragens. Dúvida? WhatsApp.`
+    },
+    {
+      question: `E se chegar com defeito?`,
+      answer: `Garantia do fabricante + 7 dias para arrependimento.`
+    }
+  ]
 }
