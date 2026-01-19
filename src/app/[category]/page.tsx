@@ -1,22 +1,30 @@
+// src/app/[category]/page.tsx
+
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getParentCategory, getSubcategories } from '@/lib/supabase'
 import Breadcrumb from '@/components/Breadcrumb'
 import SubcategoryCard from '@/components/SubcategoryCard'
+import { 
+  generateCategoryTitle, 
+  generateCategoryMetaDescription,
+  getCategorySeoName 
+} from '@/lib/seo'
 
 interface PageProps {
   params: Promise<{ category: string }>
 }
 
 // Mapeamento de slugs para nomes amigáveis
+// v2.3: Atualizado para nova taxonomia (moveis-para-casa, moveis-para-escritorio)
 const CATEGORY_NAMES: Record<string, { name: string; description: string }> = {
-  casa: {
+  'moveis-para-casa': {
     name: 'Móveis para Casa',
-    description: 'Encontre o móvel perfeito pra sua sala e quarto'
+    description: 'Encontre o móvel perfeito pra sua sala e quarto. Racks, painéis, mesas e muito mais com entrega rápida em Curitiba.'
   },
-  escritorio: {
+  'moveis-para-escritorio': {
     name: 'Móveis para Escritório',
-    description: 'Monte seu home office com conforto e praticidade'
+    description: 'Monte seu home office ou escritório profissional com conforto e praticidade. Escrivaninhas, mesas e gaveteiros.'
   }
 }
 
@@ -28,14 +36,24 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: 'Categoria não encontrada | Moveirama' }
   }
 
-  const info = CATEGORY_NAMES[category] || { name: categoryData.name, description: '' }
+  const info = CATEGORY_NAMES[category] || { 
+    name: categoryData.name, 
+    description: '' 
+  }
+  
+  // Usa funções de SEO para consistência
+  const title = generateCategoryTitle(info.name, category)
+  const description = generateCategoryMetaDescription(info.name, category)
 
   return {
-    title: `${info.name} | Moveirama`,
-    description: info.description || `Confira nossa linha de ${info.name.toLowerCase()} com entrega rápida em Curitiba e região.`,
+    title,
+    description,
     openGraph: {
-      title: `${info.name} | Moveirama`,
-      description: info.description,
+      title,
+      description,
+      siteName: 'Moveirama',
+      locale: 'pt_BR',
+      type: 'website',
     }
   }
 }
@@ -51,7 +69,10 @@ export default async function CategoryPage({ params }: PageProps) {
   }
 
   const subcategories = await getSubcategories(category)
-  const info = CATEGORY_NAMES[category] || { name: categoryData.name, description: categoryData.description }
+  const info = CATEGORY_NAMES[category] || { 
+    name: categoryData.name, 
+    description: categoryData.description 
+  }
 
   // Breadcrumb
   const breadcrumbItems = [
@@ -106,9 +127,10 @@ export default async function CategoryPage({ params }: PageProps) {
 }
 
 // Gera páginas estáticas para categorias conhecidas
+// v2.3: Atualizado para nova taxonomia
 export async function generateStaticParams() {
   return [
-    { category: 'casa' },
-    { category: 'escritorio' }
+    { category: 'moveis-para-casa' },
+    { category: 'moveis-para-escritorio' }
   ]
 }
