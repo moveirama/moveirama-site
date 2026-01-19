@@ -458,6 +458,7 @@ async function LinhaListingPage({
                     avgRating={product.avg_rating}
                     reviewCount={product.review_count}
                     categorySlug={subcategoryData.slug}
+                    tvMaxSize={product.tv_max_size}
                   />
                 ))}
               </div>
@@ -596,6 +597,7 @@ async function DirectListingPage({
                     avgRating={product.avg_rating}
                     reviewCount={product.review_count}
                     categorySlug={subcategoryData.slug}
+                    tvMaxSize={product.tv_max_size}
                   />
                 ))}
               </div>
