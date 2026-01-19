@@ -434,7 +434,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
       {/* Overlay */}
       <div 
-        className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 z-[9998] bg-black/60 backdrop-blur-sm"
         onClick={onClose}
         style={{ animation: 'overlayFadeIn 200ms ease-out' }}
         aria-hidden="true"
@@ -446,7 +446,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="search-modal-title"
-        className="fixed inset-x-0 top-0 z-[101] md:inset-x-auto md:left-1/2 md:top-[120px] md:-translate-x-1/2 md:w-full md:max-w-2xl"
+        className="fixed inset-x-0 top-0 z-[9999] md:inset-x-auto md:left-1/2 md:top-[120px] md:-translate-x-1/2 md:w-full md:max-w-2xl"
         style={{ animation: 'modalSlideIn 200ms ease-out' }}
       >
         <div className="bg-white md:rounded-xl shadow-2xl max-h-[85vh] md:max-h-[70vh] overflow-hidden flex flex-col">
