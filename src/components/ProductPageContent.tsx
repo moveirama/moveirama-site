@@ -4,6 +4,7 @@ import ProductGallery from '@/components/ProductGallery'
 import Breadcrumb from '@/components/Breadcrumb'
 import MedidasCompactas from '@/components/MedidasCompactas'
 import ShippingCalculator from '@/components/ShippingCalculator'
+import VideoProduct from '@/components/VideoProduct'
 
 // SEO V2: Imports das funções de SEO
 import { 
@@ -13,6 +14,15 @@ import {
   generateFAQSchema,
   inferCategoryType 
 } from '@/lib/seo'
+
+/**
+ * ProductPageContent — Página de Produto (PDP)
+ * 
+ * v2.0 — 20/01/2026
+ * Changelog:
+ * - v2.0 (20/01/2026): Adicionada seção VideoProduct (vídeo do produto)
+ * - v1.x: SEO V2, FAQs dinâmicas, Schema.org
+ */
 
 // Types
 interface BreadcrumbItem {
@@ -282,6 +292,16 @@ export default function ProductPageContent({
             </div>
           </div>
         </div>
+
+        {/* ============================================
+            SEÇÃO: VÍDEO DO PRODUTO (v2.0)
+            Posição: primeiro item abaixo da dobra
+            Só renderiza se video_product_url existir
+            ============================================ */}
+        <VideoProduct 
+          videoUrl={product.video_product_url} 
+          productName={product.name} 
+        />
 
         {/* Seção: Para quem é */}
         <section className="mt-10 p-6 bg-[var(--color-sage-500)]/5 rounded-lg border border-[var(--color-sage-500)]/20">
