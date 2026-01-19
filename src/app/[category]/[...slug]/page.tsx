@@ -32,7 +32,7 @@ export const dynamic = 'force-dynamic'
 // ============================================
 
 // Linhas são categorias de nível 2 que têm subcategorias próprias
-const LINHAS = ['home-office'] // Adicionar 'linha-executiva' quando entrar
+const LINHAS = ['home-office', 'linha-profissional']
 
 // Categorias pai conhecidas (nível 1)
 const PARENT_CATEGORIES = ['casa', 'escritorio']
