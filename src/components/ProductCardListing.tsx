@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { generateProductH1, inferCategoryType } from '@/lib/seo'
 
 interface ProductCardListingProps {
   slug: string
@@ -12,6 +13,7 @@ interface ProductCardListingProps {
   avgRating?: number
   reviewCount?: number
   categorySlug: string // Slug da subcategoria para URL correta
+  tvMaxSize?: number | null // Para gerar título SEO otimizado
 }
 
 export default function ProductCardListing({
@@ -22,7 +24,8 @@ export default function ProductCardListing({
   imageUrl,
   avgRating = 0,
   reviewCount = 0,
-  categorySlug
+  categorySlug,
+  tvMaxSize
 }: ProductCardListingProps) {
   // Calcula desconto
   const hasDiscount = compareAtPrice && compareAtPrice > price
@@ -62,6 +65,15 @@ export default function ProductCardListing({
   ? (imageUrl.startsWith('http') ? imageUrl : `https://res.cloudinary.com/moveirama/image/upload/c_fill,w_400,h_400,q_auto,f_auto/${imageUrl}`)
   : placeholderSvg
 
+  // SEO: Gera título otimizado com compatibilidade TV
+  const categoryType = inferCategoryType(slug, categorySlug)
+  const displayTitle = generateProductH1({
+    name,
+    tv_max_size: tvMaxSize,
+    category_type: categoryType,
+    variant_name: null // Cor já está no name
+  })
+
   return (
     <article className="relative bg-white rounded-xl overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-all duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 group">
       <Link href={`/${categorySlug}/${slug}`} className="block text-inherit no-underline">
@@ -76,7 +88,7 @@ export default function ProductCardListing({
         <div className="relative aspect-square overflow-hidden bg-[var(--color-cream)]">
           <Image
             src={imageSrc}
-            alt={name}
+            alt={displayTitle}
             fill
             sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
@@ -86,9 +98,9 @@ export default function ProductCardListing({
 
         {/* Conteúdo */}
         <div className="p-2.5 md:p-3">
-          {/* Título */}
+          {/* Título - SEO otimizado */}
           <h3 className="text-sm font-medium text-[var(--color-graphite)] leading-tight line-clamp-2 min-h-[36px] mb-1.5">
-            {name}
+            {displayTitle}
           </h3>
 
           {/* Rating (se houver) */}
