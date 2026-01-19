@@ -4,7 +4,7 @@
  * Moveirama SEO Utilities
  * Funções para gerar H1, meta description, schema.org e FAQ
  * 
- * Versão: 2.1 — Supremacia SEO & FAQ (fix H1)
+ * Versão: 2.2 — Supremacia SEO Local (+ funções de categoria)
  */
 
 // ============================================
@@ -541,4 +541,144 @@ export function generateProductFAQs(product: {
       answer: `Garantia do fabricante + 7 dias para arrependimento.`
     }
   ]
+}
+
+// ============================================
+// SEO PARA CATEGORIAS (LISTAGEM) — v2.2
+// Foco em Supremacia Local (Curitiba/RMC)
+// ============================================
+
+/**
+ * Mapeamento de slugs de categoria para nomes SEO-friendly
+ * Algumas categorias precisam de ajuste no nome para melhor SEO
+ */
+const CATEGORY_SEO_NAMES: Record<string, string> = {
+  // Casa
+  'racks': 'Racks para TV',
+  'paineis': 'Painéis para TV',
+  'mesas-de-centro': 'Mesas de Centro',
+  'estantes': 'Estantes',
+  'sapateiras': 'Sapateiras',
+  'criados-mudos': 'Criados-Mudos',
+  'comodas': 'Cômodas',
+  'penteadeiras': 'Penteadeiras',
+  'guarda-roupas': 'Guarda-Roupas',
+  
+  // Escritório / Home Office
+  'escrivaninhas': 'Escrivaninhas',
+  'mesas-para-computador': 'Mesas para Computador',
+  'estantes-para-escritorio': 'Estantes para Escritório',
+  'gaveteiros': 'Gaveteiros',
+  'armarios-para-escritorio': 'Armários para Escritório',
+  
+  // Linhas
+  'home-office': 'Móveis para Home Office',
+  'linha-profissional': 'Móveis para Escritório Profissional',
+}
+
+/**
+ * Gera o H1 otimizado para páginas de categoria (listagem)
+ * Foco em SEO Local para dominar buscas em Curitiba/RMC
+ * 
+ * @example
+ * generateCategoryH1('Painéis', 'paineis')
+ * // → "Painéis para TV em Curitiba e Região Metropolitana"
+ */
+export function generateCategoryH1(
+  categoryName: string,
+  categorySlug: string
+): string {
+  // Usa nome SEO-friendly se disponível, senão usa o nome original
+  const seoName = CATEGORY_SEO_NAMES[categorySlug] || categoryName
+  
+  return `${seoName} em Curitiba e Região Metropolitana`
+}
+
+/**
+ * Gera o title tag otimizado para páginas de categoria
+ * Formato: "[Categoria] em Curitiba e RMC | Moveirama"
+ */
+export function generateCategoryTitle(
+  categoryName: string,
+  categorySlug: string
+): string {
+  const seoName = CATEGORY_SEO_NAMES[categorySlug] || categoryName
+  
+  // RMC é abreviação comum e economiza caracteres no title
+  return `${seoName} em Curitiba e RMC | Moveirama`
+}
+
+/**
+ * Gera a meta description otimizada para páginas de categoria
+ * Inclui: benefício + localização + prazo + CTA
+ */
+export function generateCategoryMetaDescription(
+  categoryName: string,
+  categorySlug: string,
+  productCount?: number
+): string {
+  const seoName = CATEGORY_SEO_NAMES[categorySlug] || categoryName
+  const seoNameLower = seoName.toLowerCase()
+  
+  // Variações baseadas no tipo de categoria
+  const isRackOrPainel = ['racks', 'paineis'].includes(categorySlug)
+  const isEscrivaninha = ['escrivaninhas', 'mesas-para-computador'].includes(categorySlug)
+  const isHomeOffice = categorySlug === 'home-office'
+  
+  if (isRackOrPainel) {
+    return `Confira ${seoNameLower} em Curitiba e Região Metropolitana. Modelos para TV de 32" a 75", compactos e modernos. Entrega própria em até 2 dias úteis. Compre móveis na caixa sem dor de cabeça.`
+  }
+  
+  if (isEscrivaninha || isHomeOffice) {
+    return `${seoName} em Curitiba e RMC com entrega rápida. Modelos compactos ideais para apartamentos pequenos. Frota própria, entrega em até 2 dias úteis. Monte seu home office sem stress.`
+  }
+  
+  // Descrição genérica para outras categorias
+  const countText = productCount ? `${productCount} opções de ` : ''
+  return `${countText}${seoNameLower} em Curitiba e Região Metropolitana. Preço justo, entrega própria em até 2 dias úteis. Móveis na caixa com montagem fácil e suporte no WhatsApp.`
+}
+
+/**
+ * Gera FAQs para páginas de categoria (foco em logística e confiança)
+ * Diferente das FAQs de produto que são técnicas
+ */
+export function generateCategoryFAQs(
+  categoryName: string,
+  categorySlug: string
+): FAQItem[] {
+  const seoName = CATEGORY_SEO_NAMES[categorySlug] || categoryName
+  const seoNameLower = seoName.toLowerCase()
+  
+  const faqs: FAQItem[] = [
+    {
+      question: `Quais cidades vocês entregam ${seoNameLower}?`,
+      answer: `Entregamos em Curitiba e toda a Região Metropolitana: São José dos Pinhais, Colombo, Araucária, Pinhais e Fazenda Rio Grande. Usamos frota própria para garantir entrega rápida e cuidadosa.`
+    },
+    {
+      question: `Qual o prazo de entrega para ${seoNameLower} em Curitiba?`,
+      answer: `Para Curitiba e região metropolitana, o prazo é de até 2 dias úteis após confirmação do pagamento. Entregamos com frota própria, sem depender de transportadoras.`
+    },
+    {
+      question: `Vocês montam os ${seoNameLower}?`,
+      answer: `Sim! Oferecemos serviço de montagem em Curitiba e algumas cidades da RMC. O valor é informado no momento da compra. Se preferir montar sozinho, todos os produtos vêm com manual e ferragens completas.`
+    },
+    {
+      question: `Os ${seoNameLower} vêm montados ou na caixa?`,
+      answer: `Nossos móveis vêm na caixa, desmontados. Isso garante preço mais baixo e protege o produto durante o transporte. Cada peça vem com manual ilustrado e todas as ferragens necessárias.`
+    },
+    {
+      question: `Como funciona a troca ou devolução?`,
+      answer: `Você tem 7 dias após o recebimento para solicitar troca ou devolução. Basta entrar em contato pelo WhatsApp com o número do pedido. Resolvemos de forma rápida e sem burocracia.`
+    }
+  ]
+  
+  // Adiciona FAQ específica para racks/painéis
+  if (['racks', 'paineis'].includes(categorySlug)) {
+    faqs.splice(2, 0, {
+      question: `Os ${seoNameLower} acompanham suporte de TV?`,
+      answer: `A maioria dos modelos não inclui o suporte de TV. Cada página de produto informa se o suporte está incluso. Painéis geralmente precisam de suporte articulado (vendido separadamente).`
+    })
+  }
+  
+  return faqs
 }
