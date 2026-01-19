@@ -30,11 +30,42 @@ type SearchFilters = {
 }
 
 // ============================================
-// FUNÇÃO PARA REMOVER ACENTOS
+// FUNÇÕES PARA LIDAR COM ACENTOS
 // ============================================
 
 function removeAccents(str: string): string {
   return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+}
+
+// Gera variações do termo com acentos comuns em português
+// Ex: "theo" → ["theo", "théo", "thêo"]
+function generateAccentVariations(str: string): string[] {
+  const variations = new Set<string>([str])
+  
+  // Mapeamento de letras para suas variações acentuadas
+  const accentMap: { [key: string]: string[] } = {
+    'a': ['á', 'à', 'â', 'ã'],
+    'e': ['é', 'ê', 'ë'],
+    'i': ['í', 'î'],
+    'o': ['ó', 'ô', 'õ'],
+    'u': ['ú', 'û'],
+    'c': ['ç'],
+  }
+  
+  // Para cada caractere, gerar variações
+  const chars = str.toLowerCase().split('')
+  
+  for (let i = 0; i < chars.length; i++) {
+    const char = chars[i]
+    if (accentMap[char]) {
+      for (const accentedChar of accentMap[char]) {
+        const variant = chars.slice(0, i).join('') + accentedChar + chars.slice(i + 1).join('')
+        variations.add(variant)
+      }
+    }
+  }
+  
+  return Array.from(variations)
 }
 
 // ============================================
@@ -332,24 +363,27 @@ export async function GET(request: Request) {
     // APLICAR FILTROS
     // =========================================
     
-    // Texto (nome do produto) - AGORA COM SUPORTE A ACENTOS
+    // Texto (nome do produto) - COM SUPORTE A ACENTOS
     if (filters.textQuery) {
       const searchTerm = filters.textQuery.trim()
-      const searchTermNoAccent = removeAccents(searchTerm)
       
-      // Se o termo tem acento ou se a versão sem acento é diferente,
-      // buscar por ambas as formas
-      if (searchTerm !== searchTermNoAccent) {
-        // Busca com OR: termo original OU termo sem acento
-        if (searchTerm.length < 4) {
-          // Para termos curtos, buscar no início
-          dbQuery = dbQuery.or(`name.ilike.${searchTerm}%,name.ilike.${searchTermNoAccent}%`)
-        } else {
-          // Para termos maiores, buscar em qualquer lugar
-          dbQuery = dbQuery.or(`name.ilike.%${searchTerm}%,name.ilike.%${searchTermNoAccent}%`)
-        }
+      // Gerar variações com acentos (theo → théo, thêo, etc)
+      const variations = generateAccentVariations(searchTerm)
+      
+      // Se há variações, buscar por todas elas com OR
+      if (variations.length > 1) {
+        // Construir condição OR para todas as variações
+        const conditions = variations.map(v => {
+          if (searchTerm.length < 4) {
+            return `name.ilike.${v}%`
+          } else {
+            return `name.ilike.%${v}%`
+          }
+        }).join(',')
+        
+        dbQuery = dbQuery.or(conditions)
       } else {
-        // Termo sem acentos - busca normal
+        // Sem variações, busca normal
         if (searchTerm.length < 4) {
           dbQuery = dbQuery.ilike('name', `${searchTerm}%`)
         } else {
