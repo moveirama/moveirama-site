@@ -6,7 +6,11 @@ import { usePathname } from 'next/navigation'
 import SearchModal from '@/components/search/SearchModal'
 
 // ============================================
-// ESTRUTURA DE NAVEGAÇÃO v1.2
+// ESTRUTURA DE NAVEGAÇÃO v1.3
+// Atualizado: Janeiro 2026
+// - Adicionada Linha Profissional
+// - Adicionada Escrivaninhas em L
+// - Agrupamento visual (Mesas / Mobiliário)
 // ============================================
 
 // Casa: dropdown simples (sem linhas)
@@ -18,6 +22,7 @@ const MENU_CASA = {
     { label: 'Painéis para TV', href: '/casa/paineis' },
     { label: 'Buffets', href: '/casa/buffets' },
     { label: 'Penteadeiras', href: '/casa/penteadeiras' },
+    { label: 'Cantinhos', href: '/casa/cantinhos' },
   ],
 }
 
@@ -31,24 +36,50 @@ const MENU_ESCRITORIO = {
       label: 'Home Office',
       href: '/escritorio/home-office',
       subcategorias: [
-        { label: 'Escrivaninhas', href: '/escritorio/home-office/escrivaninhas', count: 120 },
+        { label: 'Escrivaninhas', href: '/escritorio/home-office/escrivaninhas', count: 31 },
+        { label: 'Escrivaninhas em L', href: '/escritorio/home-office/escrivaninhas-em-l', count: 23 },
         { label: 'Gaveteiros', href: '/escritorio/home-office/gaveteiros', count: 19 },
         { label: 'Estantes', href: '/escritorio/home-office/estantes-escritorio', count: 18 },
-        { label: 'Mesas e Balcões', href: '/escritorio/home-office/mesas-balcoes', count: 8 },
+        { label: 'Mesas e Balcões', href: '/escritorio/home-office/mesas-balcoes', count: 6 },
       ],
     },
-    // FUTURO: Descomentar quando Linha Executiva entrar
-    // {
-    //   id: 'linha-executiva',
-    //   label: 'Linha Executiva',
-    //   href: '/escritorio/linha-executiva',
-    //   subcategorias: [
-    //     { label: 'Mesas Executivas', href: '/escritorio/linha-executiva/mesas-executivas', count: 42 },
-    //     { label: 'Armários', href: '/escritorio/linha-executiva/armarios', count: 28 },
-    //     { label: 'Estantes', href: '/escritorio/linha-executiva/estantes', count: 15 },
-    //     { label: 'Gaveteiros', href: '/escritorio/linha-executiva/gaveteiros', count: 12 },
-    //   ],
-    // },
+    {
+      id: 'linha-profissional',
+      label: 'Linha Profissional',
+      href: '/escritorio/linha-profissional',
+      // Grupos visuais para organização
+      grupos: [
+        {
+          label: 'Mesas',
+          items: [
+            { label: 'Mesas Retas', href: '/escritorio/linha-profissional/mesas-retas', count: 27 },
+            { label: 'Mesas em L', href: '/escritorio/linha-profissional/mesas-em-l', count: 12 },
+            { label: 'Mesas de Reunião', href: '/escritorio/linha-profissional/mesas-reuniao', count: 4 },
+          ],
+        },
+        {
+          label: 'Mobiliário',
+          items: [
+            { label: 'Armários', href: '/escritorio/linha-profissional/armarios-profissionais', count: 5 },
+            { label: 'Balcões', href: '/escritorio/linha-profissional/balcoes-profissionais', count: 11 },
+            { label: 'Balcões de Atendimento', href: '/escritorio/linha-profissional/balcoes-atendimento', count: 4 },
+            { label: 'Estantes', href: '/escritorio/linha-profissional/estantes-profissionais', count: 2 },
+            { label: 'Prateleiras', href: '/escritorio/linha-profissional/prateleiras-profissionais', count: 6 },
+          ],
+        },
+      ],
+      // Subcategorias flat para compatibilidade
+      subcategorias: [
+        { label: 'Mesas Retas', href: '/escritorio/linha-profissional/mesas-retas', count: 27 },
+        { label: 'Mesas em L', href: '/escritorio/linha-profissional/mesas-em-l', count: 12 },
+        { label: 'Mesas de Reunião', href: '/escritorio/linha-profissional/mesas-reuniao', count: 4 },
+        { label: 'Armários', href: '/escritorio/linha-profissional/armarios-profissionais', count: 5 },
+        { label: 'Balcões', href: '/escritorio/linha-profissional/balcoes-profissionais', count: 11 },
+        { label: 'Balcões de Atendimento', href: '/escritorio/linha-profissional/balcoes-atendimento', count: 4 },
+        { label: 'Estantes', href: '/escritorio/linha-profissional/estantes-profissionais', count: 2 },
+        { label: 'Prateleiras', href: '/escritorio/linha-profissional/prateleiras-profissionais', count: 6 },
+      ],
+    },
   ],
 }
 
@@ -171,6 +202,7 @@ function DropdownSimples({
 
 // ============================================
 // DROPDOWN 2 PAINÉIS (Escritório)
+// Com suporte a grupos visuais
 // ============================================
 
 function DropdownDoisPaineis({ 
@@ -190,6 +222,9 @@ function DropdownDoisPaineis({
     ? data.linhas.find(l => l.id === activeLinha) 
     : null
 
+  // Verifica se a linha tem grupos (Linha Profissional)
+  const hasGrupos = activeLinhaData && 'grupos' in activeLinhaData && activeLinhaData.grupos
+
   return (
     <div 
       className={`
@@ -198,7 +233,10 @@ function DropdownDoisPaineis({
         transition-all duration-200
         ${isOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2 pointer-events-none'}
       `}
-      style={{ display: isOpen ? 'grid' : 'none', gridTemplateColumns: '180px 220px' }}
+      style={{ 
+        display: isOpen ? 'grid' : 'none', 
+        gridTemplateColumns: hasGrupos ? '180px 260px' : '180px 220px' 
+      }}
       role="menu"
       onMouseLeave={onReset}
     >
@@ -244,14 +282,61 @@ function DropdownDoisPaineis({
       </div>
       
       {/* Painel Direito: Subcategorias */}
-      <div className="p-4 bg-[var(--color-gray-50)] min-h-[240px] flex flex-col">
+      <div className="p-4 bg-[var(--color-gray-50)] min-h-[280px] flex flex-col">
         {!activeLinhaData ? (
           // Estado vazio
           <div className="flex-1 flex items-center justify-center" id="panel-empty">
             <span className="text-sm text-[var(--color-toffee)]">Selecione uma linha</span>
           </div>
+        ) : hasGrupos ? (
+          // Linha Profissional: com grupos visuais
+          <div id={`panel-${activeLinhaData.id}`} className="flex flex-col h-full">
+            <span className="text-xs font-semibold text-[var(--color-sage-600)] uppercase tracking-wider mb-3">
+              {activeLinhaData.label}
+            </span>
+            
+            <div className="flex-1 overflow-y-auto">
+              {activeLinhaData.grupos!.map((grupo, index) => (
+                <div key={grupo.label} className={index > 0 ? 'mt-3' : ''}>
+                  {/* Label do grupo (não clicável) */}
+                  <span className="block px-3 py-1.5 text-[11px] font-semibold text-[var(--color-toffee)] uppercase tracking-wide">
+                    {grupo.label}
+                  </span>
+                  
+                  <ul className="space-y-0.5">
+                    {grupo.items.map((item) => (
+                      <li key={item.href} role="none">
+                        <Link
+                          href={item.href}
+                          className="flex items-center justify-between px-3 py-2 rounded-lg bg-white text-[var(--color-graphite)] hover:text-[var(--color-sage-700)] transition-colors min-h-[36px] text-sm"
+                          role="menuitem"
+                        >
+                          <span>{item.label}</span>
+                          <span className="text-xs text-[var(--color-toffee)]">({item.count})</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                  
+                  {/* Divisor entre grupos */}
+                  {index < activeLinhaData.grupos!.length - 1 && (
+                    <div className="h-px bg-[var(--color-sand-light)] mt-3" />
+                  )}
+                </div>
+              ))}
+            </div>
+            
+            <Link
+              href={activeLinhaData.href}
+              className="flex items-center gap-1 px-3 py-3 mt-3 border-t border-[var(--color-sand-light)] text-[13px] font-semibold text-[var(--color-sage-600)] hover:text-[var(--color-sage-700)] transition-colors"
+              role="menuitem"
+            >
+              Ver {activeLinhaData.label}
+              <ArrowRightIcon className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         ) : (
-          // Subcategorias da linha selecionada
+          // Home Office: lista simples
           <div id={`panel-${activeLinhaData.id}`} className="flex flex-col h-full">
             <span className="text-xs font-semibold text-[var(--color-sage-600)] uppercase tracking-wider mb-3">
               {activeLinhaData.label}
@@ -635,53 +720,97 @@ export default function Header() {
                   aria-hidden={expandedCategory !== 'escritorio'}
                 >
                   <ul className="py-2">
-                    {MENU_ESCRITORIO.linhas.map((linha) => (
-                      <li key={linha.id}>
-                        {/* Botão da Linha (expandível) */}
-                        <button
-                          className={`
-                            w-full flex items-center justify-between py-3 px-6 font-medium transition-colors min-h-[52px]
-                            ${expandedLinha === linha.id ? 'text-[var(--color-sage-600)]' : 'text-[var(--color-graphite)]'}
-                            hover:text-[var(--color-sage-700)]
-                          `}
-                          onClick={() => toggleLinha(linha.id)}
-                          aria-expanded={expandedLinha === linha.id}
-                          aria-controls={`submenu-linha-${linha.id}`}
-                        >
-                          <span>{linha.label}</span>
-                          <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${expandedLinha === linha.id ? 'rotate-90' : ''}`} />
-                        </button>
-                        
-                        {/* Subcategorias da Linha */}
-                        <div
-                          id={`submenu-linha-${linha.id}`}
-                          className={`bg-white border-l-[3px] border-[var(--color-sage-500)] ml-6 ${expandedLinha === linha.id ? 'block' : 'hidden'}`}
-                          aria-hidden={expandedLinha !== linha.id}
-                        >
-                          <ul className="py-2">
-                            {linha.subcategorias.map((sub) => (
-                              <li key={sub.href}>
-                                <Link
-                                  href={sub.href}
-                                  className="flex items-center justify-between py-3 px-4 text-[var(--color-graphite)] hover:text-[var(--color-sage-700)] transition-colors min-h-[44px]"
-                                >
-                                  <span>{sub.label}</span>
-                                  <span className="text-sm text-[var(--color-toffee)]">({sub.count})</span>
-                                </Link>
-                              </li>
-                            ))}
-                            <li>
-                              <Link
-                                href={linha.href}
-                                className="block py-3 px-4 text-sm font-semibold text-[var(--color-sage-600)] border-t border-[var(--color-sand-light)] mt-2"
-                              >
-                                Ver {linha.label} →
-                              </Link>
-                            </li>
-                          </ul>
-                        </div>
-                      </li>
-                    ))}
+                    {MENU_ESCRITORIO.linhas.map((linha) => {
+                      const hasGrupos = 'grupos' in linha && linha.grupos
+                      
+                      return (
+                        <li key={linha.id}>
+                          {/* Botão da Linha (expandível) */}
+                          <button
+                            className={`
+                              w-full flex items-center justify-between py-3 px-6 font-medium transition-colors min-h-[52px]
+                              ${expandedLinha === linha.id ? 'text-[var(--color-sage-600)]' : 'text-[var(--color-graphite)]'}
+                              hover:text-[var(--color-sage-700)]
+                            `}
+                            onClick={() => toggleLinha(linha.id)}
+                            aria-expanded={expandedLinha === linha.id}
+                            aria-controls={`submenu-linha-${linha.id}`}
+                          >
+                            <span>{linha.label}</span>
+                            <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${expandedLinha === linha.id ? 'rotate-90' : ''}`} />
+                          </button>
+                          
+                          {/* Subcategorias da Linha */}
+                          <div
+                            id={`submenu-linha-${linha.id}`}
+                            className={`bg-white border-l-[3px] border-[var(--color-sage-500)] ml-6 ${expandedLinha === linha.id ? 'block' : 'hidden'}`}
+                            aria-hidden={expandedLinha !== linha.id}
+                          >
+                            {hasGrupos ? (
+                              // Linha Profissional: com grupos
+                              <div className="py-2">
+                                {linha.grupos!.map((grupo, index) => (
+                                  <div key={grupo.label}>
+                                    {/* Label do grupo */}
+                                    <span className="block px-4 py-1.5 text-[10px] font-semibold text-[var(--color-toffee)] uppercase tracking-wide">
+                                      {grupo.label}
+                                    </span>
+                                    <ul>
+                                      {grupo.items.map((item) => (
+                                        <li key={item.href}>
+                                          <Link
+                                            href={item.href}
+                                            className="flex items-center justify-between py-2.5 px-4 text-[var(--color-graphite)] hover:text-[var(--color-sage-700)] transition-colors min-h-[40px]"
+                                          >
+                                            <span className="text-sm">{item.label}</span>
+                                            <span className="text-xs text-[var(--color-toffee)]">({item.count})</span>
+                                          </Link>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                    {/* Divisor entre grupos */}
+                                    {index < linha.grupos!.length - 1 && (
+                                      <div className="h-px bg-[var(--color-sand-light)] my-2 mx-4" />
+                                    )}
+                                  </div>
+                                ))}
+                                <li>
+                                  <Link
+                                    href={linha.href}
+                                    className="block py-3 px-4 text-sm font-semibold text-[var(--color-sage-600)] border-t border-[var(--color-sand-light)] mt-2"
+                                  >
+                                    Ver {linha.label} →
+                                  </Link>
+                                </li>
+                              </div>
+                            ) : (
+                              // Home Office: lista simples
+                              <ul className="py-2">
+                                {linha.subcategorias.map((sub) => (
+                                  <li key={sub.href}>
+                                    <Link
+                                      href={sub.href}
+                                      className="flex items-center justify-between py-3 px-4 text-[var(--color-graphite)] hover:text-[var(--color-sage-700)] transition-colors min-h-[44px]"
+                                    >
+                                      <span>{sub.label}</span>
+                                      <span className="text-sm text-[var(--color-toffee)]">({sub.count})</span>
+                                    </Link>
+                                  </li>
+                                ))}
+                                <li>
+                                  <Link
+                                    href={linha.href}
+                                    className="block py-3 px-4 text-sm font-semibold text-[var(--color-sage-600)] border-t border-[var(--color-sand-light)] mt-2"
+                                  >
+                                    Ver {linha.label} →
+                                  </Link>
+                                </li>
+                              </ul>
+                            )}
+                          </div>
+                        </li>
+                      )
+                    })}
                   </ul>
                   
                   {/* Ver todos em Escritório */}
