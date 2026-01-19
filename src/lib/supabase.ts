@@ -111,6 +111,7 @@ export type ProductForListing = {
   image_url: string | null
   avg_rating: number
   review_count: number
+  tv_max_size: number | null  // ✅ ADICIONADO para SEO nos cards
 }
 
 // Tipos de ordenação
@@ -336,6 +337,7 @@ export async function getProductsByCategory(
     .eq('is_active', true)
 
   // Busca produtos com paginação
+  // ✅ ADICIONADO tv_max_size no SELECT para SEO nos cards
   const { data, error } = await supabase
     .from('products')
     .select(`
@@ -344,6 +346,7 @@ export async function getProductsByCategory(
       name,
       price,
       compare_at_price,
+      tv_max_size,
       product_images(cloudinary_path, image_type)
     `)
     .eq('category_id', categoryId)
@@ -369,7 +372,8 @@ export async function getProductsByCategory(
       compare_at_price: p.compare_at_price,
       image_url: principalImage?.cloudinary_path || firstImage?.cloudinary_path || null,
       avg_rating: 0,
-      review_count: 0
+      review_count: 0,
+      tv_max_size: p.tv_max_size  // ✅ ADICIONADO
     }
   })
 
