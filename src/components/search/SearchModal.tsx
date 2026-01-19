@@ -75,8 +75,12 @@ const CATEGORIAS = [
     texto: 'Casa', 
     href: '/casa',
     subcategorias: [
-      { texto: 'Sala', href: '/casa/sala' },
-      { texto: 'Quarto', href: '/casa/quarto' },
+      { texto: 'Racks para TV', href: '/casa/racks' },
+      { texto: 'Painéis para TV', href: '/casa/paineis' },
+      { texto: 'Mesas de Centro', href: '/casa/mesas-centro' },
+      { texto: 'Penteadeiras', href: '/casa/penteadeiras' },
+      { texto: 'Estantes', href: '/casa/estantes' },
+      { texto: 'Buffets', href: '/casa/buffets' },
     ] 
   },
   { 
@@ -85,7 +89,7 @@ const CATEGORIAS = [
     href: '/escritorio',
     subcategorias: [
       { texto: 'Home Office', href: '/escritorio/home-office' },
-      // { texto: 'Linha Executiva', href: '/escritorio/linha-executiva' }, // TODO: Adicionar quando existir
+      { texto: 'Linha Profissional', href: '/escritorio/linha-profissional' },
     ] 
   },
 ]
