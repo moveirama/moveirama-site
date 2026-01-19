@@ -30,6 +30,14 @@ type SearchFilters = {
 }
 
 // ============================================
+// FUNÇÃO PARA REMOVER ACENTOS
+// ============================================
+
+function removeAccents(str: string): string {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+}
+
+// ============================================
 // PARSER DE BUSCA INTELIGENTE
 // ============================================
 
@@ -324,19 +332,29 @@ export async function GET(request: Request) {
     // APLICAR FILTROS
     // =========================================
     
-    // Texto (nome do produto)
+    // Texto (nome do produto) - AGORA COM SUPORTE A ACENTOS
     if (filters.textQuery) {
       const searchTerm = filters.textQuery.trim()
+      const searchTermNoAccent = removeAccents(searchTerm)
       
-      // Para termos curtos (< 4 chars), buscar apenas no INÍCIO do nome
-      // Para evitar "rac" encontrar "Terracota"
-      // Para termos maiores, buscar em qualquer posição
-      if (searchTerm.length < 4) {
-        // Busca no início do nome apenas
-        dbQuery = dbQuery.ilike('name', `${searchTerm}%`)
+      // Se o termo tem acento ou se a versão sem acento é diferente,
+      // buscar por ambas as formas
+      if (searchTerm !== searchTermNoAccent) {
+        // Busca com OR: termo original OU termo sem acento
+        if (searchTerm.length < 4) {
+          // Para termos curtos, buscar no início
+          dbQuery = dbQuery.or(`name.ilike.${searchTerm}%,name.ilike.${searchTermNoAccent}%`)
+        } else {
+          // Para termos maiores, buscar em qualquer lugar
+          dbQuery = dbQuery.or(`name.ilike.%${searchTerm}%,name.ilike.%${searchTermNoAccent}%`)
+        }
       } else {
-        // Busca em qualquer lugar
-        dbQuery = dbQuery.ilike('name', `%${searchTerm}%`)
+        // Termo sem acentos - busca normal
+        if (searchTerm.length < 4) {
+          dbQuery = dbQuery.ilike('name', `${searchTerm}%`)
+        } else {
+          dbQuery = dbQuery.ilike('name', `%${searchTerm}%`)
+        }
       }
     }
     
