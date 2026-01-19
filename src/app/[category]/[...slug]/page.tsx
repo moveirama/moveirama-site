@@ -8,10 +8,17 @@ import {
   getProductBySubcategoryAndSlug,
   getParentOfSubcategory,
   getSubcategories,
-  getCategoryBySlug,           // NOVA FUNÇÃO
-  getSubcategoryOfAnyParent,   // NOVA FUNÇÃO
+  getCategoryBySlug,
+  getSubcategoryOfAnyParent,
   SortOption 
 } from '@/lib/supabase'
+
+// ✅ NOVO: Importa funções SEO para categoria
+import {
+  generateCategoryH1,
+  generateCategoryTitle,
+  generateCategoryMetaDescription
+} from '@/lib/seo'
 
 // Componentes de Listagem
 import Breadcrumb from '@/components/Breadcrumb'
@@ -123,63 +130,85 @@ async function detectPageType(category: string, slug: string[]): Promise<Detecti
 }
 
 // ============================================
-// METADATA
+// METADATA (✅ ATUALIZADO COM SEO LOCAL)
 // ============================================
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { category, slug } = await params
   const detection = await detectPageType(category, slug)
   
+  // ============================================
+  // PÁGINA DE LINHA (ex: /escritorio/home-office)
+  // ============================================
   if (detection.type === 'linha' && detection.linha) {
     const linhaCategory = await getSubcategory(category, detection.linha)
     if (!linhaCategory) {
       return { title: 'Página não encontrada | Moveirama' }
     }
+    
+    // ✅ USA FUNÇÕES SEO PARA TÍTULO E DESCRIÇÃO
+    const title = generateCategoryTitle(linhaCategory.name, detection.linha)
+    const description = generateCategoryMetaDescription(linhaCategory.name, detection.linha)
+    
     return {
-      title: `${linhaCategory.name} | Moveirama`,
-      description: linhaCategory.description || 
-        `Confira nossa linha ${linhaCategory.name} com entrega rápida em Curitiba.`,
+      title,
+      description,
       openGraph: {
-        title: `${linhaCategory.name} | Moveirama`,
-        description: linhaCategory.description || undefined,
+        title,
+        description,
       }
     }
   }
   
+  // ============================================
+  // LISTAGEM COM LINHA (ex: /escritorio/home-office/escrivaninhas)
+  // ============================================
   if (detection.type === 'linha-listing' && detection.linha && detection.subcategory) {
-    // USA A NOVA FUNÇÃO
     const subcategoryData = await getSubcategoryOfAnyParent(detection.linha, detection.subcategory)
-    const linhaCategory = await getCategoryBySlug(detection.linha)
     if (!subcategoryData) {
       return { title: 'Categoria não encontrada | Moveirama' }
     }
+    
+    // ✅ USA FUNÇÕES SEO PARA TÍTULO E DESCRIÇÃO
+    const title = generateCategoryTitle(subcategoryData.name, detection.subcategory)
+    const description = generateCategoryMetaDescription(subcategoryData.name, detection.subcategory)
+    
     return {
-      title: `${subcategoryData.name} - ${linhaCategory?.name || ''} | Moveirama`,
-      description: subcategoryData.description || 
-        `Confira nossa linha de ${subcategoryData.name.toLowerCase()} com preço justo e entrega rápida em Curitiba.`,
+      title,
+      description,
       openGraph: {
-        title: `${subcategoryData.name} | Moveirama`,
-        description: subcategoryData.description || undefined,
+        title,
+        description,
       }
     }
   }
   
+  // ============================================
+  // LISTAGEM DIRETA (ex: /casa/racks, /casa/paineis)
+  // ============================================
   if (detection.type === 'direct-listing' && detection.subcategory) {
     const subcategoryData = await getSubcategory(category, detection.subcategory)
     if (!subcategoryData) {
       return { title: 'Categoria não encontrada | Moveirama' }
     }
+    
+    // ✅ USA FUNÇÕES SEO PARA TÍTULO E DESCRIÇÃO
+    const title = generateCategoryTitle(subcategoryData.name, detection.subcategory)
+    const description = generateCategoryMetaDescription(subcategoryData.name, detection.subcategory)
+    
     return {
-      title: `${subcategoryData.name} | Moveirama`,
-      description: subcategoryData.description || 
-        `Confira nossa linha de ${subcategoryData.name.toLowerCase()} com preço justo e entrega rápida em Curitiba.`,
+      title,
+      description,
       openGraph: {
-        title: `${subcategoryData.name} | Moveirama`,
-        description: subcategoryData.description || undefined,
+        title,
+        description,
       }
     }
   }
   
+  // ============================================
+  // PÁGINA DE PRODUTO
+  // ============================================
   if (detection.type === 'product' && detection.subcategory && detection.productSlug) {
     const product = await getProductBySubcategoryAndSlug(detection.subcategory, detection.productSlug)
     if (!product) {
@@ -292,6 +321,9 @@ async function LinhaPage({
     { label: linhaCategory.name }
   ]
 
+  // ✅ H1 OTIMIZADO PARA SEO LOCAL
+  const h1Title = generateCategoryH1(linhaCategory.name, linha)
+
   return (
     <main className="min-h-screen bg-[var(--color-warm-white)]">
       <div className="max-w-[1280px] mx-auto px-4 lg:px-8">
@@ -301,7 +333,7 @@ async function LinhaPage({
         {/* Header */}
         <header className="py-4 md:py-6">
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-[var(--color-graphite)] m-0 mb-2">
-            {linhaCategory.name}
+            {h1Title}
           </h1>
           {linhaCategory.description && (
             <p className="text-base text-[var(--color-toffee)] m-0 max-w-xl">
@@ -388,11 +420,14 @@ async function LinhaListingPage({
   // URL base para paginação
   const baseUrl = `/${category}/${linha}/${subcategory}`
 
+  // ✅ H1 OTIMIZADO PARA SEO LOCAL
+  const h1Title = generateCategoryH1(subcategoryData.name, subcategory)
+
   // Schema.org ItemList
   const itemListSchema = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    name: subcategoryData.name,
+    name: h1Title,  // ✅ Usa H1 otimizado no schema
     numberOfItems: total,
     itemListElement: products.map((product, index) => ({
       '@type': 'ListItem',
@@ -429,8 +464,9 @@ async function LinhaListingPage({
         <header className="pt-4 pb-2">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
             <div>
+              {/* ✅ H1 OTIMIZADO PARA SEO LOCAL */}
               <h1 className="text-2xl md:text-[28px] lg:text-[32px] font-semibold text-[var(--color-graphite)] m-0 mb-1">
-                {subcategoryData.name}
+                {h1Title}
               </h1>
               <p className="text-sm text-[var(--color-toffee)] m-0">
                 {total} {total === 1 ? 'produto' : 'produtos'}
@@ -483,7 +519,7 @@ async function LinhaListingPage({
 }
 
 // ============================================
-// LISTAGEM DIRETA (ex: /casa/racks)
+// LISTAGEM DIRETA (ex: /casa/racks, /casa/paineis)
 // Sem linha intermediária
 // ============================================
 
@@ -527,11 +563,14 @@ async function DirectListingPage({
   // URL base para paginação
   const baseUrl = `/${category}/${subcategory}`
 
+  // ✅ H1 OTIMIZADO PARA SEO LOCAL
+  const h1Title = generateCategoryH1(subcategoryData.name, subcategory)
+
   // Schema.org ItemList
   const itemListSchema = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    name: subcategoryData.name,
+    name: h1Title,  // ✅ Usa H1 otimizado no schema
     numberOfItems: total,
     itemListElement: products.map((product, index) => ({
       '@type': 'ListItem',
@@ -568,8 +607,9 @@ async function DirectListingPage({
         <header className="pt-4 pb-2">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
             <div>
+              {/* ✅ H1 OTIMIZADO PARA SEO LOCAL */}
               <h1 className="text-2xl md:text-[28px] lg:text-[32px] font-semibold text-[var(--color-graphite)] m-0 mb-1">
-                {subcategoryData.name}
+                {h1Title}
               </h1>
               <p className="text-sm text-[var(--color-toffee)] m-0">
                 {total} {total === 1 ? 'produto' : 'produtos'}
