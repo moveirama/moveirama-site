@@ -6,11 +6,11 @@ import { usePathname } from 'next/navigation'
 import SearchModal from '@/components/search/SearchModal'
 
 // ============================================
-// ESTRUTURA DE NAVEGAÇÃO v2.0
-// Atualizado: Janeiro 2026
-// - Migração para taxonomia v2 (URLs de 2 níveis)
-// - /moveis-para-casa e /moveis-para-escritorio
-// - Agrupamento visual mantido (Home Office / Profissional)
+// ESTRUTURA DE NAVEGAÇÃO v2.1
+// Atualizado: 20/01/2026
+// Changelog:
+// - v2.1 (20/01/2026): Removidos links "Ver Linha X" (decisão Squad Visual)
+// - v2.0 (Jan/2026): Migração taxonomia v2 (URLs 2 níveis)
 // ============================================
 
 // Casa: dropdown simples
@@ -38,7 +38,6 @@ const MENU_ESCRITORIO = {
     {
       id: 'home-office',
       label: 'Home Office',
-      href: '/moveis-para-escritorio', // Filtra por home office na página
       subcategorias: [
         { label: 'Escrivaninhas', href: '/moveis-para-escritorio/escrivaninha-home-office', count: 52 },
         { label: 'Escrivaninhas em L', href: '/moveis-para-escritorio/escrivaninha-l-home-office', count: 23 },
@@ -50,7 +49,6 @@ const MENU_ESCRITORIO = {
     {
       id: 'linha-profissional',
       label: 'Linha Profissional',
-      href: '/moveis-para-escritorio', // Filtra por profissional na página
       // Grupos visuais para organização
       grupos: [
         {
@@ -206,7 +204,7 @@ function DropdownSimples({
 
 // ============================================
 // DROPDOWN 2 PAINÉIS (Escritório)
-// Com suporte a grupos visuais
+// v2.1: Removidos links "Ver Linha X" (órfãos)
 // ============================================
 
 function DropdownDoisPaineis({ 
@@ -329,15 +327,7 @@ function DropdownDoisPaineis({
                 </div>
               ))}
             </div>
-            
-            <Link
-              href={activeLinhaData.href}
-              className="flex items-center gap-1 px-3 py-3 mt-3 border-t border-[var(--color-sand-light)] text-[13px] font-semibold text-[var(--color-sage-600)] hover:text-[var(--color-sage-700)] transition-colors"
-              role="menuitem"
-            >
-              Ver {activeLinhaData.label}
-              <ArrowRightIcon className="w-3.5 h-3.5" />
-            </Link>
+            {/* REMOVIDO: Link "Ver Linha Profissional" (v2.1) */}
           </div>
         ) : (
           // Home Office: lista simples
@@ -360,15 +350,7 @@ function DropdownDoisPaineis({
                 </li>
               ))}
             </ul>
-            
-            <Link
-              href={activeLinhaData.href}
-              className="flex items-center gap-1 px-3 py-3 mt-3 border-t border-[var(--color-sand-light)] text-[13px] font-semibold text-[var(--color-sage-600)] hover:text-[var(--color-sage-700)] transition-colors"
-              role="menuitem"
-            >
-              Ver {activeLinhaData.label}
-              <ArrowRightIcon className="w-3.5 h-3.5" />
-            </Link>
+            {/* REMOVIDO: Link "Ver Home Office" (v2.1) */}
           </div>
         )}
       </div>
@@ -625,6 +607,7 @@ export default function Header() {
 
       {/* ============================================
           MOBILE MENU
+          v2.1: Removidos links "Ver Linha X"
           ============================================ */}
       <div
         id="mobile-menu"
@@ -778,14 +761,7 @@ export default function Header() {
                                     )}
                                   </div>
                                 ))}
-                                <li>
-                                  <Link
-                                    href={linha.href}
-                                    className="block py-3 px-4 text-sm font-semibold text-[var(--color-sage-600)] border-t border-[var(--color-sand-light)] mt-2"
-                                  >
-                                    Ver {linha.label} →
-                                  </Link>
-                                </li>
+                                {/* REMOVIDO: Link "Ver Linha Profissional" (v2.1) */}
                               </div>
                             ) : (
                               // Home Office: lista simples
@@ -801,14 +777,7 @@ export default function Header() {
                                     </Link>
                                   </li>
                                 ))}
-                                <li>
-                                  <Link
-                                    href={linha.href}
-                                    className="block py-3 px-4 text-sm font-semibold text-[var(--color-sage-600)] border-t border-[var(--color-sand-light)] mt-2"
-                                  >
-                                    Ver {linha.label} →
-                                  </Link>
-                                </li>
+                                {/* REMOVIDO: Link "Ver Home Office" (v2.1) */}
                               </ul>
                             )}
                           </div>
