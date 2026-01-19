@@ -6,78 +6,82 @@ import { usePathname } from 'next/navigation'
 import SearchModal from '@/components/search/SearchModal'
 
 // ============================================
-// ESTRUTURA DE NAVEGAÇÃO v1.3
+// ESTRUTURA DE NAVEGAÇÃO v2.0
 // Atualizado: Janeiro 2026
-// - Adicionada Linha Profissional
-// - Adicionada Escrivaninhas em L
-// - Agrupamento visual (Mesas / Mobiliário)
+// - Migração para taxonomia v2 (URLs de 2 níveis)
+// - /moveis-para-casa e /moveis-para-escritorio
+// - Agrupamento visual mantido (Home Office / Profissional)
 // ============================================
 
-// Casa: dropdown simples (sem linhas)
+// Casa: dropdown simples
 const MENU_CASA = {
   label: 'Casa',
-  href: '/casa',
+  href: '/moveis-para-casa',
   subcategorias: [
-    { label: 'Racks para TV', href: '/casa/racks' },
-    { label: 'Painéis para TV', href: '/casa/paineis' },
-    { label: 'Buffets', href: '/casa/buffets' },
-    { label: 'Penteadeiras', href: '/casa/penteadeiras' },
-    { label: 'Cantinhos', href: '/casa/cantinhos' },
+    { label: 'Racks para TV', href: '/moveis-para-casa/racks-tv' },
+    { label: 'Painéis para TV', href: '/moveis-para-casa/paineis-tv' },
+    { label: 'Mesas de Centro', href: '/moveis-para-casa/mesas-centro' },
+    { label: 'Mesas de Apoio', href: '/moveis-para-casa/mesas-apoio' },
+    { label: 'Buffets', href: '/moveis-para-casa/buffets' },
+    { label: 'Estantes', href: '/moveis-para-casa/estantes' },
+    { label: 'Aparadores', href: '/moveis-para-casa/aparadores' },
+    { label: 'Cantinhos', href: '/moveis-para-casa/cantinhos' },
+    { label: 'Bares', href: '/moveis-para-casa/bares' },
   ],
 }
 
-// Escritório: dropdown 2 painéis (com linhas)
+// Escritório: dropdown 2 painéis (agrupamento visual, URLs flat)
 const MENU_ESCRITORIO = {
   label: 'Escritório',
-  href: '/escritorio',
+  href: '/moveis-para-escritorio',
   linhas: [
     {
       id: 'home-office',
       label: 'Home Office',
-      href: '/escritorio/home-office',
+      href: '/moveis-para-escritorio', // Filtra por home office na página
       subcategorias: [
-        { label: 'Escrivaninhas', href: '/escritorio/home-office/escrivaninhas', count: 31 },
-        { label: 'Escrivaninhas em L', href: '/escritorio/home-office/escrivaninhas-em-l', count: 23 },
-        { label: 'Gaveteiros', href: '/escritorio/home-office/gaveteiros', count: 19 },
-        { label: 'Estantes', href: '/escritorio/home-office/estantes-escritorio', count: 18 },
-        { label: 'Mesas e Balcões', href: '/escritorio/home-office/mesas-balcoes', count: 6 },
+        { label: 'Escrivaninhas', href: '/moveis-para-escritorio/escrivaninha-home-office', count: 52 },
+        { label: 'Escrivaninhas em L', href: '/moveis-para-escritorio/escrivaninha-l-home-office', count: 23 },
+        { label: 'Gaveteiros', href: '/moveis-para-escritorio/gaveteiro-home-office', count: 19 },
+        { label: 'Estantes', href: '/moveis-para-escritorio/estante-home-office', count: 18 },
+        { label: 'Mesas e Balcões', href: '/moveis-para-escritorio/mesa-balcao-home-office', count: 8 },
       ],
     },
     {
       id: 'linha-profissional',
       label: 'Linha Profissional',
-      href: '/escritorio/linha-profissional',
+      href: '/moveis-para-escritorio', // Filtra por profissional na página
       // Grupos visuais para organização
       grupos: [
         {
           label: 'Mesas',
           items: [
-            { label: 'Mesas Retas', href: '/escritorio/linha-profissional/mesas-retas', count: 27 },
-            { label: 'Mesas em L', href: '/escritorio/linha-profissional/mesas-em-l', count: 12 },
-            { label: 'Mesas de Reunião', href: '/escritorio/linha-profissional/mesas-reuniao', count: 4 },
+            { label: 'Mesas Retas', href: '/moveis-para-escritorio/mesa-reta', count: 27 },
+            { label: 'Mesas em L', href: '/moveis-para-escritorio/mesa-em-l', count: 12 },
+            { label: 'Mesas de Reunião', href: '/moveis-para-escritorio/mesa-reuniao', count: 4 },
           ],
         },
         {
           label: 'Mobiliário',
           items: [
-            { label: 'Armários', href: '/escritorio/linha-profissional/armarios-profissionais', count: 5 },
-            { label: 'Balcões', href: '/escritorio/linha-profissional/balcoes-profissionais', count: 11 },
-            { label: 'Balcões de Atendimento', href: '/escritorio/linha-profissional/balcoes-atendimento', count: 4 },
-            { label: 'Estantes', href: '/escritorio/linha-profissional/estantes-profissionais', count: 2 },
-            { label: 'Prateleiras', href: '/escritorio/linha-profissional/prateleiras-profissionais', count: 6 },
+            { label: 'Armários', href: '/moveis-para-escritorio/armario-profissional', count: 5 },
+            { label: 'Balcões', href: '/moveis-para-escritorio/balcao-profissional', count: 11 },
+            { label: 'Balcões de Atendimento', href: '/moveis-para-escritorio/balcao-atendimento', count: 4 },
+            { label: 'Estantes', href: '/moveis-para-escritorio/estante-profissional', count: 2 },
+            { label: 'Prateleiras', href: '/moveis-para-escritorio/prateleira-profissional', count: 6 },
           ],
         },
       ],
       // Subcategorias flat para compatibilidade
       subcategorias: [
-        { label: 'Mesas Retas', href: '/escritorio/linha-profissional/mesas-retas', count: 27 },
-        { label: 'Mesas em L', href: '/escritorio/linha-profissional/mesas-em-l', count: 12 },
-        { label: 'Mesas de Reunião', href: '/escritorio/linha-profissional/mesas-reuniao', count: 4 },
-        { label: 'Armários', href: '/escritorio/linha-profissional/armarios-profissionais', count: 5 },
-        { label: 'Balcões', href: '/escritorio/linha-profissional/balcoes-profissionais', count: 11 },
-        { label: 'Balcões de Atendimento', href: '/escritorio/linha-profissional/balcoes-atendimento', count: 4 },
-        { label: 'Estantes', href: '/escritorio/linha-profissional/estantes-profissionais', count: 2 },
-        { label: 'Prateleiras', href: '/escritorio/linha-profissional/prateleiras-profissionais', count: 6 },
+        { label: 'Mesas Retas', href: '/moveis-para-escritorio/mesa-reta', count: 27 },
+        { label: 'Mesas em L', href: '/moveis-para-escritorio/mesa-em-l', count: 12 },
+        { label: 'Mesas de Reunião', href: '/moveis-para-escritorio/mesa-reuniao', count: 4 },
+        { label: 'Armários', href: '/moveis-para-escritorio/armario-profissional', count: 5 },
+        { label: 'Balcões', href: '/moveis-para-escritorio/balcao-profissional', count: 11 },
+        { label: 'Balcões de Atendimento', href: '/moveis-para-escritorio/balcao-atendimento', count: 4 },
+        { label: 'Estantes', href: '/moveis-para-escritorio/estante-profissional', count: 2 },
+        { label: 'Prateleiras', href: '/moveis-para-escritorio/prateleira-profissional', count: 6 },
       ],
     },
   ],
