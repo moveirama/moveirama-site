@@ -21,6 +21,7 @@ type Product = {
   slug: string
   price: number
   assembly_video_url: string | null
+  video_product_url: string | null
   manual_pdf_url: string | null
   medidas_image_url: string | null
   tv_max_size: number | null
@@ -91,6 +92,7 @@ export default function AdminImagensPage() {
   
   // Campos existentes
   const [videoUrl, setVideoUrl] = useState('')
+  const [videoProductUrl, setVideoProductUrl] = useState('')
   const [manualUrl, setManualUrl] = useState('')
   const [tvMaxSize, setTvMaxSize] = useState('')
   const [weightCapacity, setWeightCapacity] = useState('')
@@ -151,6 +153,7 @@ export default function AdminImagensPage() {
   // Função para atualizar todos os campos do formulário
   function updateFormFields(product: Product) {
     setVideoUrl(product.assembly_video_url || '')
+    setVideoProductUrl(product.video_product_url || '')
     setManualUrl(product.manual_pdf_url || '')
     setTvMaxSize(product.tv_max_size?.toString() || '')
     setWeightCapacity(product.weight_capacity?.toString() || '')
@@ -194,6 +197,7 @@ export default function AdminImagensPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           assembly_video_url: videoUrl || null,
+          video_product_url: videoProductUrl || null,
           manual_pdf_url: manualUrl || null,
           tv_max_size: tvMaxSize ? parseInt(tvMaxSize) : null,
           weight_capacity: weightCapacity ? parseInt(weightCapacity) : null,
@@ -618,6 +622,17 @@ export default function AdminImagensPage() {
                               placeholder="https://www.youtube.com/watch?v=..." 
                               value={videoUrl} 
                               onChange={(e) => setVideoUrl(e.target.value)}
+                              className="w-full px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm text-[#8B7355] mb-1">Vídeo do Produto (YouTube)</label>
+                            <input 
+                              type="url" 
+                              placeholder="https://www.youtube.com/watch?v=..." 
+                              value={videoProductUrl} 
+                              onChange={(e) => setVideoProductUrl(e.target.value)}
                               className="w-full px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
                             />
                           </div>
