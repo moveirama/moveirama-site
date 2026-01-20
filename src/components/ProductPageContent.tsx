@@ -18,8 +18,9 @@ import {
 /**
  * ProductPageContent — Página de Produto (PDP)
  * 
- * v2.0 — 20/01/2026
+ * v2.1 — 20/01/2026
  * Changelog:
+ * - v2.1 (20/01/2026): Prazo de entrega alterado de 2 para 3 dias úteis
  * - v2.0 (20/01/2026): Adicionada seção VideoProduct (vídeo do produto)
  * - v1.x: SEO V2, FAQs dinâmicas, Schema.org
  */
@@ -179,7 +180,7 @@ export default function ProductPageContent({
             
             {/* Resumo IA-friendly (SEO/AIO) - v2.1: removido "móvel de madeira" (material está nas specs) */}
             <p className="text-sm text-[var(--color-toffee)] mb-3 leading-relaxed break-words">
-              <strong>{product.name}</strong>{product.tv_max_size ? ` para TV até ${product.tv_max_size} polegadas` : ''}. {formatPrice(product.price)} à vista ou {parcelas}x {formatPrice(valorParcela)} sem juros. Montagem {formatDifficulty(product.assembly_difficulty)} (~{product.assembly_time_minutes}min). Entrega própria em Curitiba e região metropolitana em até 2 dias úteis.
+              <strong>{product.name}</strong>{product.tv_max_size ? ` para TV até ${product.tv_max_size} polegadas` : ''}. {formatPrice(product.price)} à vista ou {parcelas}x {formatPrice(valorParcela)} sem juros. Montagem {formatDifficulty(product.assembly_difficulty)} (~{product.assembly_time_minutes}min). Entrega própria em Curitiba e região metropolitana em até 3 dias úteis.
             </p>
             
             {/* SKU */}
@@ -437,7 +438,7 @@ export default function ProductPageContent({
             <div>
               <h3 className="text-base font-semibold text-[var(--color-graphite)] mb-2">Entrega rápida em Curitiba</h3>
               <p>
-                Entregamos com frota própria em Curitiba e região metropolitana - Colombo, São José dos Pinhais, Araucária, Pinhais e mais. Prazo de até 2 dias úteis após o pagamento. Sem surpresa no frete: você vê o valor antes de finalizar.
+                Entregamos com frota própria em Curitiba e região metropolitana - Colombo, São José dos Pinhais, Araucária, Pinhais e mais. Prazo de até 3 dias úteis após o pagamento. Sem surpresa no frete: você vê o valor antes de finalizar.
               </p>
             </div>
           </div>
