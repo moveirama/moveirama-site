@@ -261,11 +261,12 @@ export async function POST(request: Request) {
     const filePath = `${productId}/${fileName}`
 
     // Upload para Supabase Storage
+    // upsert: true → sobrescreve se já existir (evita erro "resource already exists")
     const { error: uploadError } = await supabase.storage
       .from('product-images')
       .upload(filePath, webpBuffer, {
         contentType: 'image/webp',
-        upsert: false
+        upsert: true
       })
 
     if (uploadError) {
