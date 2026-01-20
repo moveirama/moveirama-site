@@ -229,12 +229,71 @@ export default function AdminImagensPage() {
     }
   }
 
+  // Função para comprimir imagem antes do upload (evita erro 413 do Vercel)
+  async function compressImage(file: File, maxSize = 2000, quality = 0.85): Promise<File> {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.onload = () => {
+        // Calcula novas dimensões mantendo proporção
+        let { width, height } = img
+        if (width > maxSize || height > maxSize) {
+          if (width > height) {
+            height = (height / width) * maxSize
+            width = maxSize
+          } else {
+            width = (width / height) * maxSize
+            height = maxSize
+          }
+        }
+
+        // Cria canvas e desenha imagem redimensionada
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          reject(new Error('Erro ao criar canvas'))
+          return
+        }
+        ctx.drawImage(img, 0, 0, width, height)
+
+        // Converte para blob
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Erro ao comprimir imagem'))
+              return
+            }
+            // Cria novo File com mesmo nome
+            const compressedFile = new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            })
+            console.log(`Imagem comprimida: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`)
+            resolve(compressedFile)
+          },
+          'image/jpeg',
+          quality
+        )
+      }
+      img.onerror = () => reject(new Error('Erro ao carregar imagem'))
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
   async function uploadImage(file: File) {
     if (!selectedProduct) return
     setUploading(true)
     try {
+      // Comprime imagem se for maior que 3MB (evita erro 413 do Vercel)
+      let fileToUpload = file
+      if (file.size > 3 * 1024 * 1024) {
+        console.log('Comprimindo imagem grande...')
+        fileToUpload = await compressImage(file)
+      }
+
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', fileToUpload)
       formData.append('productId', selectedProduct.id)
       formData.append('productSlug', selectedProduct.slug)
       formData.append('position', String(selectedProduct.product_images?.length || 0))
