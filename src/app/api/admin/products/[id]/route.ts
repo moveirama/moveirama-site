@@ -15,6 +15,7 @@ export async function PATCH(
     // Campos permitidos para atualização
     const allowedFields = [
       'assembly_video_url',
+      'video_product_url',
       'manual_pdf_url',
       'medidas_image_url',
       'tv_max_size',
