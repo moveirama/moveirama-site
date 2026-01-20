@@ -3,12 +3,30 @@ import { NextResponse } from 'next/server'
 import sharp from 'sharp'
 
 /**
- * API de Upload de Imagens — SEO Elite v1.0
+ * API de Upload de Imagens — SEO Elite v2.0
  * 
- * Melhorias:
- * - Busca dados do produto (name, tv_max_size) para gerar SEO
- * - Alt text = padrão H1 (ex: "Rack Theo para TV até 60 polegadas - Cinamomo C / Off White")
- * - Filename otimizado (ex: "rack-theo-tv-60-polegadas-1.webp")
+ * ============================================
+ * NOMENCLATURA ELITE DE IMAGENS
+ * ============================================
+ * 
+ * ANTES (v1.0):
+ *   Filename: "painel-lumire-cinamomo-c-off-white-1.webp"
+ *   Alt text: "Painel Lumire - Cinamomo C / Off White"
+ * 
+ * DEPOIS (v2.0 Elite):
+ *   Filename: "painel-lumire-tv-75-polegadas-cinamomo-off-white-1.webp"
+ *   Alt text: "Painel Lumire para TV até 75 polegadas - Cinamomo C / Off White"
+ * 
+ * REGRAS:
+ * 1. Estrutura: {nome-base}-tv-{polegadas}-polegadas-{cor-limpa}-{index}.webp
+ * 2. Remove "c-" das cores (código interno do fornecedor)
+ * 3. Inclui "tv-{polegadas}" quando produto é rack/painel com tv_max_size
+ * 4. Alt text = padrão H1 da página (SEO otimizado)
+ * 
+ * EXEMPLOS REAIS:
+ * - "painel-lumire-cinamomo-c-off-white" + tv=75 → "painel-lumire-tv-75-polegadas-cinamomo-off-white-1.webp"
+ * - "rack-vivaldi-cinamomo-c-off-white" + tv=80 → "rack-vivaldi-tv-80-polegadas-cinamomo-off-white-1.webp"
+ * - "escrivaninha-match-pinho-preto" (sem TV) → "escrivaninha-match-pinho-preto-1.webp"
  */
 
 // ============================================
@@ -74,28 +92,95 @@ function generateImageAltText(
 }
 
 /**
- * Gera filename otimizado para SEO
+ * Extrai o nome base do produto (tipo + modelo) separado das cores
  * 
- * Para racks/painéis: "rack-theo-tv-60-polegadas-1.webp"
+ * Exemplo: "painel-lumire-cinamomo-c-off-white" 
+ *   → base: "painel-lumire", cor: "cinamomo-off-white"
+ * 
+ * Lógica: cores conhecidas são identificadas e separadas do nome base
+ */
+function extractBaseAndColor(slug: string): { base: string; color: string } {
+  // Lista de cores/acabamentos conhecidos (em ordem de prioridade)
+  const colorPatterns = [
+    // Madeiras
+    'cinamomo', 'carvalho', 'cedro', 'pinho', 'pinho-ripado', 'nogueira',
+    'amendoa', 'freijo', 'freijo-carvalho', 'nogal', 'canela', 'rustico',
+    // Cores
+    'off-white', 'branco', 'preto', 'grafite', 'cinza', 'bege',
+    // Combinações comuns
+    'nature', 'mel', 'demolição', 'demolição-chamagne', 'champanhe'
+  ]
+  
+  // Remove acentos para comparação
+  const normalizedSlug = removeAccents(slug).toLowerCase()
+  
+  // Encontra a primeira cor no slug
+  let firstColorIndex = normalizedSlug.length
+  let foundColor = ''
+  
+  for (const color of colorPatterns) {
+    const colorIndex = normalizedSlug.indexOf(color)
+    if (colorIndex > 0 && colorIndex < firstColorIndex) {
+      // Verifica se é uma palavra completa (precedida por hífen)
+      const charBefore = normalizedSlug[colorIndex - 1]
+      if (charBefore === '-') {
+        firstColorIndex = colorIndex
+        foundColor = color
+      }
+    }
+  }
+  
+  if (firstColorIndex < normalizedSlug.length) {
+    // Separa base e cor
+    const base = slug.substring(0, firstColorIndex - 1) // -1 para remover o hífen
+    const colorPart = slug.substring(firstColorIndex)
+    
+    // Limpa a cor: remove "-c-" (código interno) e normaliza
+    const cleanColor = colorPart
+      .replace(/-c-/g, '-')  // "cinamomo-c-off-white" → "cinamomo-off-white"
+      .replace(/-c$/g, '')   // Remove "-c" no final se houver
+    
+    return { base, color: cleanColor }
+  }
+  
+  // Se não encontrou cor, retorna slug inteiro como base
+  return { base: slug, color: '' }
+}
+
+/**
+ * Gera filename otimizado para SEO (Padrão Elite)
+ * 
+ * Para racks/painéis: "painel-lumire-tv-75-polegadas-cinamomo-off-white-1.webp"
  * Para outros: "escrivaninha-match-pinho-preto-1.webp"
+ * 
+ * Estrutura Elite: {nome-base}-tv-{polegadas}-polegadas-{cor-limpa}-{index}.webp
  */
 function generateImageFilename(
   productSlug: string,
   tvMaxSize: number | null,
   imageIndex: number
 ): string {
-  // Limpa o slug (remove possíveis códigos como "c-")
-  let cleanSlug = normalizeForFilename(productSlug)
+  // Normaliza o slug
+  const normalizedSlug = normalizeForFilename(productSlug)
   
-  // Se é rack/painel e tem tv_max_size, adiciona ao filename
+  // Extrai nome base e cor
+  const { base, color } = extractBaseAndColor(normalizedSlug)
+  
+  // Monta o filename
+  let filename = base
+  
+  // Se é rack/painel e tem tv_max_size, adiciona após o nome base
   if (isRackOrPainel(productSlug, '') && tvMaxSize && tvMaxSize > 0) {
-    // Verifica se já não tem "tv" no slug para evitar duplicação
-    if (!cleanSlug.includes('-tv-')) {
-      cleanSlug = `${cleanSlug}-tv-${tvMaxSize}-polegadas`
-    }
+    filename = `${base}-tv-${tvMaxSize}-polegadas`
   }
   
-  return `${cleanSlug}-${imageIndex}.webp`
+  // Adiciona cor (se houver)
+  if (color) {
+    filename = `${filename}-${color}`
+  }
+  
+  // Adiciona índice e extensão
+  return `${filename}-${imageIndex}.webp`
 }
 
 // ============================================
