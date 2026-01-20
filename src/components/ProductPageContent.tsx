@@ -53,6 +53,16 @@ function getInstallments(price: number, maxParcelas = 10) {
   return { parcelas, valorParcela }
 }
 
+// Formata dificuldade de montagem (banco armazena sem acento)
+function formatDifficulty(difficulty: string): string {
+  const map: Record<string, string> = {
+    'facil': 'fácil',
+    'medio': 'médio',
+    'dificil': 'difícil'
+  }
+  return map[difficulty] || difficulty
+}
+
 export default function ProductPageContent({ 
   product, 
   breadcrumbItems,
@@ -169,7 +179,7 @@ export default function ProductPageContent({
             
             {/* Resumo IA-friendly (SEO/AIO) - v2.1: removido "móvel de madeira" (material está nas specs) */}
             <p className="text-sm text-[var(--color-toffee)] mb-3 leading-relaxed break-words">
-              <strong>{product.name}</strong>{product.tv_max_size ? ` para TV até ${product.tv_max_size} polegadas` : ''}. {formatPrice(product.price)} à vista ou {parcelas}x {formatPrice(valorParcela)} sem juros. Montagem {product.assembly_difficulty} (~{product.assembly_time_minutes}min). Entrega própria em Curitiba e região metropolitana em até 2 dias úteis.
+              <strong>{product.name}</strong>{product.tv_max_size ? ` para TV até ${product.tv_max_size} polegadas` : ''}. {formatPrice(product.price)} à vista ou {parcelas}x {formatPrice(valorParcela)} sem juros. Montagem {formatDifficulty(product.assembly_difficulty)} (~{product.assembly_time_minutes}min). Entrega própria em Curitiba e região metropolitana em até 2 dias úteis.
             </p>
             
             {/* SKU */}
@@ -327,7 +337,7 @@ export default function ProductPageContent({
               <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
-              <span className="text-[var(--color-graphite)]">Quem quer montar sozinho sem dor de cabeça - nível {product.assembly_difficulty}, ~{product.assembly_time_minutes} minutos</span>
+              <span className="text-[var(--color-graphite)]">Quem quer montar sozinho sem dor de cabeça - nível {formatDifficulty(product.assembly_difficulty)}, ~{product.assembly_time_minutes} minutos</span>
             </li>
             <li className="flex items-start gap-3">
               <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -356,7 +366,7 @@ export default function ProductPageContent({
               <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              <span><strong>Montagem nível {product.assembly_difficulty}</strong> - tempo estimado ~{product.assembly_time_minutes} min</span>
+              <span><strong>Montagem nível {formatDifficulty(product.assembly_difficulty)}</strong> - tempo estimado ~{product.assembly_time_minutes} min</span>
             </li>
             <li className="flex items-start gap-3">
               <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -481,7 +491,7 @@ export default function ProductPageContent({
                 </tr>
                 <tr className="border-b border-[var(--color-sand-light)]">
                   <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Dificuldade montagem</th>
-                  <td className="px-4 py-3 capitalize">{product.assembly_difficulty}</td>
+                  <td className="px-4 py-3 capitalize">{formatDifficulty(product.assembly_difficulty)}</td>
                 </tr>
                 <tr>
                   <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Tempo de montagem</th>
