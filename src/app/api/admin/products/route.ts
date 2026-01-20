@@ -22,6 +22,7 @@ export async function GET(request: Request) {
         price,
         is_active,
         assembly_video_url,
+        video_product_url,
         manual_pdf_url,
         medidas_image_url,
         tv_max_size,
