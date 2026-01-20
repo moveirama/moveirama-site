@@ -167,9 +167,9 @@ export default function ProductPageContent({
               {h1Title}
             </h1>
             
-            {/* Resumo IA-friendly (SEO/AIO) */}
+            {/* Resumo IA-friendly (SEO/AIO) - v2.1: removido "móvel de madeira" (material está nas specs) */}
             <p className="text-sm text-[var(--color-toffee)] mb-3 leading-relaxed break-words">
-              <strong>{product.name}</strong> - móvel de madeira {product.tv_max_size ? `para TV até ${product.tv_max_size} polegadas` : ''}, {formatPrice(product.price)} à vista ou {parcelas}x {formatPrice(valorParcela)} sem juros. {product.main_material}{product.thickness_mm && ` ${product.thickness_mm}mm`}, montagem {product.assembly_difficulty} (~{product.assembly_time_minutes}min). Entrega própria em Curitiba e região metropolitana em até 2 dias úteis.
+              <strong>{product.name}</strong>{product.tv_max_size ? ` para TV até ${product.tv_max_size} polegadas` : ''}. {formatPrice(product.price)} à vista ou {parcelas}x {formatPrice(valorParcela)} sem juros. Montagem {product.assembly_difficulty} (~{product.assembly_time_minutes}min). Entrega própria em Curitiba e região metropolitana em até 2 dias úteis.
             </p>
             
             {/* SKU */}
