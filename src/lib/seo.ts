@@ -104,7 +104,7 @@ export function generateProductH1(product: ProductForH1): string {
  * 
  * Exemplo:
  * "Rack Theo para TV até 60". R$ 269,00 à vista ou 5x R$ 53,80 sem juros. 
- * Montagem em ~45min. Entrega em Curitiba e Região Metropolitana em até 2 dias."
+ * Montagem em ~45min. Entrega em Curitiba e Região Metropolitana em até 3 dias."
  */
 export function generateProductMetaDescription(product: ProductForMeta): string {
   const { name, price, tv_max_size, assembly_time_minutes, category_type } = product
@@ -138,7 +138,7 @@ export function generateProductMetaDescription(product: ProductForMeta): string 
   }
   
   // Parte 4: Entrega local (V2: "Região Metropolitana" para SEO local)
-  parts.push(`Entrega em Curitiba e Região Metropolitana em até 2 dias.`)
+  parts.push(`Entrega em Curitiba e Região Metropolitana em até 3 dias.`)
   
   // Junta e limita a 160 caracteres (limite do Google)
   let description = parts.join(' ')
@@ -235,7 +235,7 @@ export function generateProductSchema(product: ProductForSchema, canonicalUrl: s
           "transitTime": {
             "@type": "QuantitativeValue",
             "minValue": 1,
-            "maxValue": 2,
+            "maxValue": 3,
             "unitCode": "d"
           }
         }
@@ -384,7 +384,7 @@ export function generateRackFAQs(product: {
   // 7. Entrega (diferencial local - SEMPRE incluir)
   faqs.push({
     question: `Qual o prazo de entrega para Curitiba?`,
-    answer: `Entrega própria em Curitiba e Região Metropolitana em até 2 dias úteis. Frota própria - a gente conhece as ruas da cidade e cuida do seu móvel.`
+    answer: `Entrega própria em Curitiba e Região Metropolitana em até 3 dias úteis. Frota própria - a gente conhece as ruas da cidade e cuida do seu móvel.`
   })
   
   // 8. Garantia e troca
@@ -454,7 +454,7 @@ export function generateEscrivaninhaFAQs(product: {
   // 5. Entrega
   faqs.push({
     question: `Qual o prazo de entrega para Curitiba?`,
-    answer: `Entrega própria em Curitiba e Região Metropolitana em até 2 dias úteis.`
+    answer: `Entrega própria em Curitiba e Região Metropolitana em até 3 dias úteis.`
   })
   
   // 6. Garantia
@@ -544,7 +544,7 @@ export function generateProductFAQs(product: {
   return [
     {
       question: `Qual o prazo de entrega do ${baseName}?`,
-      answer: `Entrega própria em Curitiba e Região Metropolitana em até 2 dias úteis.`
+      answer: `Entrega própria em Curitiba e Região Metropolitana em até 3 dias úteis.`
     },
     {
       question: `É difícil montar o ${baseName}?`,
@@ -666,20 +666,20 @@ export function generateCategoryMetaDescription(
                          ['mesa-reta', 'mesa-em-l', 'mesa-reuniao', 'balcao-atendimento'].includes(categorySlug)
   
   if (isRackOrPainel) {
-    return `Confira ${seoNameLower} em Curitiba e Região Metropolitana. Modelos para TV de 32" a 75", compactos e modernos. Entrega própria em até 2 dias úteis. Compre móveis na caixa sem dor de cabeça.`
+    return `Confira ${seoNameLower} em Curitiba e Região Metropolitana. Modelos para TV de 32" a 75", compactos e modernos. Entrega própria em até 3 dias úteis. Compre móveis na caixa sem dor de cabeça.`
   }
   
   if (isEscrivaninha || isHomeOffice) {
-    return `${seoName} em Curitiba e RMC com entrega rápida. Modelos compactos ideais para apartamentos pequenos. Frota própria, entrega em até 2 dias úteis. Monte seu home office sem stress.`
+    return `${seoName} em Curitiba e RMC com entrega rápida. Modelos compactos ideais para apartamentos pequenos. Frota própria, entrega em até 3 dias úteis. Monte seu home office sem stress.`
   }
   
   if (isProfissional) {
-    return `${seoName} em Curitiba e Região Metropolitana. Móveis robustos para escritórios e empresas. Entrega própria em até 2 dias úteis. Qualidade profissional com preço justo.`
+    return `${seoName} em Curitiba e Região Metropolitana. Móveis robustos para escritórios e empresas. Entrega própria em até 3 dias úteis. Qualidade profissional com preço justo.`
   }
   
   // Descrição genérica para outras categorias
   const countText = productCount ? `${productCount} opções de ` : ''
-  return `${countText}${seoNameLower} em Curitiba e Região Metropolitana. Preço justo, entrega própria em até 2 dias úteis. Móveis na caixa com montagem fácil e suporte no WhatsApp.`
+  return `${countText}${seoNameLower} em Curitiba e Região Metropolitana. Preço justo, entrega própria em até 3 dias úteis. Móveis na caixa com montagem fácil e suporte no WhatsApp.`
 }
 
 /**
@@ -702,7 +702,7 @@ export function generateCategoryFAQs(
     },
     {
       question: `Qual o prazo de entrega para ${seoNameLower} em Curitiba?`,
-      answer: `Para Curitiba e região metropolitana, o prazo é de até 2 dias úteis após confirmação do pagamento. Entregamos com frota própria, sem depender de transportadoras.`
+      answer: `Para Curitiba e região metropolitana, o prazo é de até 3 dias úteis após confirmação do pagamento. Entregamos com frota própria, sem depender de transportadoras.`
     },
     {
       question: `Vocês montam os ${seoNameLower}?`,
