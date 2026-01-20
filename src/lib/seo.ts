@@ -4,7 +4,7 @@
  * Moveirama SEO Utilities
  * Funções para gerar H1, meta description, schema.org e FAQ
  * 
- * Versão: 2.3 — Taxonomia v2 (novos slugs de categoria)
+ * Versão: 2.3 - Taxonomia v2 (novos slugs de categoria)
  * Changelog:
  *   - v2.3: Atualizado mapeamentos para nova estrutura de URLs
  *           (racks-tv, paineis-tv, escrivaninha-home-office, etc.)
@@ -338,15 +338,15 @@ export function generateRackFAQs(product: {
     })
   }
   
-  // 2. Medidas (dúvida #2 — "vai caber?")
+  // 2. Medidas (dúvida #2 - "vai caber?")
   if (product.width && product.height && product.depth) {
     faqs.push({
       question: `Quais são as medidas do ${baseName}?`,
-      answer: `As dimensões são: ${product.width}cm de largura × ${product.height}cm de altura × ${product.depth}cm de profundidade. Meça o espaço antes de comprar — se precisar de ajuda, chama no WhatsApp.`
+      answer: `As dimensões são: ${product.width}cm de largura × ${product.height}cm de altura × ${product.depth}cm de profundidade. Meça o espaço antes de comprar - se precisar de ajuda, chama no WhatsApp.`
     })
   }
   
-  // 3. Montagem (dúvida #3 — medo de não conseguir)
+  // 3. Montagem (dúvida #3 - medo de não conseguir)
   const difficultyText = product.assembly_difficulty === 'facil' ? 'Fácil' : 
                          product.assembly_difficulty === 'medio' ? 'Médio' : 
                          product.assembly_difficulty === 'dificil' ? 'Difícil' : 'Médio'
@@ -361,7 +361,7 @@ export function generateRackFAQs(product: {
   if (product.main_material) {
     faqs.push({
       question: `Qual o material do ${baseName}?`,
-      answer: `${product.main_material} de alta durabilidade. Material resistente à umidade de Curitiba e fácil de limpar — só passar pano úmido.`
+      answer: `${product.main_material} de alta durabilidade. Material resistente à umidade de Curitiba e fácil de limpar - só passar pano úmido.`
     })
   }
   
@@ -381,10 +381,10 @@ export function generateRackFAQs(product: {
       : `Não precisa furar. O rack fica apoiado no chão, sem necessidade de fixação na parede.`
   })
   
-  // 7. Entrega (diferencial local — SEMPRE incluir)
+  // 7. Entrega (diferencial local - SEMPRE incluir)
   faqs.push({
     question: `Qual o prazo de entrega para Curitiba?`,
-    answer: `Entrega própria em Curitiba e Região Metropolitana em até 2 dias úteis. Frota própria — a gente conhece as ruas da cidade e cuida do seu móvel.`
+    answer: `Entrega própria em Curitiba e Região Metropolitana em até 2 dias úteis. Frota própria - a gente conhece as ruas da cidade e cuida do seu móvel.`
   })
   
   // 8. Garantia e troca
@@ -558,7 +558,7 @@ export function generateProductFAQs(product: {
 }
 
 // ============================================
-// SEO PARA CATEGORIAS (LISTAGEM) — v2.3
+// SEO PARA CATEGORIAS (LISTAGEM) - v2.3
 // Atualizado para nova taxonomia de URLs
 // ============================================
 
@@ -587,7 +587,7 @@ const CATEGORY_SEO_NAMES: Record<string, string> = {
   'penteadeiras': 'Penteadeiras',
   
   // ========================================
-  // MÓVEIS PARA ESCRITÓRIO — Home Office
+  // MÓVEIS PARA ESCRITÓRIO - Home Office
   // ========================================
   'escrivaninha-home-office': 'Escrivaninhas para Home Office',
   'escrivaninha-l-home-office': 'Escrivaninhas em L para Home Office',
@@ -596,7 +596,7 @@ const CATEGORY_SEO_NAMES: Record<string, string> = {
   'mesa-balcao-home-office': 'Mesas e Balcões para Home Office',
   
   // ========================================
-  // MÓVEIS PARA ESCRITÓRIO — Linha Profissional
+  // MÓVEIS PARA ESCRITÓRIO - Linha Profissional
   // ========================================
   'mesa-reta': 'Mesas Retas para Escritório',
   'mesa-em-l': 'Mesas em L para Escritório',
