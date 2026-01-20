@@ -224,13 +224,31 @@ export async function POST(request: Request) {
       )
     }
 
-    // Busca quantas imagens o produto já tem para gerar número sequencial
-    const { count } = await supabase
+    // Busca números já usados nas imagens existentes
+    // Lógica: encontra o primeiro "buraco" na sequência (ou próximo número se não houver buracos)
+    const { data: existingImages } = await supabase
       .from('product_images')
-      .select('*', { count: 'exact', head: true })
+      .select('cloudinary_path')
       .eq('product_id', productId)
-
-    const nextNumber = (count || 0) + 1
+    
+    // Extrai todos os números dos filenames existentes
+    const usedNumbers: number[] = []
+    if (existingImages && existingImages.length > 0) {
+      for (const img of existingImages) {
+        // Extrai número do padrão "...-{numero}.webp"
+        const match = img.cloudinary_path.match(/-(\d+)\.webp$/)
+        if (match) {
+          usedNumbers.push(parseInt(match[1]))
+        }
+      }
+    }
+    
+    // Encontra o primeiro número disponível (preenche buracos na sequência)
+    // Ex: se tem [1, 3], o próximo é 2. Se tem [1, 2, 3], o próximo é 4.
+    let nextNumber = 1
+    while (usedNumbers.includes(nextNumber)) {
+      nextNumber++
+    }
 
     // Converte arquivo para buffer
     const arrayBuffer = await file.arrayBuffer()
@@ -261,12 +279,11 @@ export async function POST(request: Request) {
     const filePath = `${productId}/${fileName}`
 
     // Upload para Supabase Storage
-    // upsert: true → sobrescreve se já existir (evita erro "resource already exists")
     const { error: uploadError } = await supabase.storage
       .from('product-images')
       .upload(filePath, webpBuffer, {
         contentType: 'image/webp',
-        upsert: true
+        upsert: false
       })
 
     if (uploadError) {
