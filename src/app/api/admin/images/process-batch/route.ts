@@ -10,6 +10,7 @@ const supabaseAdmin = createClient(
 
 const BUCKET = 'product-images'
 const ORIGINAIS_FOLDER = 'originais'
+const STORAGE_URL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${BUCKET}`
 
 // Gera nome SEO para o arquivo
 function generateSeoFilename(
@@ -19,6 +20,7 @@ function generateSeoFilename(
 ): string {
   let baseName = productSlug
 
+  // Adiciona TV para racks e painéis
   if (tvMaxSize && (productSlug.includes('rack-') || productSlug.includes('painel-'))) {
     baseName = `${baseName}-tv-ate-${tvMaxSize}-polegadas`
   }
@@ -155,7 +157,7 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // 3. Listar imagens na pasta
+    // 3. Listar imagens na pasta originais/{slug}/
     const { data: images, error: imagesError } = await supabaseAdmin.storage
       .from(BUCKET)
       .list(`${ORIGINAIS_FOLDER}/${slug}`, { limit: 50 })
@@ -186,7 +188,7 @@ export async function POST(request: NextRequest) {
       const position = i + 1
 
       try {
-        // Baixar
+        // Baixar original
         const { data: fileData, error: downloadError } = await supabaseAdmin.storage
           .from(BUCKET)
           .download(`${ORIGINAIS_FOLDER}/${slug}/${imageFile.name}`)
@@ -196,7 +198,7 @@ export async function POST(request: NextRequest) {
           continue
         }
 
-        // Converter
+        // Converter para WebP
         const buffer = Buffer.from(await fileData.arrayBuffer())
         const processedBuffer = await sharp(buffer)
           .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
@@ -206,7 +208,7 @@ export async function POST(request: NextRequest) {
         // Nome SEO
         const seoFilename = generateSeoFilename(product.slug, product.tv_max_size, position)
 
-        // Upload
+        // Upload para raiz do bucket
         const { error: uploadError } = await supabaseAdmin.storage
           .from(BUCKET)
           .upload(seoFilename, processedBuffer, {
@@ -220,26 +222,26 @@ export async function POST(request: NextRequest) {
         }
 
         // URL pública
-        const { data: urlData } = supabaseAdmin.storage
-          .from(BUCKET)
-          .getPublicUrl(seoFilename)
+        const publicUrl = `${STORAGE_URL}/${seoFilename}`
 
         // Alt text
         const altText = generateAltText(product.name, product.tv_max_size, position, imageFiles.length)
 
-        // Salvar no banco
+        // Salvar no banco com ESTRUTURA CORRETA
         const { error: insertError } = await supabaseAdmin
           .from('product_images')
           .insert({
             product_id: product.id,
-            url: urlData.publicUrl,
+            cloudinary_path: publicUrl,  // NÃO é "url"
             alt_text: altText,
-            position: position,
-            is_primary: position === 1
+            image_type: position === 1 ? 'principal' : 'galeria',  // NÃO é "is_primary"
+            position: position - 1,  // Começa em 0
+            is_active: true,
+            format: 'webp'
           })
 
         if (insertError) {
-          errors.push({ image: imageFile.name, error: 'Erro ao inserir no banco', details: insertError })
+          errors.push({ image: imageFile.name, error: 'Erro ao inserir no banco', details: insertError.message })
           continue
         }
 
