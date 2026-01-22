@@ -145,7 +145,7 @@ export default function RecursosMontagem({
           {medidasImagemUrl ? (
             <a
               href={medidasImagemUrl}
-              download
+              target="_blank" rel="noopener noreferrer"
               className="
                 bg-transparent border border-[var(--color-sage-500)] text-[var(--color-sage-500)]
                 text-sm font-medium py-2 px-4 rounded-lg
@@ -156,7 +156,7 @@ export default function RecursosMontagem({
               "
               aria-label="Ver imagem com medidas do produto"
             >
-              <DownloadIcon />
+              <ExternalLinkIcon />
               Ver
             </a>
           ) : (
