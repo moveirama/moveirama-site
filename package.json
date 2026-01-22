@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint"
   },
- "dependencies": {
+  "dependencies": {
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.90.1",
     "sharp": "^0.33.0",
@@ -16,6 +16,7 @@
     "@dnd-kit/sortable": "^8.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "react-dropzone": "^14.2.3",
+    "lucide-react": "^0.469.0",
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3"
@@ -31,3 +32,12 @@
     "typescript": "^5"
   }
 }
+```
+
+---
+
+## 📋 O que mudou
+
+Adicionei apenas essa linha nas `dependencies`:
+```
+"lucide-react": "^0.469.0",
