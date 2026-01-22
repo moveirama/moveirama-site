@@ -154,10 +154,10 @@ export default function RecursosMontagem({
                 focus-visible:outline focus-visible:outline-2 
                 focus-visible:outline-[var(--color-sage-500)] focus-visible:outline-offset-2
               "
-              aria-label="Baixar imagem com medidas do produto"
+              aria-label="Ver imagem com medidas do produto"
             >
               <DownloadIcon />
-              Baixar
+              Ver
             </a>
           ) : (
             <span className="
