@@ -3,10 +3,10 @@
 /**
  * Moveirama — Cliente Supabase e funções de acesso ao banco
  * 
- * v2.3: Simplificado para estrutura de 2 níveis (sem linhas intermediárias)
+ * v2.4: Corrigido carregamento de imagens nas páginas de categoria pai
  * Changelog:
- *   - Removida função getSubcategoryOfAnyParent() (não usada)
- *   - Simplificada getSubcategories() (sem lógica de sub-subcategorias)
+ *   - v2.3: Simplificado para estrutura de 2 níveis
+ *   - v2.4: Corrigido getSubcategories para buscar imagem representativa corretamente
  */
 
 import { createClient } from '@supabase/supabase-js'
@@ -148,7 +148,7 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
 /**
  * Busca subcategorias de uma categoria pai com contagem de produtos
  * 
- * v2.3: Simplificado para estrutura de 2 níveis (sem sub-subcategorias)
+ * v2.4: Corrigido para buscar imagem representativa do produto corretamente
  */
 export async function getSubcategories(parentSlug: string): Promise<CategoryWithCount[]> {
   // Busca o pai
@@ -178,30 +178,44 @@ export async function getSubcategories(parentSlug: string): Promise<CategoryWith
       const totalCount = count || 0
 
       // Busca imagem de um produto da categoria (fallback quando não tem image_url)
-      let categoryImage: string | null = null
+      let representativeImage: string | null = null
+      
       if (totalCount > 0 && !cat.image_url) {
-        const { data: productWithImage } = await supabase
+        // Busca um produto que tenha imagens
+        const { data: productsWithImages } = await supabase
           .from('products')
-          .select(`
-            id,
-            product_images(cloudinary_path, image_type)
-          `)
+          .select('id')
           .eq('category_id', cat.id)
           .eq('is_active', true)
-          .limit(1)
-          .single()
+          .order('created_at', { ascending: false })
+          .limit(10)
 
-        if (productWithImage?.product_images) {
-          const images = productWithImage.product_images as { cloudinary_path: string; image_type: string }[]
-          const principalImage = images.find(img => img.image_type === 'principal')
-          categoryImage = principalImage?.cloudinary_path || images[0]?.cloudinary_path || null
+        if (productsWithImages && productsWithImages.length > 0) {
+          // Para cada produto, tenta encontrar uma imagem
+          for (const product of productsWithImages) {
+            const { data: images } = await supabase
+              .from('product_images')
+              .select('cloudinary_path, image_type, position')
+              .eq('product_id', product.id)
+              .eq('is_active', true)
+              .order('position', { ascending: true })
+              .limit(5)
+
+            if (images && images.length > 0) {
+              // Prioridade: principal > menor position
+              const principalImage = images.find(img => img.image_type === 'principal')
+              representativeImage = principalImage?.cloudinary_path || images[0]?.cloudinary_path || null
+              
+              if (representativeImage) break // Encontrou imagem, sai do loop
+            }
+          }
         }
       }
 
       return {
         ...cat,
         product_count: totalCount,
-        image_url: cat.image_url || categoryImage
+        image_url: cat.image_url || representativeImage
       }
     })
   )
@@ -394,16 +408,4 @@ export async function getProductBySubcategoryAndSlug(
 // ========================================
 
 /**
- * Verifica se uma rota é uma categoria válida
- */
-export async function isValidCategoryRoute(
-  category: string, 
-  subcategory?: string
-): Promise<boolean> {
-  if (subcategory) {
-    const sub = await getSubcategory(category, subcategory)
-    return sub !== null
-  }
-  const parent = await getParentCategory(category)
-  return parent !== null
-}
+ * Verifica se uma rota é uma
