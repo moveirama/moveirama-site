@@ -6,9 +6,10 @@ import { usePathname } from 'next/navigation'
 import SearchModal from '@/components/search/SearchModal'
 
 // ============================================
-// ESTRUTURA DE NAVEGAÇÃO v2.1
-// Atualizado: 20/01/2026
+// ESTRUTURA DE NAVEGAÇÃO v2.2
+// Atualizado: 23/01/2026
 // Changelog:
+// - v2.2 (23/01/2026): Link "Fale Conosco" -> "Fale com a Gente" (/fale-com-a-gente)
 // - v2.1 (20/01/2026): Removidos links "Ver Linha X" (decisão Squad Visual)
 // - v2.0 (Jan/2026): Migração taxonomia v2 (URLs 2 níveis)
 // ============================================
@@ -49,7 +50,6 @@ const MENU_ESCRITORIO = {
     {
       id: 'linha-profissional',
       label: 'Linha Profissional',
-      // Grupos visuais para organização
       grupos: [
         {
           label: 'Mesas',
@@ -70,7 +70,6 @@ const MENU_ESCRITORIO = {
           ],
         },
       ],
-      // Subcategorias flat para compatibilidade
       subcategorias: [
         { label: 'Mesas Retas', href: '/moveis-para-escritorio/mesa-reta', count: 27 },
         { label: 'Mesas em L', href: '/moveis-para-escritorio/mesa-em-l', count: 12 },
@@ -204,7 +203,6 @@ function DropdownSimples({
 
 // ============================================
 // DROPDOWN 2 PAINÉIS (Escritório)
-// v2.1: Removidos links "Ver Linha X" (órfãos)
 // ============================================
 
 function DropdownDoisPaineis({ 
@@ -224,7 +222,6 @@ function DropdownDoisPaineis({
     ? data.linhas.find(l => l.id === activeLinha) 
     : null
 
-  // Verifica se a linha tem grupos (Linha Profissional)
   const hasGrupos = activeLinhaData && 'grupos' in activeLinhaData && activeLinhaData.grupos
 
   return (
@@ -242,7 +239,6 @@ function DropdownDoisPaineis({
       role="menu"
       onMouseLeave={onReset}
     >
-      {/* Painel Esquerdo: Linhas */}
       <div className="p-4 border-r border-[var(--color-sand-light)] flex flex-col">
         <span className="text-xs font-semibold text-[var(--color-toffee)] uppercase tracking-wider mb-3">
           Linhas
@@ -283,15 +279,12 @@ function DropdownDoisPaineis({
         </Link>
       </div>
       
-      {/* Painel Direito: Subcategorias */}
       <div className="p-4 bg-[var(--color-gray-50)] min-h-[280px] flex flex-col">
         {!activeLinhaData ? (
-          // Estado vazio
           <div className="flex-1 flex items-center justify-center" id="panel-empty">
             <span className="text-sm text-[var(--color-toffee)]">Selecione uma linha</span>
           </div>
         ) : hasGrupos ? (
-          // Linha Profissional: com grupos visuais
           <div id={`panel-${activeLinhaData.id}`} className="flex flex-col h-full">
             <span className="text-xs font-semibold text-[var(--color-sage-600)] uppercase tracking-wider mb-3">
               {activeLinhaData.label}
@@ -300,7 +293,6 @@ function DropdownDoisPaineis({
             <div className="flex-1 overflow-y-auto">
               {activeLinhaData.grupos!.map((grupo, index) => (
                 <div key={grupo.label} className={index > 0 ? 'mt-3' : ''}>
-                  {/* Label do grupo (não clicável) */}
                   <span className="block px-3 py-1.5 text-[11px] font-semibold text-[var(--color-toffee)] uppercase tracking-wide">
                     {grupo.label}
                   </span>
@@ -320,17 +312,14 @@ function DropdownDoisPaineis({
                     ))}
                   </ul>
                   
-                  {/* Divisor entre grupos */}
                   {index < activeLinhaData.grupos!.length - 1 && (
                     <div className="h-px bg-[var(--color-sand-light)] mt-3" />
                   )}
                 </div>
               ))}
             </div>
-            {/* REMOVIDO: Link "Ver Linha Profissional" (v2.1) */}
           </div>
         ) : (
-          // Home Office: lista simples
           <div id={`panel-${activeLinhaData.id}`} className="flex flex-col h-full">
             <span className="text-xs font-semibold text-[var(--color-sage-600)] uppercase tracking-wider mb-3">
               {activeLinhaData.label}
@@ -350,7 +339,6 @@ function DropdownDoisPaineis({
                 </li>
               ))}
             </ul>
-            {/* REMOVIDO: Link "Ver Home Office" (v2.1) */}
           </div>
         )}
       </div>
@@ -366,30 +354,25 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   
-  // Desktop: dropdown hover states
   const [casaOpen, setCasaOpen] = useState(false)
   const [escritorioOpen, setEscritorioOpen] = useState(false)
   const [activeLinha, setActiveLinha] = useState<string | null>(null)
   
-  // Mobile: accordion states
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
   const [expandedLinha, setExpandedLinha] = useState<string | null>(null)
   
   const pathname = usePathname()
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   
-  // Timeouts para delay no fechar dropdown
   const casaTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const escritorioTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Fechar menu mobile ao navegar
   useEffect(() => {
     setMobileMenuOpen(false)
     setExpandedCategory(null)
     setExpandedLinha(null)
   }, [pathname])
 
-  // Fechar menu com Escape
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -402,7 +385,6 @@ export default function Header() {
     return () => document.removeEventListener('keydown', handleEscape)
   }, [mobileMenuOpen])
 
-  // Atalho Ctrl+K / Cmd+K para abrir busca
   useEffect(() => {
     const handleSearchShortcut = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -414,7 +396,6 @@ export default function Header() {
     return () => document.removeEventListener('keydown', handleSearchShortcut)
   }, [])
 
-  // Bloquear scroll do body quando menu está aberto
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = 'hidden'
@@ -426,7 +407,6 @@ export default function Header() {
     }
   }, [mobileMenuOpen])
 
-  // Desktop: handlers para hover com delay
   const handleCasaEnter = () => {
     if (casaTimeoutRef.current) clearTimeout(casaTimeoutRef.current)
     setCasaOpen(true)
@@ -452,10 +432,9 @@ export default function Header() {
     }, 150)
   }
 
-  // Mobile: toggle accordion
   const toggleCategory = (key: string) => {
     setExpandedCategory(expandedCategory === key ? null : key)
-    setExpandedLinha(null) // Reset linha quando muda categoria
+    setExpandedLinha(null)
   }
   
   const toggleLinha = (linhaId: string) => {
@@ -471,7 +450,7 @@ export default function Header() {
             <p className="flex items-center gap-2">
               <LocationIcon className="w-4 h-4" />
               <span>Curitiba e Região Metropolitana</span>
-              <span className="hidden md:inline">•</span>
+              <span className="hidden md:inline">-</span>
               <span className="hidden md:inline">Receba em até 3 dias úteis</span>
             </p>
             <a 
@@ -481,7 +460,7 @@ export default function Header() {
               className="hidden md:flex items-center gap-2 hover:text-[var(--color-sage-500)] transition-colors"
             >
               <WhatsAppIcon className="w-4 h-4" />
-              <span>Fale conosco</span>
+              <span>Fale com a gente</span>
             </a>
           </div>
         </div>
@@ -489,7 +468,6 @@ export default function Header() {
         {/* Barra Principal */}
         <div className="bg-white border-b border-[var(--color-sand-light)]">
           <div className="max-w-[1280px] mx-auto px-4 lg:px-8 h-[72px] flex items-center justify-between">
-            {/* Logo */}
             <Link 
               href="/" 
               className="text-2xl font-bold text-[var(--color-graphite)] hover:text-[var(--color-sage-600)] transition-colors"
@@ -498,11 +476,8 @@ export default function Header() {
               moveirama
             </Link>
 
-            {/* Nav Desktop */}
             <nav className="hidden lg:block" aria-label="Menu principal">
               <ul className="flex items-center gap-2">
-                
-                {/* Casa - Dropdown Simples */}
                 <li 
                   className="relative"
                   onMouseEnter={handleCasaEnter}
@@ -526,7 +501,6 @@ export default function Header() {
                   <DropdownSimples data={MENU_CASA} isOpen={casaOpen} />
                 </li>
                 
-                {/* Escritório - Dropdown 2 Painéis */}
                 <li 
                   className="relative"
                   onMouseEnter={handleEscritorioEnter}
@@ -556,7 +530,6 @@ export default function Header() {
                   />
                 </li>
                 
-                {/* Ofertas */}
                 <li>
                   <Link
                     href="/ofertas"
@@ -568,9 +541,7 @@ export default function Header() {
               </ul>
             </nav>
 
-            {/* Ações */}
             <div className="flex items-center gap-3">
-              {/* Botão de Busca */}
               <button 
                 onClick={() => setSearchOpen(true)}
                 className="flex items-center justify-center w-11 h-11 text-[var(--color-toffee)] hover:text-[var(--color-graphite)] hover:bg-[var(--color-gray-100)] rounded-lg transition-colors"
@@ -579,7 +550,6 @@ export default function Header() {
                 <SearchIcon className="w-6 h-6" />
               </button>
               
-              {/* WhatsApp Desktop */}
               <a
                 href="https://wa.me/5541984209323"
                 target="_blank"
@@ -590,7 +560,6 @@ export default function Header() {
                 <span>WhatsApp</span>
               </a>
 
-              {/* Hamburger Mobile */}
               <button 
                 className="flex lg:hidden items-center justify-center w-11 h-11 text-[var(--color-graphite)] hover:bg-[var(--color-gray-100)] rounded-lg transition-colors"
                 onClick={() => setMobileMenuOpen(true)}
@@ -605,28 +574,22 @@ export default function Header() {
         </div>
       </header>
 
-      {/* ============================================
-          MOBILE MENU
-          v2.1: Removidos links "Ver Linha X"
-          ============================================ */}
+      {/* MOBILE MENU */}
       <div
         id="mobile-menu"
         className={`fixed inset-0 z-[2000] ${mobileMenuOpen ? 'visible' : 'invisible'}`}
         aria-hidden={!mobileMenuOpen}
         ref={mobileMenuRef}
       >
-        {/* Overlay */}
         <div 
           className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${mobileMenuOpen ? 'opacity-100' : 'opacity-0'}`}
           onClick={() => setMobileMenuOpen(false)}
           aria-hidden="true"
         />
         
-        {/* Panel */}
         <div 
           className={`absolute top-0 right-0 w-full max-w-[320px] h-full bg-white flex flex-col transition-transform duration-300 ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
         >
-          {/* Header do Menu */}
           <div className="flex justify-end p-4 border-b border-[var(--color-sand-light)]">
             <button
               className="flex items-center justify-center w-11 h-11 text-[var(--color-graphite)] hover:bg-[var(--color-gray-100)] rounded-lg transition-colors"
@@ -637,11 +600,8 @@ export default function Header() {
             </button>
           </div>
 
-          {/* Nav Mobile */}
           <nav className="flex-1 overflow-y-auto py-4">
             <ul>
-              
-              {/* Casa - Acordeão Simples */}
               <li className="border-b border-[var(--color-sand-light)]">
                 <button
                   className={`
@@ -657,7 +617,6 @@ export default function Header() {
                   <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${expandedCategory === 'casa' ? 'rotate-180' : ''}`} />
                 </button>
                 
-                {/* Submenu Casa */}
                 <ul
                   id="submenu-casa"
                   className={`bg-[var(--color-gray-50)] ${expandedCategory === 'casa' ? 'block' : 'hidden'}`}
@@ -684,7 +643,6 @@ export default function Header() {
                 </ul>
               </li>
               
-              {/* Escritório - Acordeão Aninhado */}
               <li className="border-b border-[var(--color-sand-light)]">
                 <button
                   className={`
@@ -700,7 +658,6 @@ export default function Header() {
                   <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${expandedCategory === 'escritorio' ? 'rotate-180' : ''}`} />
                 </button>
                 
-                {/* Submenu Escritório (com linhas) */}
                 <div
                   id="submenu-escritorio"
                   className={`bg-[var(--color-gray-50)] ${expandedCategory === 'escritorio' ? 'block' : 'hidden'}`}
@@ -712,7 +669,6 @@ export default function Header() {
                       
                       return (
                         <li key={linha.id}>
-                          {/* Botão da Linha (expandível) */}
                           <button
                             className={`
                               w-full flex items-center justify-between py-3 px-6 font-medium transition-colors min-h-[52px]
@@ -727,18 +683,15 @@ export default function Header() {
                             <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${expandedLinha === linha.id ? 'rotate-90' : ''}`} />
                           </button>
                           
-                          {/* Subcategorias da Linha */}
                           <div
                             id={`submenu-linha-${linha.id}`}
                             className={`bg-white border-l-[3px] border-[var(--color-sage-500)] ml-6 ${expandedLinha === linha.id ? 'block' : 'hidden'}`}
                             aria-hidden={expandedLinha !== linha.id}
                           >
                             {hasGrupos ? (
-                              // Linha Profissional: com grupos
                               <div className="py-2">
                                 {linha.grupos!.map((grupo, index) => (
                                   <div key={grupo.label}>
-                                    {/* Label do grupo */}
                                     <span className="block px-4 py-1.5 text-[10px] font-semibold text-[var(--color-toffee)] uppercase tracking-wide">
                                       {grupo.label}
                                     </span>
@@ -755,16 +708,13 @@ export default function Header() {
                                         </li>
                                       ))}
                                     </ul>
-                                    {/* Divisor entre grupos */}
                                     {index < linha.grupos!.length - 1 && (
                                       <div className="h-px bg-[var(--color-sand-light)] my-2 mx-4" />
                                     )}
                                   </div>
                                 ))}
-                                {/* REMOVIDO: Link "Ver Linha Profissional" (v2.1) */}
                               </div>
                             ) : (
-                              // Home Office: lista simples
                               <ul className="py-2">
                                 {linha.subcategorias.map((sub) => (
                                   <li key={sub.href}>
@@ -777,7 +727,6 @@ export default function Header() {
                                     </Link>
                                   </li>
                                 ))}
-                                {/* REMOVIDO: Link "Ver Home Office" (v2.1) */}
                               </ul>
                             )}
                           </div>
@@ -786,7 +735,6 @@ export default function Header() {
                     })}
                   </ul>
                   
-                  {/* Ver todos em Escritório */}
                   <Link
                     href={MENU_ESCRITORIO.href}
                     className="block px-6 py-3 text-sm font-medium text-[var(--color-sage-600)] hover:bg-[var(--color-sage-100)] transition-colors border-t border-[var(--color-sand-light)]"
@@ -796,7 +744,6 @@ export default function Header() {
                 </div>
               </li>
               
-              {/* Ofertas */}
               <li>
                 <Link
                   href="/ofertas"
@@ -808,18 +755,17 @@ export default function Header() {
               </li>
             </ul>
 
-            {/* Links Secundários */}
+            {/* Links Secundários - CORRIGIDO */}
             <div className="mt-4 pt-4 border-t border-[var(--color-sand-light)]">
               <Link
-                href="/contato"
+                href="/fale-com-a-gente"
                 className="block px-5 py-3.5 text-[15px] text-[var(--color-toffee)] hover:bg-[var(--color-gray-100)] transition-colors"
               >
-                Fale Conosco
+                Fale com a Gente
               </Link>
             </div>
           </nav>
 
-          {/* Footer do Menu */}
           <div className="p-4 border-t border-[var(--color-sand-light)]">
             <a
               href="https://wa.me/5541984209323"
@@ -834,7 +780,6 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Modal de Busca Inteligente */}
       <SearchModal 
         isOpen={searchOpen} 
         onClose={() => setSearchOpen(false)} 
