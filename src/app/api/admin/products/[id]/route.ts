@@ -1,8 +1,17 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+// Lazy initialization - só cria o client quando a função for chamada
+function getSupabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  
+  if (!url || !key) {
+    throw new Error('Missing Supabase credentials')
+  }
+  
+  return createClient(url, key)
+}
 
 export async function PATCH(
   request: NextRequest,
@@ -45,7 +54,8 @@ export async function PATCH(
       return NextResponse.json({ success: false, error: 'Nenhum campo válido para atualizar' }, { status: 400 })
     }
     
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    // Inicializa client dentro da função
+    const supabase = getSupabaseAdmin()
     
     const { data, error } = await supabase
       .from('products')
