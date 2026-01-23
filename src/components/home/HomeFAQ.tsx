@@ -1,55 +1,107 @@
 /**
- * HomeFAQ.tsx
+ * HomeFAQ.tsx - Perguntas Frequentes (Acordeão)
+ * Squad Dev - Janeiro 2026
+ * 
+ * SPECS: moveirama-home-mockup.jsx (linhas 768-873)
+ * - Fundo: Warm White (#FAF7F4)
+ * - Título: "Perguntas Frequentes" centralizado
+ * - Acordeão: max-width 720px, cards brancos
+ * - CTA WhatsApp ao final
  */
 
 'use client';
 
 import { useState } from 'react';
+import { ChevronDown, MessageCircle } from 'lucide-react';
 
-const ChevronDownIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-  </svg>
-);
-
-const faqItems = [
-  { question: 'Qual o prazo de entrega em Curitiba?', answer: 'Entregamos em 1 a 3 dias úteis (72 horas) em Curitiba com frota própria.' },
-  { question: 'Vocês entregam em Colombo, São José dos Pinhais e Araucária?', answer: 'Sim! Entregamos em toda a Região Metropolitana de Curitiba com frota própria.' },
-  { question: 'Os móveis vêm montados?', answer: 'Os móveis vêm na caixa para você montar. Acompanha manual ilustrado e ferragens. Indicamos montador se precisar.' },
-  { question: 'Quanto custa o frete?', answer: 'O frete em Curitiba começa em R$ 25. Para compras acima de R$ 299, o frete é grátis dentro de Curitiba.' },
-  { question: 'Como sei se o móvel cabe no meu espaço?', answer: 'Todas as medidas estão na página do produto. Dúvida? Manda no WhatsApp que confirmamos.' },
-  { question: 'Como funciona a troca ou devolução?', answer: 'Você tem 7 dias para trocar ou devolver conforme o CDC. O móvel precisa estar na embalagem original.' },
+const faqs = [
+  {
+    q: 'Qual o prazo de entrega em Curitiba?',
+    a: 'Entregamos em até 72 horas após a confirmação do pagamento. Usamos frota própria, então você não depende de transportadora.',
+  },
+  {
+    q: 'Vocês entregam em Colombo, São José dos Pinhais e Araucária?',
+    a: 'Sim! Atendemos toda a Região Metropolitana: Colombo, SJP, Araucária, Pinhais, Fazenda Rio Grande, Piraquara, Almirante Tamandaré e mais.',
+  },
+  {
+    q: 'Os móveis vêm montados?',
+    a: 'Vêm na caixa com manual completo + todas as ferragens + vídeo de montagem. A maioria é nível fácil (30-45 min). Travou? Chama no WhatsApp que ajudamos.',
+  },
+  {
+    q: 'Quanto custa o frete?',
+    a: 'O frete varia de R$ 25 a R$ 45 dependendo da região. Em Curitiba capital, a maioria dos bairros é R$ 25. Você vê o valor exato na página do produto, sem surpresa no checkout.',
+  },
+  {
+    q: 'Como sei se o móvel cabe no meu espaço?',
+    a: 'Todas as medidas (largura × altura × profundidade) estão na página do produto. Dúvida? Manda as medidas do seu espaço no WhatsApp que a gente confirma se cabe.',
+  },
+  {
+    q: 'Como funciona a troca?',
+    a: 'Você tem 7 dias para trocar ou devolver. Chegou com defeito? Manda foto + número do pedido no WhatsApp e resolvemos rapidinho.',
+  },
 ];
 
-export function HomeFAQ() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-  
+export default function HomeFAQ() {
+  const [openIndex, setOpenIndex] = useState<number>(-1);
+
+  const toggleFaq = (index: number) => {
+    setOpenIndex(openIndex === index ? -1 : index);
+  };
+
   return (
-    <section className="bg-[#FAF7F4] py-12 md:py-20" aria-labelledby="faq-title">
-      <div className="max-w-3xl mx-auto px-4 md:px-6">
-        <h2 id="faq-title" className="text-[#2D2D2D] text-[29px] md:text-[41px] font-bold mb-8 md:mb-10 text-center">Perguntas Frequentes</h2>
-        <dl className="space-y-3">
-          {faqItems.map((item, index) => {
-            const isOpen = openIndex === index;
-            return (
-              <div key={index} className="bg-white rounded-xl border border-[#E8DFD5] overflow-hidden">
-                <dt>
-                  <button type="button" className="w-full flex justify-between items-center gap-4 p-5 text-left cursor-pointer hover:bg-[#FAFAFA] transition-colors" onClick={() => setOpenIndex(isOpen ? null : index)} aria-expanded={isOpen}>
-                    <span className="text-[#2D2D2D] text-base font-medium">{item.question}</span>
-                    <ChevronDownIcon className={`w-5 h-5 text-[#8B7355] flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
-                  </button>
-                </dt>
-                <dd className={isOpen ? 'block' : 'hidden'}>
-                  <div className="px-5 pb-5 text-[#8B7355] text-[15px] leading-relaxed">{item.answer}</div>
-                </dd>
+    <section className="bg-[#FAF7F4] py-14 px-4 md:py-[90px] md:px-[60px]">
+      {/* Título */}
+      <h2 className="text-[29px] md:text-[41px] font-bold text-[#2D2D2D] text-center mb-7 md:mb-11">
+        Perguntas Frequentes
+      </h2>
+
+      {/* Acordeão */}
+      <div className="max-w-[720px] mx-auto flex flex-col gap-[14px]">
+        {faqs.map((faq, index) => (
+          <div
+            key={index}
+            className="bg-white rounded-xl border border-[#E8DFD5] overflow-hidden"
+          >
+            {/* Pergunta (botão) */}
+            <button
+              onClick={() => toggleFaq(index)}
+              className="w-full px-[22px] py-[18px] flex justify-between items-center text-left bg-transparent border-none cursor-pointer"
+            >
+              <span className="font-semibold text-[#2D2D2D] text-base pr-4 leading-[1.4]">
+                {faq.q}
+              </span>
+              <ChevronDown
+                size={22}
+                className={`text-[#8B7355] flex-shrink-0 transition-transform duration-200 ${
+                  openIndex === index ? 'rotate-180' : 'rotate-0'
+                }`}
+              />
+            </button>
+
+            {/* Resposta (condicional) */}
+            {openIndex === index && (
+              <div className="px-[22px] pb-[18px] text-[#8B7355] text-[15px] leading-[1.7]">
+                {faq.a}
               </div>
-            );
-          })}
-        </dl>
-        <div className="mt-8 text-center">
-          <p className="text-[#8B7355] text-[15px] mb-3">Não encontrou sua dúvida?</p>
-          <a href="https://wa.me/5541984209323?text=Oi!%20Tenho%20uma%20d%C3%BAvida" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-3 bg-[#25D366] text-white font-semibold rounded-lg hover:bg-[#20BD5A] transition-colors">Falar no WhatsApp</a>
-        </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* CTA WhatsApp */}
+      <div className="text-center mt-9">
+        <p className="text-[#8B7355] text-[15px] mb-[14px]">
+          Ainda tem dúvidas?
+        </p>
+        <a
+          href="https://wa.me/5541984209323?text=Olá! Tenho uma dúvida sobre os móveis."
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-8 py-4 bg-[#25D366] hover:bg-[#20BD5A] text-white font-semibold text-base rounded-lg transition-colors"
+        >
+          <MessageCircle size={20} />
+          Chamar no WhatsApp
+        </a>
       </div>
     </section>
   );
