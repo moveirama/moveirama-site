@@ -209,7 +209,9 @@ export async function POST(request: NextRequest) {
             position: nextPosition,
             is_active: true,
             filename_seo: seoFilename,
-            format: 'webp'
+            format: 'webp',
+            cloudinary_path: seoFilename,
+            image_type: 'product'
           })
 
         if (insertError) {
