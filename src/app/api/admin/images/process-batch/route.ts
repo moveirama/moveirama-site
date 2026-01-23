@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import sharp from 'sharp'
 
-// Lazy initialization - só cria o client quando a função for chamada
+// ============================================
+// LAZY INITIALIZATION - Corrigido para evitar erro no build
+// O client só é criado quando a função é chamada, não no escopo global
+// ============================================
 function getSupabaseAdmin() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -15,115 +18,58 @@ function getSupabaseAdmin() {
 }
 
 const BUCKET = 'product-images'
-const ORIGINAIS_FOLDER = 'originais'
 
-// Gera nome SEO para o arquivo
-function generateSeoFilename(
+// Função para gerar nome SEO Elite
+function generateSEOFilename(
   productSlug: string,
   tvMaxSize: number | null,
+  variantName: string | null,
   position: number
 ): string {
-  let baseName = productSlug
+  let filename = productSlug
 
-  // Adiciona TV para racks e painéis
-  if (tvMaxSize && (productSlug.includes('rack-') || productSlug.includes('painel-'))) {
-    baseName = `${baseName}-tv-ate-${tvMaxSize}-polegadas`
+  // Adicionar TV se aplicável
+  if (tvMaxSize) {
+    filename += `-tv-ate-${tvMaxSize}-polegadas`
   }
 
-  return `${baseName}-${position}.webp`
+  // Adicionar cor/variante se existir
+  if (variantName) {
+    const colorSlug = variantName
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+    filename += `-${colorSlug}`
+  }
+
+  // Adicionar número
+  filename += `-${position}.webp`
+
+  return filename
 }
 
-// Gera alt text SEO
+// Função para gerar alt text SEO
 function generateAltText(
   productName: string,
   tvMaxSize: number | null,
-  position: number,
-  total: number
+  variantName: string | null
 ): string {
   let alt = productName
 
   if (tvMaxSize) {
-    alt = `${productName} para TV até ${tvMaxSize} polegadas`
+    alt += ` para TV até ${tvMaxSize} polegadas`
   }
 
-  if (total > 1) {
-    alt = `${alt} - Imagem ${position} de ${total}`
+  if (variantName) {
+    alt += ` - ${variantName}`
   }
 
   return alt
 }
 
-// GET: Lista pastas pendentes
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
-  const password = searchParams.get('password')
-
-  if (password !== process.env.ADMIN_PASSWORD) {
-    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-  }
-
-  // Inicializa client dentro da função
-  const supabaseAdmin = getSupabaseAdmin()
-  
-  try {
-    // Listar pastas em originais/
-    const { data: folders, error: listError } = await supabaseAdmin.storage
-      .from(BUCKET)
-      .list(ORIGINAIS_FOLDER, { limit: 500 })
-
-    if (listError) {
-      return NextResponse.json({ error: 'Erro ao listar pastas', details: listError }, { status: 500 })
-    }
-
-    const productFolders = folders?.filter(f => !f.name.includes('.')) || []
-
-    // Verificar quais já têm imagens no banco
-    const pending: string[] = []
-    const done: string[] = []
-
-    for (const folder of productFolders) {
-      const slug = folder.name
-
-      // Buscar produto
-      const { data: product } = await supabaseAdmin
-        .from('products')
-        .select('id')
-        .eq('slug', slug)
-        .single()
-
-      if (!product) {
-        pending.push(`${slug} (produto não encontrado)`)
-        continue
-      }
-
-      // Verificar se já tem imagens
-      const { data: images } = await supabaseAdmin
-        .from('product_images')
-        .select('id')
-        .eq('product_id', product.id)
-        .limit(1)
-
-      if (images && images.length > 0) {
-        done.push(slug)
-      } else {
-        pending.push(slug)
-      }
-    }
-
-    return NextResponse.json({
-      total_folders: productFolders.length,
-      pending_count: pending.length,
-      done_count: done.length,
-      pending,
-      done
-    })
-
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-}
-
-// POST: Processa UM produto
 export async function POST(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const password = searchParams.get('password')
@@ -137,17 +83,23 @@ export async function POST(request: NextRequest) {
   const STORAGE_URL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${BUCKET}`
 
   try {
-    const body = await request.json().catch(() => ({}))
-    const slug = body.slug
+    const body = await request.json()
+    const { slug } = body
 
     if (!slug) {
-      return NextResponse.json({ error: 'Informe o slug do produto' }, { status: 400 })
+      return NextResponse.json({ error: 'Slug é obrigatório' }, { status: 400 })
     }
 
-    // 1. Buscar produto no banco
+    // 1. Buscar produto
     const { data: product, error: productError } = await supabaseAdmin
       .from('products')
-      .select('id, name, slug, tv_max_size')
+      .select(`
+        id, 
+        name, 
+        slug,
+        tv_max_size,
+        product_variants(name)
+      `)
       .eq('slug', slug)
       .single()
 
@@ -155,70 +107,80 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Produto não encontrado', slug }, { status: 404 })
     }
 
-    // 2. Verificar se já tem imagens
-    const { data: existingImages } = await supabaseAdmin
-      .from('product_images')
-      .select('id')
-      .eq('product_id', product.id)
+    const variantName = product.product_variants?.[0]?.name || null
 
-    if (existingImages && existingImages.length > 0) {
-      return NextResponse.json({
-        status: 'skipped',
-        slug,
-        reason: `Já tem ${existingImages.length} imagens`
-      })
-    }
-
-    // 3. Listar imagens na pasta originais/{slug}/
-    const { data: images, error: imagesError } = await supabaseAdmin.storage
+    // 2. Listar imagens na pasta originais/{slug}/
+    const folderPath = `originais/${slug}`
+    const { data: files, error: listError } = await supabaseAdmin.storage
       .from(BUCKET)
-      .list(`${ORIGINAIS_FOLDER}/${slug}`, { limit: 50 })
+      .list(folderPath, { limit: 100 })
 
-    if (imagesError || !images?.length) {
-      return NextResponse.json({ error: 'Nenhuma imagem encontrada na pasta', slug }, { status: 404 })
+    if (listError) {
+      return NextResponse.json({ error: 'Erro ao listar pasta', details: listError }, { status: 500 })
     }
 
-    // Filtrar e ordenar
-    const imageFiles = images
-      .filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f.name))
-      .sort((a, b) => {
-        const numA = parseInt(a.name.match(/\d+/)?.[0] || '0')
-        const numB = parseInt(b.name.match(/\d+/)?.[0] || '0')
-        return numA - numB
-      })
+    const imageFiles = files?.filter(f => 
+      f.name.match(/\.(jpg|jpeg|png|webp)$/i)
+    ) || []
 
     if (imageFiles.length === 0) {
-      return NextResponse.json({ error: 'Nenhuma imagem válida na pasta', slug }, { status: 404 })
+      return NextResponse.json({ error: 'Nenhuma imagem encontrada', folder: folderPath }, { status: 404 })
     }
 
-    // 4. Processar cada imagem
-    const processed: string[] = []
-    const errors: any[] = []
+    // Ordenar por nome (1.jpg, 2.jpg, etc)
+    imageFiles.sort((a, b) => {
+      const numA = parseInt(a.name.match(/^(\d+)/)?.[1] || '0')
+      const numB = parseInt(b.name.match(/^(\d+)/)?.[1] || '0')
+      return numA - numB
+    })
 
-    for (let i = 0; i < imageFiles.length; i++) {
-      const imageFile = imageFiles[i]
-      const position = i + 1
+    // 3. Processar cada imagem
+    const results = {
+      processed: [] as string[],
+      errors: [] as string[]
+    }
 
+    // Buscar próximo número disponível
+    const { data: existingImages } = await supabaseAdmin
+      .from('product_images')
+      .select('position')
+      .eq('product_id', product.id)
+      .order('position', { ascending: false })
+      .limit(1)
+
+    let nextPosition = (existingImages?.[0]?.position ?? -1) + 1
+
+    for (const file of imageFiles) {
       try {
-        // Baixar original
+        // Baixar imagem original
         const { data: fileData, error: downloadError } = await supabaseAdmin.storage
           .from(BUCKET)
-          .download(`${ORIGINAIS_FOLDER}/${slug}/${imageFile.name}`)
+          .download(`${folderPath}/${file.name}`)
 
         if (downloadError || !fileData) {
-          errors.push({ image: imageFile.name, error: 'Erro ao baixar' })
+          results.errors.push(`Erro ao baixar ${file.name}`)
           continue
         }
 
-        // Converter para WebP
+        // Converter para buffer
         const buffer = Buffer.from(await fileData.arrayBuffer())
+
+        // Processar com sharp: converter para WebP, redimensionar se necessário
         const processedBuffer = await sharp(buffer)
-          .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+          .resize(1200, 1200, { 
+            fit: 'inside', 
+            withoutEnlargement: true 
+          })
           .webp({ quality: 82 })
           .toBuffer()
 
-        // Nome SEO
-        const seoFilename = generateSeoFilename(product.slug, product.tv_max_size, position)
+        // Gerar nome SEO
+        const seoFilename = generateSEOFilename(
+          product.slug,
+          product.tv_max_size,
+          variantName,
+          nextPosition + 1
+        )
 
         // Upload para raiz do bucket
         const { error: uploadError } = await supabaseAdmin.storage
@@ -229,52 +191,51 @@ export async function POST(request: NextRequest) {
           })
 
         if (uploadError) {
-          errors.push({ image: imageFile.name, error: 'Erro no upload', details: uploadError })
+          results.errors.push(`Erro ao fazer upload ${seoFilename}: ${uploadError.message}`)
           continue
         }
 
-        // URL pública
-        const publicUrl = `${STORAGE_URL}/${seoFilename}`
+        // Gerar alt text
+        const altText = generateAltText(product.name, product.tv_max_size, variantName)
 
-        // Alt text
-        const altText = generateAltText(product.name, product.tv_max_size, position, imageFiles.length)
-
-        // Salvar no banco com ESTRUTURA CORRETA
+        // Registrar no banco
+        const imageUrl = `${STORAGE_URL}/${seoFilename}`
         const { error: insertError } = await supabaseAdmin
           .from('product_images')
           .insert({
             product_id: product.id,
-            cloudinary_path: publicUrl,  // NÃO é "url"
+            url: imageUrl,
             alt_text: altText,
-            image_type: position === 1 ? 'principal' : 'galeria',  // NÃO é "is_primary"
-            position: position - 1,  // Começa em 0
-            is_active: true,
-            format: 'webp'
+            position: nextPosition,
+            is_primary: nextPosition === 0
           })
 
         if (insertError) {
-          errors.push({ image: imageFile.name, error: 'Erro ao inserir no banco', details: insertError.message })
+          results.errors.push(`Erro ao registrar ${seoFilename}: ${insertError.message}`)
           continue
         }
 
-        processed.push(seoFilename)
+        results.processed.push(seoFilename)
+        nextPosition++
 
-      } catch (err: any) {
-        errors.push({ image: imageFile.name, error: err.message })
+      } catch (err) {
+        results.errors.push(`Erro processando ${file.name}: ${err instanceof Error ? err.message : 'Unknown'}`)
       }
     }
 
     return NextResponse.json({
-      status: 'processed',
-      slug,
-      product_name: product.name,
-      images_processed: processed.length,
-      images_total: imageFiles.length,
-      processed,
-      errors: errors.length > 0 ? errors : undefined
+      success: true,
+      product: product.name,
+      images_processed: results.processed.length,
+      images: results.processed,
+      errors: results.errors
     })
 
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error) {
+    console.error('Erro no processamento em lote:', error)
+    return NextResponse.json({ 
+      error: 'Erro interno', 
+      details: error instanceof Error ? error.message : 'Unknown error' 
+    }, { status: 500 })
   }
 }
