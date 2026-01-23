@@ -12,5 +12,5 @@ export { default as KnowledgeBlock } from './KnowledgeBlock';
 // Bloco 3 - Em implementação
 export { default as HomeFAQ } from './HomeFAQ';
 export { default as CoberturaSection } from './CoberturaSection';
-// export { default as SocialSection } from './SocialSection';
+export { default as SocialSection } from './SocialSection';
 // export { default as CTAFinal } from './CTAFinal';
