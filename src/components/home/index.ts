@@ -1,15 +1,11 @@
-// ============================================
-// HOME COMPONENTS - Index
-// ============================================
-
-export { default as HeroSection } from './HeroSection';
-export { default as TrustBar } from './TrustBar';
-export { default as CategoriesSection } from './CategoriesSection';
-export { default as WhatsAppFloat } from './WhatsAppFloat';
-export { default as FeaturedProducts } from './FeaturedProducts';
-export { default as DiferenciaisSection } from './DiferenciaisSection';
-export { default as KnowledgeBlock } from './KnowledgeBlock';
-export { default as HomeFAQ } from './HomeFAQ';
-export { default as CoberturaSection } from './CoberturaSection';
-export { default as SocialSection } from './SocialSection';
-export { default as CTAFinal } from './CTAFinal';
+export { HeroSection } from './HeroSection';
+export { TrustBar } from './TrustBar';
+export { CategoriesSection } from './CategoriesSection';
+export { FeaturedProducts } from './FeaturedProducts';
+export { DiferenciaisSection } from './DiferenciaisSection';
+export { KnowledgeBlock } from './KnowledgeBlock';
+export { HomeFAQ } from './HomeFAQ';
+export { CoberturaSection } from './CoberturaSection';
+export { SocialSection } from './SocialSection';
+export { CTAFinal } from './CTAFinal';
+export { WhatsAppFloat } from './WhatsAppFloat';
