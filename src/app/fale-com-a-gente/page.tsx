@@ -6,7 +6,7 @@ import Link from 'next/link'
 // ============================================
 
 export const metadata: Metadata = {
-  title: 'Fale com a Gente | Moveirama — Atendimento WhatsApp Curitiba',
+  title: 'Fale com a Gente | Moveirama - Atendimento WhatsApp Curitiba',
   description: 'Dúvida sobre medidas, entrega ou montagem? Fale com a Moveirama pelo WhatsApp. Atendimento de domingo a domingo. CNPJ: 61.154.643/0001-84',
   alternates: {
     canonical: 'https://moveirama.com.br/fale-com-a-gente',
@@ -159,9 +159,9 @@ const duvidasFrequentes = [
   { icon: <RefreshIcon />, text: 'E se eu precisar trocar?' },
 ]
 
-// URLs das redes sociais (PREENCHER)
-const INSTAGRAM_URL = '#' // TODO: Preencher URL real
-const FACEBOOK_URL = '#' // TODO: Preencher URL real
+// URLs das redes sociais
+const INSTAGRAM_URL = 'https://instagram.com/moveirama'
+const FACEBOOK_URL = 'https://facebook.com/moveirama'
 
 // ============================================
 // COMPONENTE PRINCIPAL
@@ -272,8 +272,8 @@ export default function FaleComAGentePage() {
                 </span>
               </div>
               <p className="text-[#2D2D2D] text-[15px] ml-8 leading-relaxed">
-                Rua Exemplo, 123 — Bairro<br/>
-                Curitiba — PR • CEP 80000-000
+                Rua Barão de Guaraúna, 517 - Juvevê<br/>
+                Curitiba - PR
               </p>
             </div>
 
