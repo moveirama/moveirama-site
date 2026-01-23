@@ -1,67 +1,54 @@
-// ============================================
-// CoberturaSection - Área de Cobertura
-// ============================================
-// Squad Dev - Janeiro 2026
-// Mostra as cidades atendidas
-// ============================================
+/**
+ * CoberturaSection.tsx - Área de Cobertura
+ * Squad Dev - Janeiro 2026
+ * 
+ * SPECS: moveirama-home-mockup.jsx (linhas 876-917)
+ * - Fundo: Warm White (#FAF7F4)
+ * - Título: "Entregamos em Curitiba e Região"
+ * - Pills: Curitiba destacado (Sage), demais branco com borda
+ * - Ícone Check em cada pill
+ */
 
-import { MapPin, Truck } from 'lucide-react';
+import { Check } from 'lucide-react';
 
-const cidades = [
-  { nome: 'Curitiba', destaque: true },
-  { nome: 'Colombo', destaque: false },
-  { nome: 'São José dos Pinhais', destaque: false },
-  { nome: 'Araucária', destaque: false },
-  { nome: 'Pinhais', destaque: false },
-  { nome: 'Fazenda Rio Grande', destaque: false },
-  { nome: 'Almirante Tamandaré', destaque: false },
-  { nome: 'Piraquara', destaque: false },
-  { nome: 'Campo Largo', destaque: false },
-  { nome: 'Quatro Barras', destaque: false },
+const cities = [
+  { name: 'Curitiba', highlight: true },
+  { name: 'São José dos Pinhais', highlight: false },
+  { name: 'Colombo', highlight: false },
+  { name: 'Pinhais', highlight: false },
+  { name: 'Araucária', highlight: false },
+  { name: 'Fazenda Rio Grande', highlight: false },
+  { name: 'Almirante Tamandaré', highlight: false },
+  { name: 'Piraquara', highlight: false },
+  { name: 'Quatro Barras', highlight: false },
+  { name: 'Campina Grande do Sul', highlight: false },
 ];
 
 export default function CoberturaSection() {
   return (
-    <section className="py-12 md:py-16 bg-[#2D2D2D]">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-14 h-14 bg-[#6B8E7A]/20 rounded-full mb-4">
-              <Truck className="w-7 h-7 text-[#6B8E7A]" />
-            </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
-              Entregamos em Curitiba e Região
-            </h2>
-            <p className="text-[#B8A99A]">
-              Frota própria para garantir rapidez e cuidado na entrega
-            </p>
-          </div>
+    <section className="bg-[#FAF7F4] py-12 px-4 md:py-[70px] md:px-[60px] text-center">
+      {/* Título */}
+      <h2 className="text-[26px] md:text-[36px] font-bold text-[#2D2D2D] mb-7">
+        Entregamos em Curitiba e Região
+      </h2>
 
-          {/* Grid de Cidades */}
-          <div className="flex flex-wrap justify-center gap-3">
-            {cidades.map((cidade, index) => (
-              <div
-                key={index}
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
-                  cidade.destaque
-                    ? 'bg-[#6B8E7A] text-white'
-                    : 'bg-[#3D3D3D] text-[#E8DFD5]'
-                }`}
-              >
-                <MapPin className="w-4 h-4" />
-                <span className="text-sm font-medium">{cidade.nome}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Info adicional */}
-          <div className="text-center mt-8">
-            <p className="text-[#B8A99A] text-sm">
-              Prazo de entrega: <span className="text-white font-medium">1 a 3 dias úteis</span> após confirmação do pagamento
-            </p>
-          </div>
-        </div>
+      {/* Pills de cidades */}
+      <div className="flex flex-wrap gap-3 justify-center max-w-[650px] mx-auto">
+        {cities.map((city, index) => (
+          <span
+            key={index}
+            className={`
+              inline-flex items-center gap-[6px] px-4 py-[10px] rounded-[20px] text-sm
+              ${city.highlight 
+                ? 'bg-[#6B8E7A] text-white font-semibold' 
+                : 'bg-white text-[#2D2D2D] font-medium border border-[#E8DFD5]'
+              }
+            `}
+          >
+            <Check size={16} />
+            {city.name}
+          </span>
+        ))}
       </div>
     </section>
   );
