@@ -13,6 +13,7 @@ import {
   KnowledgeBlock,
   HomeFAQ,
   CoberturaSection,
+  SocialSection,
   WhatsAppFloat,
 } from '@/components/home';
 
@@ -106,7 +107,7 @@ export default function HomePage() {
       {/* Bloco 3 */}
       <HomeFAQ />
       <CoberturaSection />
-      {/* SocialSection - próximo */}
+      <SocialSection />
       {/* CTAFinal - último */}
 
       {/* Flutuante */}
