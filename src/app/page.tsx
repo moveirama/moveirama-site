@@ -1,12 +1,15 @@
 /**
  * Home Page - Moveirama
- * V1 - Apenas componentes implementados
+ * V2 - Bloco 1 + Bloco 2 implementados
  */
 import type { Metadata } from 'next';
 import {
   HeroSection,
   TrustBar,
   CategoriesSection,
+  FeaturedProducts,
+  DiferenciaisSection,
+  KnowledgeBlock,
   WhatsAppFloat,
 } from '@/components/home';
 import {
@@ -80,13 +83,17 @@ export default function HomePage() {
       />
 
       <main>
+        {/* Bloco 1 */}
         <HeroSection />
         <TrustBar />
         <CategoriesSection />
-        {/* TODO: Adicionar após criar componentes
+        
+        {/* Bloco 2 */}
         <FeaturedProducts />
         <DiferenciaisSection />
         <KnowledgeBlock />
+
+        {/* TODO: Bloco 3
         <HomeFAQ />
         <CoberturaSection />
         <SocialSection />
