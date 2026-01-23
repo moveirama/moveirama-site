@@ -207,7 +207,9 @@ export async function POST(request: NextRequest) {
             urls: imageUrl,
             alt_text: altText,
             position: nextPosition,
-            is_primary: nextPosition === 0
+            is_active: true,
+            filename_seo: seoFilename,
+            format: 'webp'
           })
 
         if (insertError) {
