@@ -1,5 +1,5 @@
 /**
- * CTAFinal.tsx - CTA de Fechamento
+ * CTAFinal.tsx
  */
 
 import Link from 'next/link';
@@ -14,35 +14,13 @@ export function CTAFinal() {
   return (
     <section className="bg-[#6B8E7A] py-16 md:py-20">
       <div className="max-w-4xl mx-auto px-4 md:px-6 text-center">
-        <h2 className="text-white text-[31px] md:text-[46px] font-bold leading-tight mb-4">
-          Pronto para mobiliar?
-        </h2>
-        <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto">
-          Escolha seus móveis, calcule o frete e receba em até 72h em Curitiba e Região.
-        </p>
-        
+        <h2 className="text-white text-[31px] md:text-[46px] font-bold leading-tight mb-4">Pronto para mobiliar?</h2>
+        <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto">Escolha seus móveis, calcule o frete e receba em até 72h em Curitiba e Região.</p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link
-            href="/moveis-para-casa"
-            className="inline-flex items-center justify-center gap-2 bg-white text-[#2D2D2D] font-semibold px-8 py-4 rounded-lg hover:bg-gray-100 transition-colors min-h-[52px]"
-          >
-            Ver Móveis para Casa
-          </Link>
-          
-          
-            href="https://wa.me/5541984209323?text=Oi!%20Quero%20saber%20mais%20sobre%20os%20m%C3%B3veis"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20BD5A] text-white font-semibold px-8 py-4 rounded-lg transition-colors min-h-[52px]"
-          >
-            <WhatsAppIcon />
-            Falar no WhatsApp
-          </a>
+          <Link href="/moveis-para-casa" className="inline-flex items-center justify-center gap-2 bg-white text-[#2D2D2D] font-semibold px-8 py-4 rounded-lg hover:bg-gray-100 transition-colors min-h-[52px]">Ver Móveis para Casa</Link>
+          <a href="https://wa.me/5541984209323?text=Oi!%20Quero%20saber%20mais%20sobre%20os%20m%C3%B3veis" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20BD5A] text-white font-semibold px-8 py-4 rounded-lg transition-colors min-h-[52px]"><WhatsAppIcon />Falar no WhatsApp</a>
         </div>
-        
-        <p className="text-white/60 text-sm mt-8">
-          Empresa de Curitiba • CNPJ ativo • Nota fiscal • 3 meses de garantia
-        </p>
+        <p className="text-white/60 text-sm mt-8">Empresa de Curitiba • CNPJ ativo • Nota fiscal • 3 meses de garantia</p>
       </div>
     </section>
   );
