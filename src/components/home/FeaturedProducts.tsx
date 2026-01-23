@@ -1,60 +1,34 @@
-// ============================================
-// FeaturedProducts - Produtos em Destaque
-// ============================================
-// Squad Dev - Janeiro 2026
-// Exibe os produtos mais vendidos na Home
-// ============================================
+/**
+ * FeaturedProducts.tsx - Produtos em Destaque
+ * Squad Dev - Janeiro 2026
+ * 
+ * SPECS: HANDOFF_Home_Page_Decisoes_Visuais.md v2.5
+ * - Título: "Novidades no catálogo"
+ * - Link "Ver todos": cor Terracota (#B85C38)
+ * - Fundo: branco (#fff)
+ * - Grid: 4 colunas desktop, 2 mobile
+ * - Badges: Terracota (social) / Sage (entrega)
+ */
 
 import Link from 'next/link';
-import { Star } from 'lucide-react';
+import Image from 'next/image';
+import { ChevronRight } from 'lucide-react';
+import { createServerSupabaseClient } from '@/lib/supabase';
 
-// TODO: Substituir por dados reais do Supabase
-const products = [
-  {
-    id: '1',
-    name: 'Rack Cronos para TV até 50"',
-    slug: 'rack-cronos-off-white',
-    category: 'racks-tv',
-    price: 259.90,
-    oldPrice: 319.90,
-    rating: 4.8,
-    reviews: 42,
-    image: null,
-  },
-  {
-    id: '2',
-    name: 'Escrivaninha Office Plus',
-    slug: 'escrivaninha-office-plus-branco',
-    category: 'escrivaninha-home-office',
-    price: 189.90,
-    oldPrice: null,
-    rating: 4.9,
-    reviews: 38,
-    image: null,
-  },
-  {
-    id: '3',
-    name: 'Painel Âmbar para TV até 65"',
-    slug: 'painel-ambar-cinamomo',
-    category: 'paineis-tv',
-    price: 349.90,
-    oldPrice: 429.90,
-    rating: 4.7,
-    reviews: 29,
-    image: null,
-  },
-  {
-    id: '4',
-    name: 'Mesa de Centro Elegance',
-    slug: 'mesa-centro-elegance-off-white',
-    category: 'mesas-centro',
-    price: 139.90,
-    oldPrice: null,
-    rating: 4.6,
-    reviews: 17,
-    image: null,
-  },
-];
+interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  compare_at_price: number | null;
+  category: {
+    slug: string;
+  } | null;
+  product_images: {
+    url: string;
+    alt_text: string | null;
+  }[];
+}
 
 function formatPrice(value: number): string {
   return value.toLocaleString('pt-BR', {
@@ -63,89 +37,115 @@ function formatPrice(value: number): string {
   });
 }
 
-export default function FeaturedProducts() {
+function formatInstallment(price: number): string {
+  const installment = price / 5;
+  return `5x ${installment.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+}
+
+async function getFeaturedProducts(): Promise<Product[]> {
+  const supabase = await createServerSupabaseClient();
+  
+  const { data, error } = await supabase
+    .from('products')
+    .select(`
+      id,
+      name,
+      slug,
+      price,
+      compare_at_price,
+      category:categories(slug),
+      product_images(url, alt_text)
+    `)
+    .eq('is_active', true)
+    .eq('is_featured', true)
+    .order('created_at', { ascending: false })
+    .limit(8);
+
+  if (error) {
+    console.error('Erro ao buscar produtos em destaque:', error);
+    return [];
+  }
+
+  return (data as Product[]) || [];
+}
+
+export default async function FeaturedProducts() {
+  const products = await getFeaturedProducts();
+
+  // Se não houver produtos em destaque, não renderiza a seção
+  if (products.length === 0) {
+    return null;
+  }
+
   return (
-    <section className="py-12 md:py-16 bg-white">
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <h2 className="text-2xl md:text-3xl font-bold text-[#2D2D2D] mb-2">
-            Mais Vendidos em Curitiba
+    <section className="py-12 md:py-[70px] bg-white">
+      <div className="container mx-auto px-4 md:px-[60px] max-w-[1160px]">
+        {/* Header da seção */}
+        <div className="flex justify-between items-center mb-7 md:mb-9">
+          <h2 className="text-[26px] md:text-[36px] font-bold text-[#2D2D2D]">
+            Novidades no catálogo
           </h2>
-          <p className="text-[#8B7355]">
-            Os móveis preferidos dos nossos clientes
-          </p>
-        </div>
-
-        {/* Grid de Produtos */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          {products.map((product) => (
-            <Link
-              key={product.id}
-              href={`/${product.category}/${product.slug}`}
-              className="group bg-[#FAF7F4] rounded-xl overflow-hidden hover:shadow-lg transition-shadow"
-            >
-              {/* Imagem */}
-              <div className="aspect-square bg-[#F0E8DF] relative">
-                {/* Placeholder - substituir por Image quando tiver fotos */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-20 h-20 bg-[#E8DFD5] rounded-lg" />
-                </div>
-
-                {/* Badge de desconto */}
-                {product.oldPrice && (
-                  <span className="absolute top-2 left-2 bg-[#B85C38] text-white text-xs font-bold px-2 py-1 rounded">
-                    -{Math.round((1 - product.price / product.oldPrice) * 100)}%
-                  </span>
-                )}
-              </div>
-
-              {/* Info */}
-              <div className="p-4">
-                {/* Rating */}
-                <div className="flex items-center gap-1 mb-2">
-                  <Star className="w-4 h-4 fill-[#D4A574] text-[#D4A574]" />
-                  <span className="text-sm font-medium text-[#2D2D2D]">
-                    {product.rating}
-                  </span>
-                  <span className="text-xs text-[#8B7355]">
-                    ({product.reviews})
-                  </span>
-                </div>
-
-                {/* Nome */}
-                <h3 className="font-medium text-[#2D2D2D] text-sm md:text-base mb-2 line-clamp-2 group-hover:text-[#6B8E7A] transition-colors">
-                  {product.name}
-                </h3>
-
-                {/* Preço */}
-                <div>
-                  {product.oldPrice && (
-                    <span className="text-sm text-[#B8A99A] line-through block">
-                      {formatPrice(product.oldPrice)}
-                    </span>
-                  )}
-                  <span className="text-lg font-bold text-[#2D2D2D]">
-                    {formatPrice(product.price)}
-                  </span>
-                  <span className="text-xs text-[#8B7355] block">
-                    ou 5x de {formatPrice(product.price / 5)} sem juros
-                  </span>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {/* CTA Ver todos */}
-        <div className="text-center mt-10">
           <Link
             href="/moveis-para-casa"
-            className="inline-flex items-center justify-center bg-[#6B8E7A] hover:bg-[#5A7A68] text-white font-semibold px-8 py-3 rounded-lg transition-colors min-h-[48px]"
+            className="hidden md:flex items-center gap-1 text-[15px] font-semibold text-[#B85C38] hover:text-[#9A4D30] transition-colors"
           >
-            Ver Todos os Produtos
+            Ver todos
+            <ChevronRight className="w-[18px] h-[18px]" />
           </Link>
         </div>
+
+        {/* Grid de produtos */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-[14px] md:gap-[22px]">
+          {products.slice(0, 8).map((product) => {
+            const categorySlug = product.category?.slug || 'produtos';
+            const productUrl = `/${categorySlug}/${product.slug}`;
+            const mainImage = product.product_images?.[0];
+
+            return (
+              <Link
+                key={product.id}
+                href={productUrl}
+                className="group bg-[#FAF7F4] rounded-xl overflow-hidden border border-[#E8DFD5] hover:shadow-md transition-all"
+              >
+                {/* Imagem */}
+                <div className="relative aspect-square bg-[#F0E8DF] flex items-center justify-center">
+                  {mainImage ? (
+                    <Image
+                      src={mainImage.url}
+                      alt={mainImage.alt_text || product.name}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                    />
+                  ) : (
+                    <span className="text-5xl opacity-30">📷</span>
+                  )}
+                </div>
+
+                {/* Info do produto */}
+                <div className="p-[14px] md:p-[18px]">
+                  <p className="text-[15px] md:text-base font-medium text-[#2D2D2D] mb-[10px] leading-[1.4] line-clamp-2">
+                    {product.name}
+                  </p>
+                  <p className="text-xl md:text-[22px] font-bold text-[#2D2D2D] mb-[6px]">
+                    {formatPrice(product.price)}
+                  </p>
+                  <p className="text-sm text-[#8B7355]">
+                    ou {formatInstallment(product.price)} sem juros
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Ver mais (mobile only) */}
+        <Link
+          href="/moveis-para-casa"
+          className="md:hidden flex items-center justify-center w-full mt-7 py-4 text-[#B85C38] font-semibold text-base border-2 border-[#B85C38] rounded-lg hover:bg-[#B85C38] hover:text-white transition-colors"
+        >
+          Ver mais produtos
+        </Link>
       </div>
     </section>
   );
