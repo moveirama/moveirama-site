@@ -2,15 +2,20 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import sharp from 'sharp'
 
-// Cliente Supabase com service role (acesso total)
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Lazy initialization - só cria o client quando a função for chamada
+function getSupabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  
+  if (!url || !key) {
+    throw new Error('Missing Supabase credentials')
+  }
+  
+  return createClient(url, key)
+}
 
 const BUCKET = 'product-images'
 const ORIGINAIS_FOLDER = 'originais'
-const STORAGE_URL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${BUCKET}`
 
 // Gera nome SEO para o arquivo
 function generateSeoFilename(
@@ -57,6 +62,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
+  // Inicializa client dentro da função
+  const supabaseAdmin = getSupabaseAdmin()
+  
   try {
     // Listar pastas em originais/
     const { data: folders, error: listError } = await supabaseAdmin.storage
@@ -123,6 +131,10 @@ export async function POST(request: NextRequest) {
   if (password !== process.env.ADMIN_PASSWORD) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
+
+  // Inicializa client dentro da função
+  const supabaseAdmin = getSupabaseAdmin()
+  const STORAGE_URL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${BUCKET}`
 
   try {
     const body = await request.json().catch(() => ({}))
