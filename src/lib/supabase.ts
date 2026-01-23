@@ -408,4 +408,16 @@ export async function getProductBySubcategoryAndSlug(
 // ========================================
 
 /**
- * Verifica se uma rota é uma
+ * Verifica se uma rota é uma categoria válida
+ */
+export async function isValidCategoryRoute(
+  category: string, 
+  subcategory?: string
+): Promise<boolean> {
+  if (subcategory) {
+    const sub = await getSubcategory(category, subcategory)
+    return sub !== null
+  }
+  const parent = await getParentCategory(category)
+  return parent !== null
+}
