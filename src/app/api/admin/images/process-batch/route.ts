@@ -210,7 +210,7 @@ export async function POST(request: NextRequest) {
             is_active: true,
             filename_seo: seoFilename,
             format: 'webp',
-            cloudinary_path: seoFilename,
+            cloudinary_path: imageUrl,
             image_type: nextPosition === 0 ? 'principal' : 'galeria'
           })
 
