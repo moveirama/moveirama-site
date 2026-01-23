@@ -1,6 +1,11 @@
 /**
  * Home Page - Moveirama
  * Squad Dev - Janeiro 2026
+ * 
+ * ESTRUTURA COMPLETA:
+ * - Bloco 1: Hero, TrustBar, Categories
+ * - Bloco 2: FeaturedProducts, Diferenciais, Knowledge
+ * - Bloco 3: FAQ, Cobertura, Social, CTAFinal
  */
 
 import type { Metadata } from 'next';
@@ -14,6 +19,7 @@ import {
   HomeFAQ,
   CoberturaSection,
   SocialSection,
+  CTAFinal,
   WhatsAppFloat,
 } from '@/components/home';
 
@@ -108,7 +114,7 @@ export default function HomePage() {
       <HomeFAQ />
       <CoberturaSection />
       <SocialSection />
-      {/* CTAFinal - último */}
+      <CTAFinal />
 
       {/* Flutuante */}
       <WhatsAppFloat />
