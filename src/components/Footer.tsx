@@ -131,11 +131,11 @@ export default function Footer() {
           <div className="flex flex-col items-center md:items-start">
             <h4 className="font-semibold mb-4">Categorias</h4>
             <ul className="space-y-2 text-sm text-[#D9CFC4]">
-              <li><Link href="/casa/racks" className="hover:text-white transition-colors">Racks para TV</Link></li>
-              <li><Link href="/casa/paineis" className="hover:text-white transition-colors">Painéis para TV</Link></li>
-              <li><Link href="/escritorio/escrivaninhas" className="hover:text-white transition-colors">Escrivaninhas</Link></li>
-              <li><Link href="/casa/buffets" className="hover:text-white transition-colors">Buffets</Link></li>
-              <li><Link href="/escritorio/mesas" className="hover:text-white transition-colors">Mesas</Link></li>
+              <li><Link href="/moveis-para-casa/racks-tv" className="hover:text-white transition-colors">Racks para TV</Link></li>
+              <li><Link href="/moveis-para-casa/paineis-tv" className="hover:text-white transition-colors">Painéis para TV</Link></li>
+              <li><Link href="/moveis-para-escritorio/escrivaninha-home-office" className="hover:text-white transition-colors">Escrivaninhas</Link></li>
+              <li><Link href="/moveis-para-casa/buffets" className="hover:text-white transition-colors">Buffets</Link></li>
+              <li><Link href="/moveis-para-escritorio/mesa-reta" className="hover:text-white transition-colors">Mesas de Escritório</Link></li>
             </ul>
           </div>
 
