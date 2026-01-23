@@ -1,21 +1,48 @@
 /**
- * KnowledgeBlock.tsx
+ * KnowledgeBlock.tsx - Bloco de Conteúdo SEO
+ * Squad Dev - Janeiro 2026
+ * 
+ * SPECS: HANDOFF_Home_Page_Decisoes_Visuais.md v2.5
+ * - Fundo: Cream (#F0E8DF)
+ * - Layout: 1 coluna centralizada, max-width 720px
+ * - Texto: Toffee (#8B7355) com destaques em Graphite
+ * - Conteúdo: SEO semântico para Curitiba/RMC
  */
 
-export function KnowledgeBlock() {
+export default function KnowledgeBlock() {
   return (
-    <section className="bg-[#F0E8DF] py-12 md:py-20" aria-labelledby="knowledge-title">
-      <div className="max-w-[720px] mx-auto px-4 md:px-6">
-        <h2 id="knowledge-title" className="text-[#2D2D2D] text-[29px] md:text-[36px] font-bold mb-6 text-center">Móveis para apartamentos em Curitiba</h2>
-        <div className="text-[#8B7355] text-base leading-relaxed space-y-4">
-          <p>A <strong className="text-[#2D2D2D]">Moveirama</strong> é uma loja de móveis em Curitiba especializada em móveis para apartamentos compactos. Atendemos bairros como <strong className="text-[#2D2D2D]">CIC, Pinheirinho, Cajuru, Boqueirão, Sítio Cercado, Xaxim e Portão</strong>, além de toda a Região Metropolitana.</p>
-          <p>Nosso diferencial é a <strong className="text-[#2D2D2D]">entrega em até 72 horas com frota própria</strong>. Nada de transportadora terceirizada — a gente mesmo leva seu móvel com cuidado até a porta do seu apartamento.</p>
-          <p>Trabalhamos com as melhores marcas de móveis como <strong className="text-[#2D2D2D]">Artely e Artany</strong>, conhecidas pelo excelente custo-benefício e qualidade dos materiais.</p>
-          <p>Precisa de ajuda com a montagem? Todos os móveis vêm com manual ilustrado e ferragens completas. Também <strong className="text-[#2D2D2D]">indicamos montadores de confiança</strong> se você preferir.</p>
-          <p>Somos uma empresa de Curitiba com <strong className="text-[#2D2D2D]">CNPJ ativo, nota fiscal e 3 meses de garantia</strong> em todos os produtos. Compre sem medo!</p>
-        </div>
-        <div className="mt-8 text-center">
-          <a href="https://wa.me/5541984209323?text=Oi!%20Quero%20saber%20mais" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20BD5A] text-white font-semibold px-6 py-3 rounded-lg transition-colors min-h-[48px]">Chamar no WhatsApp</a>
+    <section className="py-14 md:py-[90px] bg-[#F0E8DF]">
+      <div className="container mx-auto px-5 md:px-[60px]">
+        <div className="max-w-[720px] mx-auto">
+          {/* H2 SEO */}
+          <h2 className="text-[29px] md:text-[36px] font-bold text-[#2D2D2D] mb-7 leading-tight">
+            Móveis para Apartamentos Compactos em Curitiba
+          </h2>
+
+          {/* Conteúdo SEO */}
+          <div className="text-[17px] text-[#8B7355] leading-[1.8] space-y-[18px]">
+            <p>
+              A Moveirama entende a realidade de quem mora em{' '}
+              <strong className="text-[#2D2D2D] font-semibold">apartamento pequeno</strong>{' '}
+              em Curitiba e Região Metropolitana. Por isso, trabalhamos com móveis que{' '}
+              <strong className="text-[#2D2D2D] font-semibold">otimizam espaço</strong>{' '}
+              sem abrir mão do design.
+            </p>
+
+            <p>
+              Nossos racks comportam TVs de{' '}
+              <strong className="text-[#2D2D2D] font-semibold">43 a 65 polegadas</strong>.{' '}
+              As escrivaninhas cabem em qualquer cantinho do home office. E o melhor:{' '}
+              entregamos com{' '}
+              <strong className="text-[#2D2D2D] font-semibold">frota própria em até 72 horas</strong>.
+            </p>
+
+            <p>
+              Atendemos todos os bairros de Curitiba - CIC, Pinheirinho, Cajuru, Boqueirão,{' '}
+              Sítio Cercado - e também Colombo, São José dos Pinhais, Araucária, Pinhais{' '}
+              e Fazenda Rio Grande.
+            </p>
+          </div>
         </div>
       </div>
     </section>
