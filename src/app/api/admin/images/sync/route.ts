@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Lazy initialization - só cria o client quando a função for chamada
+function getSupabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  
+  if (!url || !key) {
+    throw new Error('Missing Supabase credentials')
+  }
+  
+  return createClient(url, key)
+}
 
 const BUCKET = 'product-images'
-const STORAGE_URL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${BUCKET}`
 
 export async function POST(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -16,6 +22,10 @@ export async function POST(request: NextRequest) {
   if (password !== process.env.ADMIN_PASSWORD) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
+
+  // Inicializa client dentro da função
+  const supabaseAdmin = getSupabaseAdmin()
+  const STORAGE_URL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${BUCKET}`
 
   try {
     // 1. Listar todos os arquivos .webp na raiz do bucket
