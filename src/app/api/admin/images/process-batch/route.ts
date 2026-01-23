@@ -204,7 +204,7 @@ export async function POST(request: NextRequest) {
           .from('product_images')
           .insert({
             product_id: product.id,
-            url: imageUrl,
+            urls: imageUrl,
             alt_text: altText,
             position: nextPosition,
             is_primary: nextPosition === 0
