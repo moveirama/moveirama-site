@@ -7,13 +7,12 @@
  * - Link "Ver todos": cor Terracota (#B85C38)
  * - Fundo: branco (#fff)
  * - Grid: 4 colunas desktop, 2 mobile
- * - Badges: Terracota (social) / Sage (entrega)
  */
 
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 interface Product {
   id: string;
@@ -43,8 +42,6 @@ function formatInstallment(price: number): string {
 }
 
 async function getFeaturedProducts(): Promise<Product[]> {
-  const supabase = await createServerSupabaseClient();
-  
   const { data, error } = await supabase
     .from('products')
     .select(`
