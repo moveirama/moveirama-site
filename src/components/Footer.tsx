@@ -18,9 +18,11 @@ export default function Footer() {
             "email": "contato@moveirama.com.br",
             "address": {
               "@type": "PostalAddress",
+              "streetAddress": "Rua Barão de Guaraúna, 517",
               "addressLocality": "Curitiba",
               "addressRegion": "PR",
-              "addressCountry": "BR"
+              "addressCountry": "BR",
+              "postalCode": "80030-310"
             },
             "geo": {
               "@type": "GeoCoordinates",
@@ -67,7 +69,7 @@ export default function Footer() {
             ],
             "openingHoursSpecification": {
               "@type": "OpeningHoursSpecification",
-              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
               "opens": "09:00",
               "closes": "18:00"
             },
@@ -90,7 +92,7 @@ export default function Footer() {
             {/* Redes Sociais - Destacadas conforme handoff */}
             <div className="flex justify-center md:justify-start gap-4 mt-6">
               <a 
-                href="https://www.facebook.com/moveirama" 
+                href="https://facebook.com/moveirama" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center justify-center w-11 h-11 rounded-full bg-white/10 border border-white/30 hover:bg-[#6B8E7A] hover:border-[#6B8E7A] transition-all"
@@ -101,7 +103,7 @@ export default function Footer() {
                 </svg>
               </a>
               <a 
-                href="https://www.instagram.com/moveirama" 
+                href="https://instagram.com/moveirama" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center justify-center w-11 h-11 rounded-full bg-white/10 border border-white/30 hover:bg-[#6B8E7A] hover:border-[#6B8E7A] transition-all"
@@ -141,7 +143,7 @@ export default function Footer() {
           <div className="flex flex-col items-center md:items-start">
             <h4 className="font-semibold mb-4">Atendimento</h4>
             <ul className="space-y-2 text-sm text-[#D9CFC4]">
-              <li><Link href="/contato" className="hover:text-white transition-colors">Fale Conosco</Link></li>
+              <li><Link href="/fale-com-a-gente" className="hover:text-white transition-colors">Fale com a Gente</Link></li>
               <li><Link href="/politicas/troca-devolucao" className="hover:text-white transition-colors">Trocas e Devoluções</Link></li>
               <li><Link href="/politicas/privacidade" className="hover:text-white transition-colors">Política de Privacidade</Link></li>
               <li><Link href="/entrega" className="hover:text-white transition-colors">Regiões de Entrega</Link></li>
@@ -163,7 +165,7 @@ export default function Footer() {
               <li>Quatro Barras</li>
             </ul>
             <p className="mt-4 text-xs text-[#B8A99A]">
-              Entrega própria • Sem surpresa no frete
+              Entrega própria - Sem surpresa no frete
             </p>
           </div>
         </div>
@@ -173,15 +175,15 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             {/* CNPJ e info legal */}
             <div className="text-sm text-[#B8A99A] text-center md:text-left">
-              <p>Moveirama Móveis LTDA • CNPJ: XX.XXX.XXX/0001-XX</p>
-              <p>Curitiba, PR • CEP XXXXX-XXX</p>
+              <p>Moveirama Eureka Móveis Ltda - CNPJ: 61.154.643/0001-84</p>
+              <p>Rua Barão de Guaraúna, 517 - Juvevê - Curitiba, PR</p>
             </div>
 
             {/* Pagamentos */}
             <div className="flex items-center gap-3 text-[#B8A99A]">
               <span className="text-xs">Pagamento seguro:</span>
               <span className="text-sm">Pix</span>
-              <span className="text-sm">•</span>
+              <span className="text-sm">-</span>
               <span className="text-sm">Cartão</span>
             </div>
           </div>
