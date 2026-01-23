@@ -1,19 +1,12 @@
 /**
  * Home Page - Moveirama
+ * V1 - Apenas componentes implementados
  */
-
 import type { Metadata } from 'next';
 import {
   HeroSection,
   TrustBar,
   CategoriesSection,
-  FeaturedProducts,
-  DiferenciaisSection,
-  KnowledgeBlock,
-  HomeFAQ,
-  CoberturaSection,
-  SocialSection,
-  CTAFinal,
   WhatsAppFloat,
 } from '@/components/home';
 import {
@@ -90,6 +83,7 @@ export default function HomePage() {
         <HeroSection />
         <TrustBar />
         <CategoriesSection />
+        {/* TODO: Adicionar após criar componentes
         <FeaturedProducts />
         <DiferenciaisSection />
         <KnowledgeBlock />
@@ -97,6 +91,7 @@ export default function HomePage() {
         <CoberturaSection />
         <SocialSection />
         <CTAFinal />
+        */}
       </main>
 
       <WhatsAppFloat />
