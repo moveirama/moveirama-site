@@ -13,7 +13,7 @@
  */
 
 import type { Metadata } from 'next';
-import { createClient } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import {
   OfertasHero,
   TabelaSemantica,
@@ -88,7 +88,6 @@ async function getOfertasProducts(
   ordenar: string,
   pagina: number
 ): Promise<{ products: Product[]; total: number }> {
-  const supabase = createClient();
   const ITEMS_PER_PAGE = 12;
   const offset = (pagina - 1) * ITEMS_PER_PAGE;
 
@@ -158,7 +157,6 @@ function calcularDesconto(price: number, compareAtPrice: number | null): number 
 
 // Gera schema de produto individual
 function generateProductSchema(product: Product) {
-  const desconto = calcularDesconto(product.price, product.compare_at_price);
   const categorySlug =
     Array.isArray(product.category)
       ? product.category[0]?.slug
@@ -317,4 +315,3 @@ export default async function OfertasPage({ searchParams }: OfertasPageProps) {
     </main>
   );
 }
-
