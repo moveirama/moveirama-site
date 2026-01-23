@@ -1,108 +1,89 @@
-// ============================================
-// HomeFAQ - Perguntas Frequentes da Home
-// ============================================
-// Squad Dev - Janeiro 2026
-// FAQ com Schema.org para SEO
-// ============================================
+/**
+ * HomeFAQ.tsx - FAQ Acordeão
+ */
 
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
 
-const faqs = [
+const ChevronDownIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+  </svg>
+);
+
+const faqItems = [
   {
-    question: 'Qual o prazo de entrega para Curitiba?',
-    answer: 'Entregamos em até 72 horas (3 dias úteis) para Curitiba e região metropolitana. Usamos frota própria, sem depender de transportadoras.',
+    question: 'Qual o prazo de entrega em Curitiba?',
+    answer: 'Entregamos em 1 a 3 dias úteis (72 horas) em Curitiba com frota própria. Não usamos transportadora — a gente mesmo leva seu móvel com cuidado.',
   },
   {
-    question: 'Vocês entregam em quais cidades?',
-    answer: 'Atendemos Curitiba e toda a região metropolitana: Colombo, São José dos Pinhais, Araucária, Pinhais, Fazenda Rio Grande, Almirante Tamandaré, Piraquara e Campo Largo.',
+    question: 'Vocês entregam em Colombo, São José dos Pinhais e Araucária?',
+    answer: 'Sim! Entregamos em toda a Região Metropolitana de Curitiba com frota própria: Colombo, São José dos Pinhais, Araucária, Pinhais, Fazenda Rio Grande, Almirante Tamandaré, Piraquara, Quatro Barras e Campina Grande do Sul.',
   },
   {
     question: 'Os móveis vêm montados?',
-    answer: 'Os móveis vêm desmontados na caixa, com manual de instruções e todas as ferragens. A montagem é simples e temos vídeos passo a passo. Se preferir, oferecemos serviço de montagem por um valor adicional.',
+    answer: 'Os móveis vêm na caixa para você montar. Mas calma: acompanha manual ilustrado, todas as ferragens necessárias e disponibilizamos vídeo de montagem. Precisa de montador? A gente indica.',
   },
   {
-    question: 'Como funciona a garantia?',
-    answer: 'Todos os produtos têm garantia de fábrica (geralmente 90 dias a 1 ano, dependendo do fabricante). Além disso, você tem 7 dias para troca ou devolução conforme o Código de Defesa do Consumidor.',
+    question: 'Quanto custa o frete?',
+    answer: 'O frete em Curitiba começa em R$ 25. Para compras acima de R$ 299, o frete é grátis dentro de Curitiba.',
   },
   {
-    question: 'Quais formas de pagamento vocês aceitam?',
-    answer: 'Aceitamos Pix (com 5% de desconto), cartão de crédito em até 5x sem juros, e cartão de débito. O pagamento é processado de forma segura.',
+    question: 'Como sei se o móvel cabe no meu espaço?',
+    answer: 'Todas as medidas (largura, altura, profundidade) estão na página do produto. Dúvida? Manda no WhatsApp que confirmamos.',
   },
   {
-    question: 'E se o móvel chegar com defeito?',
-    answer: 'Não se preocupe! Tire fotos, entre em contato pelo WhatsApp com o número do pedido e resolvemos rapidamente. Trocamos o produto ou devolvemos seu dinheiro.',
+    question: 'Como funciona a troca ou devolução?',
+    answer: 'Você tem 7 dias para trocar ou devolver conforme o CDC. O móvel precisa estar na embalagem original.',
   },
 ];
 
-export default function HomeFAQ() {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
-
-  const toggleFAQ = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
-
+export function HomeFAQ() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  
   return (
-    <section className="py-12 md:py-16 bg-[#FAF7F4]">
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <h2 className="text-2xl md:text-3xl font-bold text-[#2D2D2D] mb-2">
-            Dúvidas Frequentes
-          </h2>
-          <p className="text-[#8B7355]">
-            Respostas rápidas para suas principais perguntas
-          </p>
-        </div>
-
-        {/* FAQ Accordion */}
-        <div className="max-w-3xl mx-auto">
-          <div className="space-y-3">
-            {faqs.map((faq, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-xl overflow-hidden"
-              >
-                <button
-                  onClick={() => toggleFAQ(index)}
-                  className="w-full flex items-center justify-between p-5 text-left hover:bg-[#FAF7F4] transition-colors min-h-[48px]"
-                  aria-expanded={openIndex === index}
-                >
-                  <span className="font-medium text-[#2D2D2D] pr-4">
-                    {faq.question}
-                  </span>
-                  <ChevronDown
-                    className={`w-5 h-5 text-[#8B7355] flex-shrink-0 transition-transform ${
-                      openIndex === index ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-                {openIndex === index && (
-                  <div className="px-5 pb-5">
-                    <p className="text-[#8B7355] leading-relaxed">
-                      {faq.answer}
-                    </p>
+    <section className="bg-[#FAF7F4] py-12 md:py-20" aria-labelledby="faq-title">
+      <div className="max-w-3xl mx-auto px-4 md:px-6">
+        <h2 id="faq-title" className="text-[#2D2D2D] text-[29px] md:text-[41px] font-bold mb-8 md:mb-10 text-center">
+          Perguntas Frequentes
+        </h2>
+        
+        <dl className="space-y-3">
+          {faqItems.map((item, index) => {
+            const isOpen = openIndex === index;
+            return (
+              <div key={index} className="bg-white rounded-xl border border-[#E8DFD5] overflow-hidden">
+                <dt>
+                  <button
+                    type="button"
+                    className="w-full flex justify-between items-center gap-4 p-5 text-left cursor-pointer hover:bg-[#FAFAFA] transition-colors"
+                    onClick={() => setOpenIndex(isOpen ? null : index)}
+                    aria-expanded={isOpen}
+                  >
+                    <span className="text-[#2D2D2D] text-base font-medium">{item.question}</span>
+                    <ChevronDownIcon className={`w-5 h-5 text-[#8B7355] flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                </dt>
+                <dd className={isOpen ? 'block' : 'hidden'}>
+                  <div className="px-5 pb-5 text-[#8B7355] text-[15px] leading-relaxed">
+                    {item.answer}
                   </div>
-                )}
+                </dd>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* CTA */}
-        <div className="text-center mt-8">
-          <p className="text-[#8B7355] mb-3">
-            Não encontrou sua dúvida?
-          </p>
+            );
+          })}
+        </dl>
+        
+        <div className="mt-8 text-center">
+          <p className="text-[#8B7355] text-[15px] mb-3">Não encontrou sua dúvida?</p>
           
-            href="https://wa.me/5541984209323?text=Oi!%20Tenho%20uma%20dúvida"
+            href="https://wa.me/5541984209323?text=Oi!%20Tenho%20uma%20d%C3%BAvida"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-[#6B8E7A] hover:text-[#5A7A68] font-medium transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-3 bg-[#25D366] text-white font-semibold rounded-lg hover:bg-[#20BD5A] transition-colors"
           >
-            Fale com a gente no WhatsApp
+            Falar no WhatsApp
           </a>
         </div>
       </div>
