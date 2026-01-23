@@ -211,7 +211,7 @@ export async function POST(request: NextRequest) {
             filename_seo: seoFilename,
             format: 'webp',
             cloudinary_path: seoFilename,
-            image_type: 'product'
+            image_type: nextPosition === 0 ? 'principal' : 'galeria'
           })
 
         if (insertError) {
