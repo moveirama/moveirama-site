@@ -1,77 +1,99 @@
-// ============================================
-// DiferenciaisSection - Diferenciais da Loja
-// ============================================
-// Squad Dev - Janeiro 2026
-// Exibe os diferenciais da Moveirama
-// ============================================
+/**
+ * DiferenciaisSection.tsx - Por que Moveirama?
+ * Squad Dev - Janeiro 2026
+ * 
+ * SPECS: HANDOFF_Home_Page_Decisoes_Visuais.md v2.5
+ * - Fundo: Graphite (#2D2D2D)
+ * - Texto: Branco
+ * - 7 diferenciais em grid 3 colunas (desktop) / 1 coluna (mobile)
+ * - Box ícone: Sage sólido (#6B8E7A)
+ * - Copy atualizado v2.5: "Somos de Curitiba", "3 Meses de Garantia"
+ */
 
-import { Truck, Clock, Wrench, MessageCircle, Shield, MapPin } from 'lucide-react';
+import { 
+  Truck, 
+  Wrench, 
+  MessageCircle, 
+  Ruler, 
+  DollarSign, 
+  Shield, 
+  Building2 
+} from 'lucide-react';
 
 const diferenciais = [
   {
     icon: Truck,
-    title: 'Entrega Própria',
-    description: 'Frota própria em Curitiba e região metropolitana. Sem terceiros, sem surpresas.',
-  },
-  {
-    icon: Clock,
-    title: 'Receba em até 72h',
-    description: 'Pediu hoje? Recebe rápido. Prazo real, sem enrolação.',
+    title: 'Frota Própria',
+    description: 'Nada de transportadora. A gente mesmo entrega em Curitiba e RMC, com cuidado.',
   },
   {
     icon: Wrench,
-    title: 'Montagem Fácil',
-    description: 'Manual claro, vídeo passo a passo e suporte se travar.',
+    title: 'Montagem Sem Stress',
+    description: 'Manual + ferragens + vídeo. Precisa de montador? A gente indica.',
   },
   {
     icon: MessageCircle,
-    title: 'Suporte no WhatsApp',
-    description: 'Atendimento humano de verdade. Sem robô, sem espera.',
+    title: 'WhatsApp de Verdade',
+    description: 'Gente real que entende de móveis e te ajuda a escolher.',
+  },
+  {
+    icon: Ruler,
+    title: 'Medidas Claras',
+    description: 'Todas as medidas detalhadas. Dúvida? A gente confirma.',
+  },
+  {
+    icon: DollarSign,
+    title: 'Preço Sem Surpresa',
+    description: 'O preço que você vê é o que paga. Sem taxa escondida.',
   },
   {
     icon: Shield,
-    title: 'Compra Segura',
-    description: 'Nota fiscal, garantia de fábrica e política de troca clara.',
+    title: '3 Meses de Garantia',
+    description: 'Todos os produtos com garantia de fábrica.',
   },
   {
-    icon: MapPin,
+    icon: Building2,
     title: 'Somos de Curitiba',
-    description: 'Conhecemos a cidade e a região. Entregamos onde outros não vão.',
+    description: 'Empresa local com CNPJ e nota fiscal. Nada de loja fantasma.',
   },
 ];
 
 export default function DiferenciaisSection() {
   return (
-    <section className="py-12 md:py-16 bg-[#FAF7F4]">
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <h2 className="text-2xl md:text-3xl font-bold text-[#2D2D2D] mb-2">
-            Por que comprar na Moveirama?
-          </h2>
-          <p className="text-[#8B7355]">
-            Mais do que móveis: tranquilidade do pedido à montagem
-          </p>
-        </div>
+    <section className="py-14 md:py-[90px] bg-[#2D2D2D]">
+      <div className="container mx-auto px-5 md:px-[60px]">
+        {/* Header da seção */}
+        <h2 className="text-[31px] md:text-[46px] font-bold text-white text-center mb-9 md:mb-[52px]">
+          Por que comprar na Moveirama?
+        </h2>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Grid de diferenciais */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-7 max-w-[1000px] mx-auto">
           {diferenciais.map((item, index) => {
-            const Icon = item.icon;
+            const IconComponent = item.icon;
+            
             return (
               <div
                 key={index}
-                className="bg-white rounded-xl p-6 hover:shadow-md transition-shadow"
+                className="flex items-start gap-[18px]"
               >
-                <div className="w-12 h-12 bg-[#6B8E7A]/10 rounded-lg flex items-center justify-center mb-4">
-                  <Icon className="w-6 h-6 text-[#6B8E7A]" />
+                {/* Box do ícone */}
+                <div className="flex-shrink-0 w-[52px] h-[52px] rounded-xl bg-[#6B8E7A] flex items-center justify-center">
+                  <IconComponent 
+                    className="w-[26px] h-[26px] text-white" 
+                    strokeWidth={1.5} 
+                  />
                 </div>
-                <h3 className="font-semibold text-[#2D2D2D] text-lg mb-2">
-                  {item.title}
-                </h3>
-                <p className="text-[#8B7355] text-sm leading-relaxed">
-                  {item.description}
-                </p>
+
+                {/* Texto */}
+                <div>
+                  <h3 className="text-[17px] font-semibold text-white mb-[6px]">
+                    {item.title}
+                  </h3>
+                  <p className="text-[15px] text-white/75 leading-relaxed">
+                    {item.description}
+                  </p>
+                </div>
               </div>
             );
           })}
