@@ -119,7 +119,7 @@ export default function Footer() {
               <li><Link href="/fale-com-a-gente" className="hover:text-[#FAF7F4] transition-colors">Fale com a Gente</Link></li>
               <li><Link href="/politicas/troca-devolucao" className="hover:text-[#FAF7F4] transition-colors">Trocas e Devoluções</Link></li>
               <li><Link href="/politicas/privacidade" className="hover:text-[#FAF7F4] transition-colors">Política de Privacidade</Link></li>
-              <li><Link href="/entrega" className="hover:text-[#FAF7F4] transition-colors">Regiões de Entrega</Link></li>
+              <li><Link href="/entrega-moveis-curitiba-rmc" className="hover:text-[#FAF7F4] transition-colors">Onde entregamos</Link></li>
             </ul>
           </div>
 

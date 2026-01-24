@@ -15,6 +15,31 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+
+  async redirects() {
+    return [
+      {
+        source: '/onde-entregamos',
+        destination: '/entrega-moveis-curitiba-rmc',
+        permanent: true,
+      },
+      {
+        source: '/frete-curitiba',
+        destination: '/entrega-moveis-curitiba-rmc',
+        permanent: true,
+      },
+      {
+        source: '/regioes-de-entrega',
+        destination: '/entrega-moveis-curitiba-rmc',
+        permanent: true,
+      },
+      {
+        source: '/entrega',
+        destination: '/entrega-moveis-curitiba-rmc',
+        permanent: true,
+      },
+    ]
+  },
 };
 
 export default nextConfig;
