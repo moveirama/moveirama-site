@@ -785,7 +785,7 @@ export default function AdminImagensPage() {
                         {isOnSale && (
                           <div className="ml-8 space-y-4">
                             <div>
-                              <label className="block text-sm text-[#8B7355] mb-1">Preço "De" (anterior)</label>
+                              <label className="block text-sm text-[#8B7355] mb-1">Vender por:</label>
                               <div className="flex items-center gap-2">
                                 <span className="text-sm text-[#8B7355]">R$</span>
                                 <input 
@@ -813,15 +813,7 @@ export default function AdminImagensPage() {
                                 </p>
                               </div>
                             )}
-                            
-                            {/* Aviso se preço "de" for menor ou igual */}
-                            {price && compareAtPrice && parseFloat(compareAtPrice) <= parseFloat(price) && (
-                              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                                <p className="text-sm text-red-600">
-                                  ⚠️ O preço "De" deve ser maior que o preço atual
-                                </p>
-                              </div>
-                            )}
+                          
                           </div>
                         )}
                       </div>
