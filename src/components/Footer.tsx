@@ -57,7 +57,7 @@ export default function Footer() {
         <div className="grid md:grid-cols-4 gap-8 text-center md:text-left">
           {/* Sobre */}
           <div className="flex flex-col items-center md:items-start">
-            <h3 className="text-xl font-bold mb-4 text-[#FAF7F4]">moveirama</h3>
+            <h3 className="text-2xl font-bold mb-4 text-[#FAF7F4]">moveirama</h3>
             <p className="text-[#FAF7F4]/70 text-sm leading-relaxed">
               Móveis novos com entrega rápida em Curitiba e Região Metropolitana. 
               Preço justo, montagem fácil e suporte de verdade.
