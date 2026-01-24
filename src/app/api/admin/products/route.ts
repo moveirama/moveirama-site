@@ -20,6 +20,8 @@ export async function GET(request: Request) {
         name,
         slug,
         price,
+        compare_at_price,
+        is_on_sale,
         is_active,
         assembly_video_url,
         video_product_url,
@@ -72,18 +74,22 @@ export async function GET(request: Request) {
       filteredProducts = filteredProducts.filter(p => p.product_images && p.product_images.length > 0)
     } else if (filter === 'without-images') {
       filteredProducts = filteredProducts.filter(p => !p.product_images || p.product_images.length === 0)
+    } else if (filter === 'on-sale') {
+      filteredProducts = filteredProducts.filter(p => p.is_on_sale === true)
     }
 
     const total = formattedProducts.length
     const withImages = formattedProducts.filter(p => p.product_images && p.product_images.length > 0).length
     const withoutImages = total - withImages
+    const onSale = formattedProducts.filter(p => p.is_on_sale === true).length
 
     return NextResponse.json({
       products: filteredProducts,
       stats: {
         total,
         withImages,
-        withoutImages
+        withoutImages,
+        onSale
       }
     })
   } catch (error) {

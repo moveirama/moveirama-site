@@ -3,10 +3,11 @@
 /**
  * Moveirama — Cliente Supabase e funções de acesso ao banco
  * 
- * v2.4: Corrigido carregamento de imagens nas páginas de categoria pai
+ * v2.5: Suporte a categorias secundárias (produtos em múltiplas categorias)
  * Changelog:
  *   - v2.3: Simplificado para estrutura de 2 níveis
  *   - v2.4: Corrigido getSubcategories para buscar imagem representativa corretamente
+ *   - v2.5: getProductsByCategory agora inclui produtos de categorias secundárias
  */
 
 import { createClient } from '@supabase/supabase-js'
@@ -148,7 +149,7 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
 /**
  * Busca subcategorias de uma categoria pai com contagem de produtos
  * 
- * v2.4: Corrigido para buscar imagem representativa do produto corretamente
+ * v2.5: Inclui contagem de produtos de categorias secundárias
  */
 export async function getSubcategories(parentSlug: string): Promise<CategoryWithCount[]> {
   // Busca o pai
@@ -168,14 +169,20 @@ export async function getSubcategories(parentSlug: string): Promise<CategoryWith
   // Busca contagem de produtos e imagem para cada subcategoria
   const categoriesWithCount = await Promise.all(
     categories.map(async (cat) => {
-      // Conta produtos desta categoria
-      const { count } = await supabase
+      // Conta produtos desta categoria (principal)
+      const { count: primaryCount } = await supabase
         .from('products')
         .select('*', { count: 'exact', head: true })
         .eq('category_id', cat.id)
         .eq('is_active', true)
 
-      const totalCount = count || 0
+      // Conta produtos desta categoria (secundária)
+      const { count: secondaryCount } = await supabase
+        .from('product_secondary_categories')
+        .select('product_id', { count: 'exact', head: true })
+        .eq('category_id', cat.id)
+
+      const totalCount = (primaryCount || 0) + (secondaryCount || 0)
 
       // Busca imagem de um produto da categoria (fallback quando não tem image_url)
       let representativeImage: string | null = null
@@ -282,6 +289,8 @@ export async function getParentOfSubcategory(subcategorySlug: string): Promise<C
 
 /**
  * Busca produtos de uma categoria com paginação e ordenação
+ * 
+ * v2.5: Inclui produtos de categorias secundárias (product_secondary_categories)
  */
 export async function getProductsByCategory(
   categoryId: string,
@@ -317,15 +326,10 @@ export async function getProductsByCategory(
       orderAscending = true
   }
 
-  // Conta total
-  const { count } = await supabase
-    .from('products')
-    .select('*', { count: 'exact', head: true })
-    .eq('category_id', categoryId)
-    .eq('is_active', true)
-
-  // Busca produtos com paginação
-  const { data, error } = await supabase
+  // ========================================
+  // BUSCA PRODUTOS PRINCIPAIS (category_id)
+  // ========================================
+  const { data: primaryProducts, error: primaryError } = await supabase
     .from('products')
     .select(`
       id,
@@ -334,19 +338,94 @@ export async function getProductsByCategory(
       price,
       compare_at_price,
       tv_max_size,
+      created_at,
       product_images(cloudinary_path, image_type)
     `)
     .eq('category_id', categoryId)
     .eq('is_active', true)
-    .order(orderColumn, { ascending: orderAscending })
-    .range((page - 1) * perPage, page * perPage - 1)
 
-  if (error || !data) {
-    return { products: [], total: 0 }
+  // ========================================
+  // BUSCA PRODUTOS SECUNDÁRIOS (product_secondary_categories)
+  // ========================================
+  const { data: secondaryLinks } = await supabase
+    .from('product_secondary_categories')
+    .select('product_id')
+    .eq('category_id', categoryId)
+
+  let secondaryProducts: any[] = []
+  
+  if (secondaryLinks && secondaryLinks.length > 0) {
+    const secondaryProductIds = secondaryLinks.map(link => link.product_id)
+    
+    const { data: secProducts } = await supabase
+      .from('products')
+      .select(`
+        id,
+        slug,
+        name,
+        price,
+        compare_at_price,
+        tv_max_size,
+        created_at,
+        product_images(cloudinary_path, image_type)
+      `)
+      .in('id', secondaryProductIds)
+      .eq('is_active', true)
+    
+    secondaryProducts = secProducts || []
   }
 
-  // Mapeia para o formato esperado
-  const products: ProductForListing[] = data.map(p => {
+  // ========================================
+  // COMBINA E REMOVE DUPLICATAS
+  // ========================================
+  const allProductsMap = new Map<string, any>()
+  
+  // Adiciona produtos principais
+  if (primaryProducts) {
+    for (const p of primaryProducts) {
+      allProductsMap.set(p.id, p)
+    }
+  }
+  
+  // Adiciona produtos secundários (se não existir)
+  for (const p of secondaryProducts) {
+    if (!allProductsMap.has(p.id)) {
+      allProductsMap.set(p.id, p)
+    }
+  }
+  
+  let allProducts = Array.from(allProductsMap.values())
+
+  // ========================================
+  // ORDENAÇÃO
+  // ========================================
+  allProducts.sort((a, b) => {
+    const aVal = a[orderColumn]
+    const bVal = b[orderColumn]
+    
+    if (aVal === null || aVal === undefined) return 1
+    if (bVal === null || bVal === undefined) return -1
+    
+    if (typeof aVal === 'string') {
+      return orderAscending 
+        ? aVal.localeCompare(bVal) 
+        : bVal.localeCompare(aVal)
+    }
+    
+    return orderAscending ? aVal - bVal : bVal - aVal
+  })
+
+  // ========================================
+  // PAGINAÇÃO
+  // ========================================
+  const total = allProducts.length
+  const startIndex = (page - 1) * perPage
+  const paginatedProducts = allProducts.slice(startIndex, startIndex + perPage)
+
+  // ========================================
+  // MAPEIA PARA FORMATO ESPERADO
+  // ========================================
+  const products: ProductForListing[] = paginatedProducts.map(p => {
     const images = p.product_images || []
     const principalImage = images.find((img: { image_type: string }) => img.image_type === 'principal')
     const firstImage = images[0]
@@ -364,11 +443,13 @@ export async function getProductsByCategory(
     }
   })
 
-  return { products, total: count || 0 }
+  return { products, total }
 }
 
 /**
  * Busca produto por slug da subcategoria e slug do produto
+ * 
+ * v2.5: Também busca em categorias secundárias
  */
 export async function getProductBySubcategoryAndSlug(
   subcategorySlug: string, 
@@ -377,6 +458,7 @@ export async function getProductBySubcategoryAndSlug(
   const subcategory = await getSubcategoryBySlug(subcategorySlug)
   if (!subcategory) return null
 
+  // Tenta buscar pela categoria principal
   const { data: product, error } = await supabase
     .from('products')
     .select(`
@@ -391,16 +473,61 @@ export async function getProductBySubcategoryAndSlug(
     .eq('is_active', true)
     .single()
 
-  if (error || !product) return null
+  if (!error && product) {
+    // Filtra e ordena FAQs
+    if (product.faqs) {
+      product.faqs = product.faqs
+        .filter((faq: { is_active?: boolean }) => faq.is_active !== false)
+        .sort((a: { position: number }, b: { position: number }) => a.position - b.position)
+    }
+    return product
+  }
+
+  // Se não encontrou pela categoria principal, busca pela secundária
+  // Primeiro busca o produto pelo slug
+  const { data: productBySlug } = await supabase
+    .from('products')
+    .select('id')
+    .eq('slug', productSlug)
+    .eq('is_active', true)
+    .single()
+
+  if (!productBySlug) return null
+
+  // Verifica se esse produto está vinculado à categoria secundária
+  const { data: secondaryLink } = await supabase
+    .from('product_secondary_categories')
+    .select('product_id')
+    .eq('category_id', subcategory.id)
+    .eq('product_id', productBySlug.id)
+    .single()
+
+  if (!secondaryLink) return null
+
+  // Busca o produto completo
+  const { data: secProduct, error: secError } = await supabase
+    .from('products')
+    .select(`
+      *,
+      category:categories(*),
+      variants:product_variants(*),
+      images:product_images(*),
+      faqs:product_faqs(*)
+    `)
+    .eq('id', secondaryLink.product_id)
+    .eq('is_active', true)
+    .single()
+
+  if (secError || !secProduct) return null
   
   // Filtra e ordena FAQs
-  if (product.faqs) {
-    product.faqs = product.faqs
+  if (secProduct.faqs) {
+    secProduct.faqs = secProduct.faqs
       .filter((faq: { is_active?: boolean }) => faq.is_active !== false)
       .sort((a: { position: number }, b: { position: number }) => a.position - b.position)
   }
   
-  return product
+  return secProduct
 }
 
 // ========================================

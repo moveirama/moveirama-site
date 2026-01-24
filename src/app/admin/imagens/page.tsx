@@ -20,8 +20,8 @@ type Product = {
   name: string
   slug: string
   price: number
-  compare_at_price: number | null  // OFERTA: preço "de" (antigo)
-  is_on_sale: boolean | null       // OFERTA: flag de oferta
+  compare_at_price: number | null
+  is_on_sale: boolean | null
   assembly_video_url: string | null
   video_product_url: string | null
   manual_pdf_url: string | null
@@ -30,7 +30,6 @@ type Product = {
   weight_capacity: number | null
   category_slug: string | null
   product_images: ProductImage[]
-  // Características
   num_doors: number | null
   num_drawers: number | null
   num_shelves: number | null
@@ -46,6 +45,7 @@ type Stats = {
   total: number
   withImages: number
   withoutImages: number
+  onSale: number
 }
 
 function SortableImage({ img, idx, onDelete, deleting }: { 
@@ -81,9 +81,9 @@ export default function AdminImagensPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [products, setProducts] = useState<Product[]>([])
-  const [stats, setStats] = useState<Stats>({ total: 0, withImages: 0, withoutImages: 0 })
+  const [stats, setStats] = useState<Stats>({ total: 0, withImages: 0, withoutImages: 0, onSale: 0 })
   const [search, setSearch] = useState('')
-  const [filter, setFilter] = useState<'all' | 'with-images' | 'without-images'>('all')
+  const [filter, setFilter] = useState<'all' | 'with-images' | 'without-images' | 'on-sale'>('all')
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadingMedidas, setUploadingMedidas] = useState(false)
@@ -104,7 +104,7 @@ export default function AdminImagensPage() {
   const [isOnSale, setIsOnSale] = useState(false)
   const [compareAtPrice, setCompareAtPrice] = useState('')
   
-  // Campos de características (NOVOS)
+  // Campos de características
   const [numDoors, setNumDoors] = useState('')
   const [numDrawers, setNumDrawers] = useState('')
   const [numShelves, setNumShelves] = useState('')
@@ -156,7 +156,6 @@ export default function AdminImagensPage() {
     }
   }
 
-  // Função para atualizar todos os campos do formulário
   function updateFormFields(product: Product) {
     setVideoUrl(product.assembly_video_url || '')
     setVideoProductUrl(product.video_product_url || '')
@@ -164,10 +163,8 @@ export default function AdminImagensPage() {
     setTvMaxSize(product.tv_max_size?.toString() || '')
     setWeightCapacity(product.weight_capacity?.toString() || '')
     setPrice(product.price?.toString() || '')
-    // OFERTA: Atualizar campos de oferta
     setIsOnSale(product.is_on_sale || false)
     setCompareAtPrice(product.compare_at_price?.toString() || '')
-    // Características
     setNumDoors(product.num_doors?.toString() || '')
     setNumDrawers(product.num_drawers?.toString() || '')
     setNumShelves(product.num_shelves?.toString() || '')
@@ -211,10 +208,8 @@ export default function AdminImagensPage() {
           tv_max_size: tvMaxSize ? parseInt(tvMaxSize) : null,
           weight_capacity: weightCapacity ? parseInt(weightCapacity) : null,
           price: price ? parseFloat(price) : null,
-          // OFERTA: Incluir campos de oferta no save
           is_on_sale: isOnSale,
           compare_at_price: compareAtPrice ? parseFloat(compareAtPrice) : null,
-          // Características
           num_doors: numDoors ? parseInt(numDoors) : null,
           num_drawers: numDrawers ? parseInt(numDrawers) : null,
           num_shelves: numShelves ? parseInt(numShelves) : null,
@@ -241,12 +236,10 @@ export default function AdminImagensPage() {
     }
   }
 
-  // Função para comprimir imagem antes do upload (evita erro 413 do Vercel)
   async function compressImage(file: File, maxSize = 2000, quality = 0.85): Promise<File> {
     return new Promise((resolve, reject) => {
       const img = new Image()
       img.onload = () => {
-        // Calcula novas dimensões mantendo proporção
         let { width, height } = img
         if (width > maxSize || height > maxSize) {
           if (width > height) {
@@ -258,7 +251,6 @@ export default function AdminImagensPage() {
           }
         }
 
-        // Cria canvas e desenha imagem redimensionada
         const canvas = document.createElement('canvas')
         canvas.width = width
         canvas.height = height
@@ -269,14 +261,12 @@ export default function AdminImagensPage() {
         }
         ctx.drawImage(img, 0, 0, width, height)
 
-        // Converte para blob
         canvas.toBlob(
           (blob) => {
             if (!blob) {
               reject(new Error('Erro ao comprimir imagem'))
               return
             }
-            // Cria novo File com mesmo nome
             const compressedFile = new File([blob], file.name, {
               type: 'image/jpeg',
               lastModified: Date.now(),
@@ -297,7 +287,6 @@ export default function AdminImagensPage() {
     if (!selectedProduct) return
     setUploading(true)
     try {
-      // Comprime imagem se for maior que 3MB (evita erro 413 do Vercel)
       let fileToUpload = file
       if (file.size > 3 * 1024 * 1024) {
         console.log('Comprimindo imagem grande...')
@@ -477,7 +466,6 @@ export default function AdminImagensPage() {
     e.target.value = ''
   }
 
-  // OFERTA: Função auxiliar para calcular desconto
   function calcularDesconto(precoAtual: number, precoDe: number): number {
     if (!precoDe || precoDe <= precoAtual) return 0
     return Math.round(((precoDe - precoAtual) / precoDe) * 100)
@@ -509,7 +497,9 @@ export default function AdminImagensPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-semibold text-[#2D2D2D]">Gestão de Produtos</h2>
-            <p className="text-sm text-[#8B7355] mt-1">{stats.total} produtos • {stats.withImages} com imagens • {stats.withoutImages} sem imagens</p>
+            <p className="text-sm text-[#8B7355] mt-1">
+              {stats.total} produtos • {stats.withImages} com imagens • {stats.withoutImages} sem imagens • {stats.onSale} em oferta
+            </p>
           </div>
         </div>
 
@@ -518,10 +508,20 @@ export default function AdminImagensPage() {
             <div className="flex-1">
               <input type="text" placeholder="Buscar por nome ou SKU..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full px-4 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A]" />
             </div>
-            <div className="flex gap-2">
-              {(['all', 'without-images', 'with-images'] as const).map((f) => (
-                <button key={f} onClick={() => setFilter(f)} className={`px-4 py-2 rounded-lg text-sm font-medium ${filter === f ? 'bg-[#6B8E7A] text-white' : 'bg-[#F0E8DF] text-[#2D2D2D] hover:bg-[#E8DFD5]'}`}>
-                  {f === 'all' ? 'Todos' : f === 'without-images' ? 'Sem imagens' : 'Com imagens'}
+            <div className="flex gap-2 flex-wrap">
+              {(['all', 'without-images', 'with-images', 'on-sale'] as const).map((f) => (
+                <button 
+                  key={f} 
+                  onClick={() => setFilter(f)} 
+                  className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                    filter === f 
+                      ? f === 'on-sale' 
+                        ? 'bg-[#B85C38] text-white' 
+                        : 'bg-[#6B8E7A] text-white' 
+                      : 'bg-[#F0E8DF] text-[#2D2D2D] hover:bg-[#E8DFD5]'
+                  }`}
+                >
+                  {f === 'all' ? 'Todos' : f === 'without-images' ? 'Sem imagens' : f === 'with-images' ? 'Com imagens' : '🏷️ Com desconto'}
                 </button>
               ))}
             </div>
@@ -548,7 +548,6 @@ export default function AdminImagensPage() {
                             ) : (
                               <span className="text-xs text-[#8B7355]">Sem foto</span>
                             )}
-                            {/* OFERTA: Badge de oferta na lista */}
                             {product.is_on_sale && (
                               <span className="absolute -top-1 -right-1 text-[10px] bg-[#B85C38] text-white px-1 rounded">%</span>
                             )}
@@ -557,7 +556,6 @@ export default function AdminImagensPage() {
                             <p className="font-medium text-[#2D2D2D] truncate">{product.name}</p>
                             <p className="text-sm text-[#8B7355]">
                               SKU: {product.sku} • {product.product_images?.length || 0} img
-                              {/* OFERTA: Mostrar badge se em oferta */}
                               {product.is_on_sale && <span className="ml-2 text-[#B85C38] font-medium">• Em oferta</span>}
                             </p>
                           </div>
@@ -578,7 +576,6 @@ export default function AdminImagensPage() {
               )}
             </div>
             
-            {/* Abas */}
             {selectedProduct && (
               <div className="flex border-b border-[#E8DFD5]">
                 <button
@@ -607,10 +604,8 @@ export default function AdminImagensPage() {
             <div className="p-4 max-h-[650px] overflow-y-auto">
               {selectedProduct ? (
                 <>
-                  {/* ========== ABA IMAGENS ========== */}
                   {activeTab === 'imagens' && (
                     <div>
-                      {/* Imagens do Produto */}
                       <div className="mb-6">
                         <h4 className="text-sm font-medium text-[#2D2D2D] mb-2">Imagens do Produto ({sortedImages.length}) <span className="font-normal text-[#8B7355]">— arraste para reordenar</span></h4>
                         {sortedImages.length > 0 ? (
@@ -628,7 +623,6 @@ export default function AdminImagensPage() {
                         )}
                       </div>
                       
-                      {/* Upload de Imagens do Produto */}
                       <div onDragOver={handleDragOverUpload} onDragLeave={handleDragLeaveUpload} onDrop={handleDropUpload} className={`border-2 border-dashed rounded-lg p-6 text-center mb-6 ${dragOver ? 'border-[#6B8E7A] bg-[#F0F5F2]' : 'border-[#E8DFD5] hover:border-[#6B8E7A]'}`}>
                         {uploading ? (
                           <p className="text-[#8B7355]">Enviando...</p>
@@ -643,7 +637,6 @@ export default function AdminImagensPage() {
                         )}
                       </div>
 
-                      {/* Imagem das Medidas */}
                       <div className="border-t border-[#E8DFD5] pt-6 mb-6">
                         <h4 className="text-sm font-medium text-[#2D2D2D] mb-2">
                           📐 Imagem das Medidas
@@ -695,7 +688,6 @@ export default function AdminImagensPage() {
                         )}
                       </div>
 
-                      {/* URLs de Montagem */}
                       <div className="border-t border-[#E8DFD5] pt-6">
                         <h4 className="text-sm font-medium text-[#2D2D2D] mb-4">🔧 Montagem</h4>
                         
@@ -745,11 +737,9 @@ export default function AdminImagensPage() {
                     </div>
                   )}
 
-                  {/* ========== ABA CARACTERÍSTICAS ========== */}
                   {activeTab === 'caracteristicas' && (
                     <div className="space-y-6">
                       
-                      {/* Preço */}
                       <div>
                         <h4 className="text-sm font-medium text-[#2D2D2D] mb-3">💰 Preço</h4>
                         <div className="flex items-center gap-2">
@@ -766,11 +756,9 @@ export default function AdminImagensPage() {
                         </div>
                       </div>
 
-                      {/* OFERTA: Nova seção de Ofertas */}
                       <div className="border-t border-[#E8DFD5] pt-6">
                         <h4 className="text-sm font-medium text-[#2D2D2D] mb-3">🏷️ Oferta</h4>
                         
-                        {/* Checkbox Em Oferta */}
                         <label className="flex items-center gap-3 cursor-pointer mb-4">
                           <input 
                             type="checkbox" 
@@ -781,7 +769,6 @@ export default function AdminImagensPage() {
                           <span className="text-sm text-[#2D2D2D] font-medium">Produto em Oferta</span>
                         </label>
                         
-                        {/* Campo Preço "De" - só aparece se marcado como oferta */}
                         {isOnSale && (
                           <div className="ml-8 space-y-4">
                             <div>
@@ -800,7 +787,6 @@ export default function AdminImagensPage() {
                               </div>
                             </div>
                             
-                            {/* Preview do desconto */}
                             {price && compareAtPrice && parseFloat(compareAtPrice) > parseFloat(price) && (
                               <div className="p-3 bg-[#FDF0EB] border border-[#B85C38]/20 rounded-lg">
                                 <p className="text-sm text-[#2D2D2D]">
@@ -813,12 +799,10 @@ export default function AdminImagensPage() {
                                 </p>
                               </div>
                             )}
-                          
                           </div>
                         )}
                       </div>
 
-                      {/* Compatibilidade TV - só para racks e painéis */}
                       {selectedProduct.category_slug && ['racks', 'paineis'].includes(selectedProduct.category_slug) && (
                         <div className="border-t border-[#E8DFD5] pt-6">
                           <h4 className="text-sm font-medium text-[#2D2D2D] mb-3">📺 Compatibilidade TV</h4>
@@ -837,7 +821,6 @@ export default function AdminImagensPage() {
                         </div>
                       )}
 
-                      {/* Peso Suportado */}
                       <div className="border-t border-[#E8DFD5] pt-6">
                         <h4 className="text-sm font-medium text-[#2D2D2D] mb-3">⚖️ Peso Suportado</h4>
                         <div className="flex items-center gap-2">
@@ -854,7 +837,6 @@ export default function AdminImagensPage() {
                         </div>
                       </div>
 
-                      {/* Quantidades */}
                       <div className="border-t border-[#E8DFD5] pt-6">
                         <h4 className="text-sm font-medium text-[#2D2D2D] mb-3">🗄️ Estrutura do Móvel</h4>
                         <div className="grid grid-cols-2 gap-4">
@@ -905,7 +887,6 @@ export default function AdminImagensPage() {
                         </div>
                       </div>
 
-                      {/* Tipo de Porta e Pés */}
                       <div className="border-t border-[#E8DFD5] pt-6">
                         <h4 className="text-sm font-medium text-[#2D2D2D] mb-3">🚪 Detalhes</h4>
                         <div className="grid grid-cols-2 gap-4">
@@ -941,7 +922,6 @@ export default function AdminImagensPage() {
                         </div>
                       </div>
 
-                      {/* Checkboxes */}
                       <div className="border-t border-[#E8DFD5] pt-6">
                         <h4 className="text-sm font-medium text-[#2D2D2D] mb-3">✨ Recursos Especiais</h4>
                         <div className="space-y-3">
@@ -975,7 +955,6 @@ export default function AdminImagensPage() {
                         </div>
                       </div>
 
-                      {/* Botão Salvar */}
                       <div className="border-t border-[#E8DFD5] pt-6">
                         <button 
                           onClick={saveProduct}
