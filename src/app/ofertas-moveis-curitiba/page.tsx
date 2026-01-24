@@ -1,6 +1,6 @@
 /**
  * Página de Ofertas - Moveirama
- * Squad Dev - Janeiro 2026
+ * Squad Dev - 25/01/2026
  * 
  * ESTRUTURA:
  * - Hero com Knowledge Block (SEO/AIO)
@@ -10,6 +10,9 @@
  * - Seção de confiança
  * 
  * ROTA: /ofertas-moveis-curitiba
+ * 
+ * CHANGELOG:
+ * - 25/01/2026: Corrigido campo de imagem (cloudinary_path em vez de url)
  */
 
 import type { Metadata } from 'next';
@@ -69,7 +72,7 @@ interface Product {
   depth_cm: number | null;
   for_small_spaces: boolean;
   category: { slug: string } | { slug: string }[] | null;
-  product_images: { url: string; alt_text: string | null }[];
+  product_images: { cloudinary_path: string; alt_text: string | null }[];
 }
 
 interface OfertasPageProps {
@@ -108,7 +111,7 @@ async function getOfertasProducts(
       depth_cm,
       for_small_spaces,
       category:categories(slug),
-      product_images(url, alt_text)
+      product_images(cloudinary_path, alt_text)
     `,
       { count: 'exact' }
     )
@@ -167,7 +170,7 @@ function generateProductSchema(product: Product) {
     name: product.name,
     description: product.short_description,
     url: `https://moveirama.com.br/${categorySlug}/${product.slug}`,
-    image: product.product_images[0]?.url,
+    image: product.product_images[0]?.cloudinary_path,
     offers: {
       '@type': 'Offer',
       price: product.price.toFixed(2),

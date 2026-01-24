@@ -1,6 +1,6 @@
 /**
  * OfertaProductCard - Card de produto em oferta
- * Squad Dev - Janeiro 2026
+ * Squad Dev - 25/01/2026
  * 
  * ELEMENTOS:
  * - Badge de desconto (Terracota)
@@ -11,6 +11,9 @@
  * - Prova social regional
  * - Prazo de entrega
  * - Botão Comprar
+ * 
+ * CHANGELOG:
+ * - 25/01/2026: Corrigido campo de imagem (cloudinary_path em vez de url)
  */
 
 import Link from 'next/link';
@@ -78,7 +81,7 @@ interface Product {
   tv_max_size: number | null;
   for_small_spaces: boolean;
   category: { slug: string } | { slug: string }[] | null;
-  product_images: { url: string; alt_text: string | null }[];
+  product_images: { cloudinary_path: string; alt_text: string | null }[];
 }
 
 interface OfertaProductCardProps {
@@ -152,7 +155,7 @@ export default function OfertaProductCard({
 
   // Imagem principal
   const imagemPrincipal = product.product_images[0];
-  const imagemUrl = imagemPrincipal?.url || '/images/placeholder-product.jpg';
+  const imagemUrl = imagemPrincipal?.cloudinary_path || '/images/placeholder-product.jpg';
   const imagemAlt =
     imagemPrincipal?.alt_text || `${product.name} em oferta na Moveirama`;
 
@@ -275,4 +278,3 @@ export default function OfertaProductCard({
     </article>
   );
 }
-
