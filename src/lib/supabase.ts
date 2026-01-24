@@ -188,7 +188,7 @@ export async function getSubcategories(parentSlug: string): Promise<CategoryWith
       let representativeImage: string | null = null
       
       if (totalCount > 0 && !cat.image_url) {
-        // Busca um produto que tenha imagens
+        // Primeiro tenta produtos da categoria principal
         const { data: productsWithImages } = await supabase
           .from('products')
           .select('id')
@@ -197,24 +197,41 @@ export async function getSubcategories(parentSlug: string): Promise<CategoryWith
           .order('created_at', { ascending: false })
           .limit(10)
 
+        let productIdsToCheck: string[] = []
+        
         if (productsWithImages && productsWithImages.length > 0) {
-          // Para cada produto, tenta encontrar uma imagem
-          for (const product of productsWithImages) {
-            const { data: images } = await supabase
-              .from('product_images')
-              .select('cloudinary_path, image_type, position')
-              .eq('product_id', product.id)
-              .eq('is_active', true)
-              .order('position', { ascending: true })
-              .limit(5)
+          productIdsToCheck = productsWithImages.map(p => p.id)
+        }
+        
+        // Se não tem produtos principais, busca IDs dos produtos secundários
+        if (productIdsToCheck.length === 0) {
+          const { data: secondaryProductLinks } = await supabase
+            .from('product_secondary_categories')
+            .select('product_id')
+            .eq('category_id', cat.id)
+            .limit(10)
+          
+          if (secondaryProductLinks && secondaryProductLinks.length > 0) {
+            productIdsToCheck = secondaryProductLinks.map(link => link.product_id)
+          }
+        }
 
-            if (images && images.length > 0) {
-              // Prioridade: principal > menor position
-              const principalImage = images.find(img => img.image_type === 'principal')
-              representativeImage = principalImage?.cloudinary_path || images[0]?.cloudinary_path || null
-              
-              if (representativeImage) break // Encontrou imagem, sai do loop
-            }
+        // Para cada produto, tenta encontrar uma imagem
+        for (const productId of productIdsToCheck) {
+          const { data: images } = await supabase
+            .from('product_images')
+            .select('cloudinary_path, image_type, position')
+            .eq('product_id', productId)
+            .eq('is_active', true)
+            .order('position', { ascending: true })
+            .limit(5)
+
+          if (images && images.length > 0) {
+            // Prioridade: principal > menor position
+            const principalImage = images.find(img => img.image_type === 'principal')
+            representativeImage = principalImage?.cloudinary_path || images[0]?.cloudinary_path || null
+            
+            if (representativeImage) break // Encontrou imagem, sai do loop
           }
         }
       }
