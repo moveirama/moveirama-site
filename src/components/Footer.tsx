@@ -1,29 +1,63 @@
 import Link from 'next/link'
-import Image from 'next/image'
 
 export default function Footer() {
   return (
-    <footer className="bg-[#2D2D2D] text-[#FAF7F4]">
-      {/* Main Footer */}
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        {/* Logo */}
-        <div className="mb-8">
-          <Link href="/" className="inline-block">
-            <Image
-              src="/logo/moveirama-branco.svg"
-              alt="Moveirama"
-              width={160}
-              height={32}
-              className="h-8 w-auto"
-            />
-          </Link>
-        </div>
+    <footer className="bg-[#2D2D2D] text-[#FAF7F4] mt-16 overflow-x-hidden">
+      {/* Schema.org LocalBusiness */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FurnitureStore",
+            "name": "Moveirama",
+            "description": "Loja de móveis em Curitiba. Racks, painéis, escrivaninhas e mais com entrega rápida em Curitiba e Região Metropolitana.",
+            "url": "https://moveirama.com.br",
+            "logo": "https://moveirama.com.br/logo.png",
+            "telephone": "+55-41-98420-9323",
+            "email": "contato@moveirama.com.br",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "Rua Barão de Guaraúna, 517",
+              "addressLocality": "Curitiba",
+              "addressRegion": "PR",
+              "addressCountry": "BR",
+              "postalCode": "80030-310"
+            },
+            "geo": {
+              "@type": "GeoCoordinates",
+              "latitude": "-25.4284",
+              "longitude": "-49.2733"
+            },
+            "areaServed": [
+              { "@type": "City", "name": "Curitiba" },
+              { "@type": "City", "name": "Colombo" },
+              { "@type": "City", "name": "São José dos Pinhais" },
+              { "@type": "City", "name": "Araucária" },
+              { "@type": "City", "name": "Pinhais" },
+              { "@type": "City", "name": "Fazenda Rio Grande" },
+              { "@type": "City", "name": "Almirante Tamandaré" },
+              { "@type": "City", "name": "Campina Grande do Sul" },
+              { "@type": "City", "name": "Quatro Barras" }
+            ],
+            "openingHoursSpecification": {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+              "opens": "09:00",
+              "closes": "18:00"
+            },
+            "priceRange": "$$",
+            "paymentAccepted": ["Pix", "Cartão de Crédito", "Cartão de Débito"],
+            "currenciesAccepted": "BRL"
+          })
+        }}
+      />
 
-        {/* Grid de Colunas */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="max-w-[1280px] mx-auto px-4 py-12 overflow-x-hidden">
+        <div className="grid md:grid-cols-4 gap-8 text-center md:text-left">
           
           {/* Coluna 1: Categorias */}
-          <div>
+          <div className="flex flex-col items-center md:items-start">
             <h3 className="text-base font-semibold text-[#FAF7F4] mb-4">
               Categorias
             </h3>
@@ -72,7 +106,7 @@ export default function Footer() {
           </div>
 
           {/* Coluna 2: Atendimento */}
-          <div>
+          <div className="flex flex-col items-center md:items-start">
             <h3 className="text-base font-semibold text-[#FAF7F4] mb-4">
               Atendimento
             </h3>
@@ -109,7 +143,7 @@ export default function Footer() {
           </div>
 
           {/* Coluna 3: Institucional */}
-          <div>
+          <div className="flex flex-col items-center md:items-start">
             <h3 className="text-base font-semibold text-[#FAF7F4] mb-4">
               Institucional
             </h3>
@@ -142,7 +176,7 @@ export default function Footer() {
           </div>
 
           {/* Coluna 4: Moveirama é curitibana! */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col items-center md:items-start gap-2">
             <h3 className="text-base font-semibold text-[#FAF7F4]">
               Moveirama é curitibana!
             </h3>
@@ -156,7 +190,7 @@ export default function Footer() {
 
       {/* Bottom Bar */}
       <div className="border-t border-[#FAF7F4]/20">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-[1280px] mx-auto px-4 py-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-2 text-sm text-[#FAF7F4]/70">
             <span>CNPJ 00.000.000/0001-00 • Curitiba, PR</span>
             <span>© 2026 Moveirama. Todos os direitos reservados.</span>
