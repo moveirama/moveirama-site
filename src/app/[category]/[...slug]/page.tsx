@@ -1,5 +1,4 @@
 // src/app/[category]/[...slug]/page.tsx
-
 /**
  * Página dinâmica para subcategorias e produtos
  * 
@@ -9,7 +8,6 @@
  * - /moveis-para-casa/racks-tv → listagem de produtos
  * - /racks-tv/rack-theo → página de produto
  */
-
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { 
@@ -21,26 +19,23 @@ import {
   getParentOfSubcategory,
   SortOption 
 } from '@/lib/supabase'
-
 // Funções SEO
 import {
   generateCategoryH1,
   generateCategoryTitle,
   generateCategoryMetaDescription
 } from '@/lib/seo'
-
 // Componentes de Listagem
 import Breadcrumb from '@/components/Breadcrumb'
 import ProductCardListing from '@/components/ProductCardListing'
 import SortControl from '@/components/SortControl'
 import Pagination from '@/components/Pagination'
 import EmptyState from '@/components/EmptyState'
-
 // Componentes de Produto
 import ProductPageContent from '@/components/ProductPageContent'
 
-// FORÇA REVALIDAÇÃO A CADA REQUEST
-export const dynamic = 'force-dynamic'
+// Revalida a página a cada 1 hora (busca dados novos do banco)
+export const revalidate = 3600
 
 // ============================================
 // CONFIGURAÇÃO — v2.3 (estrutura simplificada)
