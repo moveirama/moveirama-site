@@ -1,5 +1,4 @@
 // src/app/[category]/page.tsx
-
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getParentCategory, getSubcategories } from '@/lib/supabase'
@@ -10,6 +9,9 @@ import {
   generateCategoryMetaDescription,
   getCategorySeoName 
 } from '@/lib/seo'
+
+// Revalida a página a cada 1 hora (busca dados novos do banco)
+export const revalidate = 3600
 
 interface PageProps {
   params: Promise<{ category: string }>
