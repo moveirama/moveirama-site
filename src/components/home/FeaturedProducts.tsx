@@ -22,7 +22,7 @@ interface ProductFromDB {
   price: number;
   compare_at_price: number | null;
   category: { slug: string }[];
-  product_images: { url: string; alt_text: string | null }[];
+  product_images: { cloudinary_path: string; alt_text: string | null }[];
 }
 
 // Tipo normalizado para uso no componente
@@ -33,7 +33,7 @@ interface Product {
   price: number;
   compare_at_price: number | null;
   categorySlug: string | null;
-  mainImage: { url: string; alt_text: string | null } | null;
+  mainImage: { cloudinary_path: string; alt_text: string | null } | null;
 }
 
 function formatPrice(value: number): string {
@@ -58,7 +58,7 @@ async function getFeaturedProducts(): Promise<Product[]> {
       price,
       compare_at_price,
       category:categories(slug),
-      product_images(url, alt_text)
+      product_images(cloudinary_path, alt_text)
     `)
     .eq('is_active', true)
     .eq('is_featured', true)
@@ -124,7 +124,7 @@ export default async function FeaturedProducts() {
                 <div className="relative aspect-square bg-[#F0E8DF] flex items-center justify-center">
                   {product.mainImage ? (
                     <Image
-                      src={product.mainImage.url}
+                      src={product.mainImage.cloudinary_path}
                       alt={product.mainImage.alt_text || product.name}
                       fill
                       className="object-cover"
