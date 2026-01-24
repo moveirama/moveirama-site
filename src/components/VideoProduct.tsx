@@ -5,7 +5,7 @@ import { useState, useCallback } from 'react'
 /**
  * VideoProduct — Seção de vídeo de apresentação do produto
  * 
- * v1.0 — 20/01/2026
+ * v1.1 — 24/01/2026
  * Specs: SPEC_Video_Produto_PDP.md (Squad Visual)
  * 
  * DIFERENTE de vídeo de montagem:
@@ -13,6 +13,9 @@ import { useState, useCallback } from 'react'
  * - Vídeo Montagem: passo a passo, reduz medo
  * 
  * Posição na PDP: primeiro item abaixo da dobra (após trust badges)
+ * 
+ * CHANGELOG v1.1:
+ * - Adicionado suporte a YouTube Shorts (youtube.com/shorts/XXX)
  */
 
 interface VideoProductProps {
@@ -26,9 +29,10 @@ interface VideoProductProps {
  * - https://www.youtube.com/watch?v=ABC123
  * - https://youtu.be/ABC123
  * - https://www.youtube.com/embed/ABC123
+ * - https://www.youtube.com/shorts/ABC123 ← NOVO v1.1
  */
 function getYouTubeId(url: string): string | null {
-  const regex = /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&\n?#]+)/
+  const regex = /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([^&\n?#]+)/
   const match = url.match(regex)
   return match ? match[1] : null
 }
