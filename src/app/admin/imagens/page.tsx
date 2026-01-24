@@ -20,6 +20,8 @@ type Product = {
   name: string
   slug: string
   price: number
+  compare_at_price: number | null  // OFERTA: preço "de" (antigo)
+  is_on_sale: boolean | null       // OFERTA: flag de oferta
   assembly_video_url: string | null
   video_product_url: string | null
   manual_pdf_url: string | null
@@ -98,6 +100,10 @@ export default function AdminImagensPage() {
   const [weightCapacity, setWeightCapacity] = useState('')
   const [price, setPrice] = useState('')
   
+  // OFERTA: Novos campos
+  const [isOnSale, setIsOnSale] = useState(false)
+  const [compareAtPrice, setCompareAtPrice] = useState('')
+  
   // Campos de características (NOVOS)
   const [numDoors, setNumDoors] = useState('')
   const [numDrawers, setNumDrawers] = useState('')
@@ -158,6 +164,9 @@ export default function AdminImagensPage() {
     setTvMaxSize(product.tv_max_size?.toString() || '')
     setWeightCapacity(product.weight_capacity?.toString() || '')
     setPrice(product.price?.toString() || '')
+    // OFERTA: Atualizar campos de oferta
+    setIsOnSale(product.is_on_sale || false)
+    setCompareAtPrice(product.compare_at_price?.toString() || '')
     // Características
     setNumDoors(product.num_doors?.toString() || '')
     setNumDrawers(product.num_drawers?.toString() || '')
@@ -202,6 +211,9 @@ export default function AdminImagensPage() {
           tv_max_size: tvMaxSize ? parseInt(tvMaxSize) : null,
           weight_capacity: weightCapacity ? parseInt(weightCapacity) : null,
           price: price ? parseFloat(price) : null,
+          // OFERTA: Incluir campos de oferta no save
+          is_on_sale: isOnSale,
+          compare_at_price: compareAtPrice ? parseFloat(compareAtPrice) : null,
           // Características
           num_doors: numDoors ? parseInt(numDoors) : null,
           num_drawers: numDrawers ? parseInt(numDrawers) : null,
@@ -465,6 +477,12 @@ export default function AdminImagensPage() {
     e.target.value = ''
   }
 
+  // OFERTA: Função auxiliar para calcular desconto
+  function calcularDesconto(precoAtual: number, precoDe: number): number {
+    if (!precoDe || precoDe <= precoAtual) return 0
+    return Math.round(((precoDe - precoAtual) / precoDe) * 100)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#FAF7F4] flex items-center justify-center">
@@ -524,16 +542,24 @@ export default function AdminImagensPage() {
                     <li key={product.id}>
                       <button onClick={() => setSelectedProduct(product)} className={`w-full px-4 py-3 text-left hover:bg-[#F0E8DF] ${selectedProduct?.id === product.id ? 'bg-[#F0F5F2]' : ''}`}>
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 bg-[#F0E8DF] rounded flex-shrink-0 flex items-center justify-center overflow-hidden">
+                          <div className="w-12 h-12 bg-[#F0E8DF] rounded flex-shrink-0 flex items-center justify-center overflow-hidden relative">
                             {product.product_images?.[0] ? (
                               <img src={product.product_images[0].cloudinary_path} alt="" className="w-full h-full object-cover" />
                             ) : (
                               <span className="text-xs text-[#8B7355]">Sem foto</span>
                             )}
+                            {/* OFERTA: Badge de oferta na lista */}
+                            {product.is_on_sale && (
+                              <span className="absolute -top-1 -right-1 text-[10px] bg-[#B85C38] text-white px-1 rounded">%</span>
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-[#2D2D2D] truncate">{product.name}</p>
-                            <p className="text-sm text-[#8B7355]">SKU: {product.sku} • {product.product_images?.length || 0} img</p>
+                            <p className="text-sm text-[#8B7355]">
+                              SKU: {product.sku} • {product.product_images?.length || 0} img
+                              {/* OFERTA: Mostrar badge se em oferta */}
+                              {product.is_on_sale && <span className="ml-2 text-[#B85C38] font-medium">• Em oferta</span>}
+                            </p>
                           </div>
                         </div>
                       </button>
@@ -738,6 +764,66 @@ export default function AdminImagensPage() {
                             className="w-40 px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
                           />
                         </div>
+                      </div>
+
+                      {/* OFERTA: Nova seção de Ofertas */}
+                      <div className="border-t border-[#E8DFD5] pt-6">
+                        <h4 className="text-sm font-medium text-[#2D2D2D] mb-3">🏷️ Oferta</h4>
+                        
+                        {/* Checkbox Em Oferta */}
+                        <label className="flex items-center gap-3 cursor-pointer mb-4">
+                          <input 
+                            type="checkbox" 
+                            checked={isOnSale}
+                            onChange={(e) => setIsOnSale(e.target.checked)}
+                            className="w-5 h-5 rounded border-[#E8DFD5] text-[#B85C38] focus:ring-[#B85C38]"
+                          />
+                          <span className="text-sm text-[#2D2D2D] font-medium">Produto em Oferta</span>
+                        </label>
+                        
+                        {/* Campo Preço "De" - só aparece se marcado como oferta */}
+                        {isOnSale && (
+                          <div className="ml-8 space-y-4">
+                            <div>
+                              <label className="block text-sm text-[#8B7355] mb-1">Preço "De" (anterior)</label>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm text-[#8B7355]">R$</span>
+                                <input 
+                                  type="number" 
+                                  placeholder="Ex: 799.00"
+                                  min="0"
+                                  step="0.01"
+                                  value={compareAtPrice} 
+                                  onChange={(e) => setCompareAtPrice(e.target.value)}
+                                  className="w-40 px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B85C38] text-sm"
+                                />
+                              </div>
+                            </div>
+                            
+                            {/* Preview do desconto */}
+                            {price && compareAtPrice && parseFloat(compareAtPrice) > parseFloat(price) && (
+                              <div className="p-3 bg-[#FDF0EB] border border-[#B85C38]/20 rounded-lg">
+                                <p className="text-sm text-[#2D2D2D]">
+                                  <span className="text-[#8B7355] line-through">De R$ {parseFloat(compareAtPrice).toFixed(2).replace('.', ',')}</span>
+                                  <span className="mx-2">por</span>
+                                  <span className="font-bold text-[#2D2D2D]">R$ {parseFloat(price).toFixed(2).replace('.', ',')}</span>
+                                  <span className="ml-2 px-2 py-0.5 bg-[#B85C38] text-white text-xs font-bold rounded">
+                                    {calcularDesconto(parseFloat(price), parseFloat(compareAtPrice))}% OFF
+                                  </span>
+                                </p>
+                              </div>
+                            )}
+                            
+                            {/* Aviso se preço "de" for menor ou igual */}
+                            {price && compareAtPrice && parseFloat(compareAtPrice) <= parseFloat(price) && (
+                              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                                <p className="text-sm text-red-600">
+                                  ⚠️ O preço "De" deve ser maior que o preço atual
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       {/* Compatibilidade TV - só para racks e painéis */}

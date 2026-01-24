@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 
 // ============================================
-// LAZY INITIALIZATION - Corrigido para evitar erro no build
-// O client só é criado quando a função é chamada, não no escopo global
+// LAZY INITIALIZATION - Cliente admin (service role)
 // ============================================
 function getSupabaseAdmin() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -16,14 +17,53 @@ function getSupabaseAdmin() {
   return createClient(url, key)
 }
 
+// ============================================
+// Verificar autenticação via Supabase Auth
+// ============================================
+async function checkAuth(request: NextRequest): Promise<boolean> {
+  // Opção 1: Verificar senha na query string (mantém compatibilidade)
+  const { searchParams } = new URL(request.url)
+  const password = searchParams.get('password')
+  
+  if (password && password === process.env.ADMIN_PASSWORD) {
+    return true
+  }
+  
+  // Opção 2: Verificar sessão do Supabase Auth via cookies
+  try {
+    const cookieStore = await cookies()
+    
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll()
+          },
+          setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options as Record<string, unknown>)
+            })
+          },
+        },
+      }
+    )
+    
+    const { data: { user } } = await supabase.auth.getUser()
+    return !!user
+  } catch (error) {
+    console.error('Erro ao verificar auth:', error)
+    return false
+  }
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { searchParams } = new URL(request.url)
-  const password = searchParams.get('password')
-
-  if (password !== process.env.ADMIN_PASSWORD) {
+  const isAuthorized = await checkAuth(request)
+  if (!isAuthorized) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
@@ -58,10 +98,8 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { searchParams } = new URL(request.url)
-  const password = searchParams.get('password')
-
-  if (password !== process.env.ADMIN_PASSWORD) {
+  const isAuthorized = await checkAuth(request)
+  if (!isAuthorized) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
@@ -155,10 +193,8 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { searchParams } = new URL(request.url)
-  const password = searchParams.get('password')
-
-  if (password !== process.env.ADMIN_PASSWORD) {
+  const isAuthorized = await checkAuth(request)
+  if (!isAuthorized) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
