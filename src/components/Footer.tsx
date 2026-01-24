@@ -1,198 +1,166 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function Footer() {
   return (
-    <footer className="bg-[var(--color-graphite)] text-white mt-16 overflow-x-hidden">
-      {/* Schema.org LocalBusiness */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FurnitureStore",
-            "name": "Moveirama",
-            "description": "Loja de móveis em Curitiba. Racks, painéis, escrivaninhas e mais com entrega rápida em Curitiba e Região Metropolitana.",
-            "url": "https://moveirama.com.br",
-            "logo": "https://moveirama.com.br/logo.png",
-            "telephone": "+55-41-98420-9323",
-            "email": "contato@moveirama.com.br",
-            "address": {
-              "@type": "PostalAddress",
-              "streetAddress": "Rua Barão de Guaraúna, 517",
-              "addressLocality": "Curitiba",
-              "addressRegion": "PR",
-              "addressCountry": "BR",
-              "postalCode": "80030-310"
-            },
-            "geo": {
-              "@type": "GeoCoordinates",
-              "latitude": "-25.4284",
-              "longitude": "-49.2733"
-            },
-            "areaServed": [
-              {
-                "@type": "City",
-                "name": "Curitiba"
-              },
-              {
-                "@type": "City",
-                "name": "Colombo"
-              },
-              {
-                "@type": "City",
-                "name": "São José dos Pinhais"
-              },
-              {
-                "@type": "City",
-                "name": "Araucária"
-              },
-              {
-                "@type": "City",
-                "name": "Pinhais"
-              },
-              {
-                "@type": "City",
-                "name": "Fazenda Rio Grande"
-              },
-              {
-                "@type": "City",
-                "name": "Almirante Tamandaré"
-              },
-              {
-                "@type": "City",
-                "name": "Campina Grande do Sul"
-              },
-              {
-                "@type": "City",
-                "name": "Quatro Barras"
-              }
-            ],
-            "openingHoursSpecification": {
-              "@type": "OpeningHoursSpecification",
-              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-              "opens": "09:00",
-              "closes": "18:00"
-            },
-            "priceRange": "$$",
-            "paymentAccepted": ["Pix", "Cartão de Crédito", "Cartão de Débito"],
-            "currenciesAccepted": "BRL"
-          })
-        }}
-      />
-
-      <div className="max-w-[1280px] mx-auto px-4 py-12 overflow-x-hidden">
-        <div className="grid md:grid-cols-4 gap-8 text-center md:text-left">
-          {/* Sobre */}
-          <div className="flex flex-col items-center md:items-start">
-            <h3 className="text-xl font-bold mb-4">moveirama</h3>
-            <p className="text-[#D9CFC4] text-sm leading-relaxed">
-              Móveis novos com entrega rápida em Curitiba e Região Metropolitana. 
-              Preço justo, montagem fácil e suporte de verdade.
-            </p>
-            {/* Redes Sociais */}
-            <div className="flex justify-center md:justify-start gap-4 mt-6">
-              <a 
-                href="https://facebook.com/moveirama" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex items-center justify-center w-11 h-11 rounded-full bg-white/10 border border-white/30 hover:bg-[#6B8E7A] hover:border-[#6B8E7A] transition-all"
-                aria-label="Facebook da Moveirama"
-              >
-                <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-              </a>
-              <a 
-                href="https://instagram.com/moveirama" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex items-center justify-center w-11 h-11 rounded-full bg-white/10 border border-white/30 hover:bg-[#6B8E7A] hover:border-[#6B8E7A] transition-all"
-                aria-label="Instagram da Moveirama"
-              >
-                <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
-                </svg>
-              </a>
-              <a 
-                href="https://wa.me/5541984209323" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex items-center justify-center w-11 h-11 rounded-full bg-white/10 border border-white/30 hover:bg-[#25D366] hover:border-[#25D366] transition-all"
-                aria-label="WhatsApp da Moveirama"
-              >
-                <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                </svg>
-              </a>
-            </div>
-          </div>
-
-          {/* Categorias */}
-          <div className="flex flex-col items-center md:items-start">
-            <h4 className="font-semibold mb-4">Categorias</h4>
-            <ul className="space-y-2 text-sm text-[#D9CFC4]">
-              <li><Link href="/moveis-para-casa/racks-tv" className="hover:text-white transition-colors">Racks para TV</Link></li>
-              <li><Link href="/moveis-para-casa/paineis-tv" className="hover:text-white transition-colors">Painéis para TV</Link></li>
-              <li><Link href="/moveis-para-escritorio/escrivaninha-home-office" className="hover:text-white transition-colors">Escrivaninhas</Link></li>
-              <li><Link href="/moveis-para-casa/buffets" className="hover:text-white transition-colors">Buffets</Link></li>
-              <li><Link href="/moveis-para-escritorio/mesa-reta" className="hover:text-white transition-colors">Mesas de Escritório</Link></li>
-            </ul>
-          </div>
-
-          {/* Atendimento */}
-          <div className="flex flex-col items-center md:items-start">
-            <h4 className="font-semibold mb-4">Atendimento</h4>
-            <ul className="space-y-2 text-sm text-[#D9CFC4]">
-              <li><Link href="/fale-com-a-gente" className="hover:text-white transition-colors">Fale com a Gente</Link></li>
-              <li><Link href="/politicas/troca-devolucao" className="hover:text-white transition-colors">Trocas e Devoluções</Link></li>
-              <li><Link href="/politicas/privacidade" className="hover:text-white transition-colors">Política de Privacidade</Link></li>
-              <li><Link href="/entrega" className="hover:text-white transition-colors">Regiões de Entrega</Link></li>
-            </ul>
-          </div>
-
-          {/* Somos de Curitiba (NOVO - substitui "Onde Entregamos") */}
-          <div className="flex flex-col items-center md:items-start gap-3">
-            <h4 className="font-semibold">Moveirama curitibana!</h4>
-            <p className="text-sm text-white/70 leading-relaxed">
-              Entrega própria em Curitiba e região metropolitana.
-            </p>
-            <a 
-              href="https://wa.me/5541984209323"
-              className="inline-flex items-center gap-2 text-sm font-medium text-[#25D366] hover:opacity-80 transition-opacity mt-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#25D366] focus-visible:outline-offset-2"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Falar no WhatsApp"
-            >
-              <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-              </svg>
-              <span>Chamar no WhatsApp</span>
-            </a>
-          </div>
+    <footer className="bg-[#2D2D2D] text-[#FAF7F4]">
+      {/* Main Footer */}
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        {/* Logo */}
+        <div className="mb-8">
+          <Link href="/" className="inline-block">
+            <Image
+              src="/logo/moveirama-branco.svg"
+              alt="Moveirama"
+              width={160}
+              height={32}
+              className="h-8 w-auto"
+            />
+          </Link>
         </div>
 
-        {/* Linha divisória */}
-        <div className="border-t border-[#8B7355] mt-10 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            {/* CNPJ e info legal */}
-            <div className="text-sm text-[#B8A99A] text-center md:text-left">
-              <p>Moveirama Eureka Móveis Ltda - CNPJ: 61.154.643/0001-84</p>
-              <p>Curitiba, PR</p>
-            </div>
-
-            {/* Pagamentos */}
-            <div className="flex items-center gap-3 text-[#B8A99A]">
-              <span className="text-xs">Pagamento seguro:</span>
-              <span className="text-sm">Pix</span>
-              <span className="text-sm">-</span>
-              <span className="text-sm">Cartão</span>
-            </div>
+        {/* Grid de Colunas */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          
+          {/* Coluna 1: Categorias */}
+          <div>
+            <h3 className="text-base font-semibold text-[#FAF7F4] mb-4">
+              Categorias
+            </h3>
+            <ul className="space-y-2">
+              <li>
+                <Link 
+                  href="/moveis-para-casa/racks-tv" 
+                  className="text-sm text-[#FAF7F4]/70 hover:text-[#FAF7F4] transition-colors"
+                >
+                  Racks para TV
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/moveis-para-casa/paineis-tv" 
+                  className="text-sm text-[#FAF7F4]/70 hover:text-[#FAF7F4] transition-colors"
+                >
+                  Painéis para TV
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/moveis-para-escritorio/escrivaninha-home-office" 
+                  className="text-sm text-[#FAF7F4]/70 hover:text-[#FAF7F4] transition-colors"
+                >
+                  Escrivaninhas
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/moveis-para-escritorio" 
+                  className="text-sm text-[#FAF7F4]/70 hover:text-[#FAF7F4] transition-colors"
+                >
+                  Home Office
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/moveis-para-casa/penteadeiras" 
+                  className="text-sm text-[#FAF7F4]/70 hover:text-[#FAF7F4] transition-colors"
+                >
+                  Penteadeiras
+                </Link>
+              </li>
+            </ul>
           </div>
 
-          {/* Copyright */}
-          <p className="text-center text-xs text-[#B8A99A] mt-6">
-            © {new Date().getFullYear()} Moveirama. Todos os direitos reservados.
-          </p>
+          {/* Coluna 2: Atendimento */}
+          <div>
+            <h3 className="text-base font-semibold text-[#FAF7F4] mb-4">
+              Atendimento
+            </h3>
+            <ul className="space-y-2">
+              <li>
+                <a 
+                  href="https://wa.me/5541984209323"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-[#FAF7F4]/70 hover:text-[#FAF7F4] transition-colors"
+                >
+                  WhatsApp
+                </a>
+              </li>
+              <li>
+                <span className="text-sm text-[#FAF7F4]/70">
+                  Seg a Sex: 9h às 18h
+                </span>
+              </li>
+              <li>
+                <span className="text-sm text-[#FAF7F4]/70">
+                  Sábado: 9h às 13h
+                </span>
+              </li>
+              <li>
+                <Link 
+                  href="/entrega" 
+                  className="text-sm text-[#FAF7F4]/70 hover:text-[#FAF7F4] transition-colors"
+                >
+                  Regiões de Entrega
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Coluna 3: Institucional */}
+          <div>
+            <h3 className="text-base font-semibold text-[#FAF7F4] mb-4">
+              Institucional
+            </h3>
+            <ul className="space-y-2">
+              <li>
+                <Link 
+                  href="/sobre" 
+                  className="text-sm text-[#FAF7F4]/70 hover:text-[#FAF7F4] transition-colors"
+                >
+                  Sobre nós
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/politicas/privacidade" 
+                  className="text-sm text-[#FAF7F4]/70 hover:text-[#FAF7F4] transition-colors"
+                >
+                  Política de Privacidade
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/politicas/troca-devolucao" 
+                  className="text-sm text-[#FAF7F4]/70 hover:text-[#FAF7F4] transition-colors"
+                >
+                  Trocas e Devoluções
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Coluna 4: Moveirama é curitibana! */}
+          <div className="flex flex-col gap-2">
+            <h3 className="text-base font-semibold text-[#FAF7F4]">
+              Moveirama é curitibana!
+            </h3>
+            <p className="text-sm text-[#FAF7F4]/70 leading-relaxed">
+              Entrega própria em Curitiba e região metropolitana.
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+      {/* Bottom Bar */}
+      <div className="border-t border-[#FAF7F4]/20">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-2 text-sm text-[#FAF7F4]/70">
+            <span>CNPJ 00.000.000/0001-00 • Curitiba, PR</span>
+            <span>© 2026 Moveirama. Todos os direitos reservados.</span>
+          </div>
         </div>
       </div>
     </footer>
