@@ -7,6 +7,12 @@ import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEn
 import { arrayMove, SortableContext, useSortable, rectSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
+// ============================================
+// Moveirama — Admin Imagens Page
+// Versão: 2.1 — Correção lógica de oferta
+// Data: 25/01/2026
+// ============================================
+
 type ProductImage = {
   id: string
   cloudinary_path: string
@@ -100,7 +106,7 @@ export default function AdminImagensPage() {
   const [weightCapacity, setWeightCapacity] = useState('')
   const [price, setPrice] = useState('')
   
-  // OFERTA: Novos campos
+  // OFERTA: Campos corrigidos v2.1
   const [isOnSale, setIsOnSale] = useState(false)
   const [compareAtPrice, setCompareAtPrice] = useState('')
   
@@ -740,22 +746,26 @@ export default function AdminImagensPage() {
                   {activeTab === 'caracteristicas' && (
                     <div className="space-y-6">
                       
-                      <div>
-                        <h4 className="text-sm font-medium text-[#2D2D2D] mb-3">💰 Preço</h4>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-[#8B7355]">R$</span>
-                          <input 
-                            type="number" 
-                            placeholder="Ex: 299.90"
-                            min="0"
-                            step="0.01"
-                            value={price} 
-                            onChange={(e) => setPrice(e.target.value)}
-                            className="w-40 px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
-                          />
+                      {/* PREÇO NORMAL (só mostra se NÃO estiver em oferta) */}
+                      {!isOnSale && (
+                        <div>
+                          <h4 className="text-sm font-medium text-[#2D2D2D] mb-3">💰 Preço</h4>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-[#8B7355]">R$</span>
+                            <input 
+                              type="number" 
+                              placeholder="Ex: 299.90"
+                              min="0"
+                              step="0.01"
+                              value={price} 
+                              onChange={(e) => setPrice(e.target.value)}
+                              className="w-40 px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6B8E7A] text-sm"
+                            />
+                          </div>
                         </div>
-                      </div>
+                      )}
 
+                      {/* SEÇÃO DE OFERTA — v2.1 CORRIGIDA */}
                       <div className="border-t border-[#E8DFD5] pt-6">
                         <h4 className="text-sm font-medium text-[#2D2D2D] mb-3">🏷️ Oferta</h4>
                         
@@ -763,7 +773,21 @@ export default function AdminImagensPage() {
                           <input 
                             type="checkbox" 
                             checked={isOnSale}
-                            onChange={(e) => setIsOnSale(e.target.checked)}
+                            onChange={(e) => {
+                              const marcandoOferta = e.target.checked
+                              setIsOnSale(marcandoOferta)
+                              
+                              if (marcandoOferta && price && !compareAtPrice) {
+                                // Ao marcar oferta: preço atual vira "De" (compare_at_price)
+                                setCompareAtPrice(price)
+                                // Limpa o preço para usuário digitar o preço promocional
+                                setPrice('')
+                              } else if (!marcandoOferta && compareAtPrice) {
+                                // Ao desmarcar oferta: restaura preço original
+                                setPrice(compareAtPrice)
+                                setCompareAtPrice('')
+                              }
+                            }}
                             className="w-5 h-5 rounded border-[#E8DFD5] text-[#B85C38] focus:ring-[#B85C38]"
                           />
                           <span className="text-sm text-[#2D2D2D] font-medium">Produto em Oferta</span>
@@ -771,18 +795,25 @@ export default function AdminImagensPage() {
                         
                         {isOnSale && (
                           <div className="ml-8 space-y-4">
+                            <div className="p-3 bg-[#F0E8DF] rounded-lg">
+                              <p className="text-xs text-[#8B7355] mb-2">💡 Preço original (será riscado):</p>
+                              <p className="text-lg font-medium text-[#8B7355] line-through">
+                                R$ {compareAtPrice ? parseFloat(compareAtPrice).toFixed(2).replace('.', ',') : '---'}
+                              </p>
+                            </div>
+                            
                             <div>
-                              <label className="block text-sm text-[#8B7355] mb-1">Vender por:</label>
+                              <label className="block text-sm text-[#B85C38] font-medium mb-1">Preço PROMOCIONAL (cliente paga):</label>
                               <div className="flex items-center gap-2">
                                 <span className="text-sm text-[#8B7355]">R$</span>
                                 <input 
                                   type="number" 
-                                  placeholder="Ex: 799.00"
+                                  placeholder="Ex: 179.00"
                                   min="0"
                                   step="0.01"
-                                  value={compareAtPrice} 
-                                  onChange={(e) => setCompareAtPrice(e.target.value)}
-                                  className="w-40 px-3 py-2 border border-[#E8DFD5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B85C38] text-sm"
+                                  value={price} 
+                                  onChange={(e) => setPrice(e.target.value)}
+                                  className="w-40 px-3 py-2 border-2 border-[#B85C38] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B85C38] text-sm font-bold"
                                 />
                               </div>
                             </div>
@@ -792,10 +823,18 @@ export default function AdminImagensPage() {
                                 <p className="text-sm text-[#2D2D2D]">
                                   <span className="text-[#8B7355] line-through">De R$ {parseFloat(compareAtPrice).toFixed(2).replace('.', ',')}</span>
                                   <span className="mx-2">por</span>
-                                  <span className="font-bold text-[#2D2D2D]">R$ {parseFloat(price).toFixed(2).replace('.', ',')}</span>
+                                  <span className="font-bold text-[#B85C38]">R$ {parseFloat(price).toFixed(2).replace('.', ',')}</span>
                                   <span className="ml-2 px-2 py-0.5 bg-[#B85C38] text-white text-xs font-bold rounded">
                                     {calcularDesconto(parseFloat(price), parseFloat(compareAtPrice))}% OFF
                                   </span>
+                                </p>
+                              </div>
+                            )}
+                            
+                            {price && compareAtPrice && parseFloat(price) >= parseFloat(compareAtPrice) && (
+                              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                                <p className="text-sm text-red-600">
+                                  ⚠️ Preço promocional deve ser MENOR que o preço original
                                 </p>
                               </div>
                             )}

@@ -6,9 +6,10 @@ import { usePathname } from 'next/navigation'
 import SearchModal from '@/components/search/SearchModal'
 
 // ============================================
-// ESTRUTURA DE NAVEGAÇÃO v2.2
-// Atualizado: 23/01/2026
+// ESTRUTURA DE NAVEGAÇÃO v2.3
+// Atualizado: 25/01/2026
 // Changelog:
+// - v2.3 (25/01/2026): Corrigido link Ofertas -> /ofertas-moveis-curitiba
 // - v2.2 (23/01/2026): Link "Fale Conosco" -> "Fale com a Gente" (/fale-com-a-gente)
 // - v2.1 (20/01/2026): Removidos links "Ver Linha X" (decisão Squad Visual)
 // - v2.0 (Jan/2026): Migração taxonomia v2 (URLs 2 níveis)
@@ -532,7 +533,7 @@ export default function Header() {
                 
                 <li>
                   <Link
-                    href="/ofertas"
+                    href="/ofertas-moveis-curitiba"
                     className="flex items-center px-4 py-3 text-[15px] font-medium text-[var(--color-graphite)] hover:bg-[var(--color-gray-100)] hover:text-[var(--color-sage-600)] rounded-lg transition-all duration-150"
                   >
                     Ofertas
@@ -746,7 +747,7 @@ export default function Header() {
               
               <li>
                 <Link
-                  href="/ofertas"
+                  href="/ofertas-moveis-curitiba"
                   className="flex items-center justify-between px-5 py-3.5 text-base font-medium text-[var(--color-graphite)] hover:bg-[var(--color-gray-100)] transition-colors min-h-[56px]"
                 >
                   <span>Ofertas</span>
