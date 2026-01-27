@@ -108,7 +108,7 @@ export default function Footer() {
               <li><Link href="/moveis-para-casa/paineis-tv" className="hover:text-[#FAF7F4] transition-colors">Painéis para TV</Link></li>
               <li><Link href="/moveis-para-escritorio/escrivaninha-home-office" className="hover:text-[#FAF7F4] transition-colors">Escrivaninhas</Link></li>
               <li><Link href="/moveis-para-casa/buffets" className="hover:text-[#FAF7F4] transition-colors">Buffets</Link></li>
-              <li><Link href="/moveis-para-escritorio/mesa-reta" className="hover:text-[#FAF7F4] transition-colors">Mesas de Escritório</Link></li>
+              <li><Link href="/moveis-para-escritorio/mesa-em-l" className="hover:text-[#FAF7F4] transition-colors">Mesas em L</Link></li>
             </ul>
           </div>
 
@@ -117,8 +117,8 @@ export default function Footer() {
             <h4 className="font-semibold mb-4 text-[#FAF7F4]">Atendimento</h4>
             <ul className="space-y-2 text-sm text-[#FAF7F4]/70">
               <li><Link href="/fale-com-a-gente" className="hover:text-[#FAF7F4] transition-colors">Fale com a Gente</Link></li>
-              <li><Link href="/politicas/troca-devolucao" className="hover:text-[#FAF7F4] transition-colors">Trocas e Devoluções</Link></li>
-              <li><Link href="/politicas/privacidade" className="hover:text-[#FAF7F4] transition-colors">Política de Privacidade</Link></li>
+              <li><Link href="/politica-trocas-devolucoes" className="hover:text-[#FAF7F4] transition-colors">Trocas e Devoluções</Link></li>
+              <li><Link href="/politica-privacidade" className="hover:text-[#FAF7F4] transition-colors">Política de Privacidade</Link></li>
               <li><Link href="/entrega-moveis-curitiba-rmc" className="hover:text-[#FAF7F4] transition-colors">Onde entregamos</Link></li>
             </ul>
           </div>
@@ -138,7 +138,7 @@ export default function Footer() {
             {/* CNPJ e info legal */}
             <div className="text-sm text-[#FAF7F4]/70 text-center md:text-left">
               <p>Moveirama Eureka Móveis Ltda - CNPJ: 61.154.643/0001-84</p>
-              <p>Rua Barão de Guaraúna, 517 - Juvevê - Curitiba, PR</p>
+              <p>Escritório Administrativo - Bairro Juvevê - Curitiba - PR</p>
             </div>
 
             {/* Pagamentos */}

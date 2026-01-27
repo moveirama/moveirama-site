@@ -4,11 +4,13 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import SearchModal from '@/components/search/SearchModal'
+import { CartBadge } from '@/components/cart'
 
 // ============================================
-// ESTRUTURA DE NAVEGAÇÃO v2.3
-// Atualizado: 25/01/2026
+// ESTRUTURA DE NAVEGAÇÃO v2.4
+// Atualizado: 27/01/2026
 // Changelog:
+// - v2.4 (27/01/2026): Adicionado CartBadge, removido WhatsApp do header (usar flutuante)
 // - v2.3 (25/01/2026): Corrigido link Ofertas -> /ofertas-moveis-curitiba
 // - v2.2 (23/01/2026): Link "Fale Conosco" -> "Fale com a Gente" (/fale-com-a-gente)
 // - v2.1 (20/01/2026): Removidos links "Ver Linha X" (decisão Squad Visual)
@@ -542,27 +544,27 @@ export default function Header() {
               </ul>
             </nav>
 
-            <div className="flex items-center gap-3">
+            {/* ============================================
+                ÁREA DE AÇÕES (DIREITA) - v2.4
+                Ordem: Busca → Carrinho → Hambúrguer (mobile)
+                WhatsApp REMOVIDO (usar flutuante)
+                ============================================ */}
+            <div className="flex items-center gap-2">
+              {/* Busca */}
               <button 
                 onClick={() => setSearchOpen(true)}
-                className="flex items-center justify-center w-11 h-11 text-[var(--color-toffee)] hover:text-[var(--color-graphite)] hover:bg-[var(--color-gray-100)] rounded-lg transition-colors"
+                className="flex items-center justify-center w-11 h-11 text-[var(--color-toffee)] hover:text-[var(--color-graphite)] hover:bg-[#F0E8DF] rounded-lg transition-colors"
                 aria-label="Buscar produtos (Ctrl+K)"
               >
                 <SearchIcon className="w-6 h-6" />
               </button>
               
-              <a
-                href="https://wa.me/5541984209323"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden lg:flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[var(--color-whatsapp)] hover:bg-[#20BD5A] rounded-lg transition-colors"
-              >
-                <WhatsAppIcon className="w-5 h-5" />
-                <span>WhatsApp</span>
-              </a>
+              {/* ⭐ CARRINHO - NOVO v2.4 */}
+              <CartBadge />
 
+              {/* Hambúrguer (mobile only) */}
               <button 
-                className="flex lg:hidden items-center justify-center w-11 h-11 text-[var(--color-graphite)] hover:bg-[var(--color-gray-100)] rounded-lg transition-colors"
+                className="flex lg:hidden items-center justify-center w-11 h-11 text-[var(--color-graphite)] hover:bg-[#F0E8DF] rounded-lg transition-colors"
                 onClick={() => setMobileMenuOpen(true)}
                 aria-label="Abrir menu"
                 aria-expanded={mobileMenuOpen}
@@ -756,7 +758,7 @@ export default function Header() {
               </li>
             </ul>
 
-            {/* Links Secundários - CORRIGIDO */}
+            {/* Links Secundários */}
             <div className="mt-4 pt-4 border-t border-[var(--color-sand-light)]">
               <Link
                 href="/fale-com-a-gente"

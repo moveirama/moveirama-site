@@ -5,6 +5,12 @@ import Breadcrumb from '@/components/Breadcrumb'
 import MedidasCompactas from '@/components/MedidasCompactas'
 import ShippingCalculator from '@/components/ShippingCalculator'
 import VideoProduct from '@/components/VideoProduct'
+import { ProductSaveWrapper } from '@/components/minha-lista'
+import ProductRating from '@/components/ProductRating'
+import { ReviewsSection } from '@/components/reviews'
+import VizinhosAprovaram from '@/components/VizinhosAprovaram'
+import { BuyNowButton } from '@/components/cart'
+import type { Review, ReviewsSummaryType } from '@/components/reviews'
 
 // SEO V2: Imports das funções de SEO
 import { 
@@ -18,8 +24,18 @@ import {
 /**
  * ProductPageContent — Página de Produto (PDP)
  * 
- * v2.1 — 20/01/2026
+ * v2.10 — 27/01/2026
  * Changelog:
+ * - v2.10 (27/01/2026): Fix buyButtonProduct com dimensões (width_cm, height_cm, depth_cm)
+ *                       Adicionado campos extras (tv_max_size, main_material, thickness_mm)
+ * - v2.9 (27/01/2026): Integração com sistema de carrinho (BuyNowButton)
+ *                      Botões "Comprar agora" e "Comprar" agora adicionam ao carrinho
+ * - v2.8 (26/01/2026): Adicionado VizinhosAprovaram (prova social regional)
+ * - v2.7 (26/01/2026): Adicionado ReviewsSection (bloco de comentários) após FAQ
+ * - v2.6 (26/01/2026): Adicionado ProductRating (estrelinhas) abaixo do H1
+ *                      Adicionado ProductSaveWrapper (Minha Lista)
+ *                      Badge 5% OFF alterado para terracota (#B85C38)
+ *                      Botão WhatsApp alterado para outline
  * - v2.1 (20/01/2026): Prazo de entrega alterado de 2 para 3 dias úteis
  * - v2.0 (20/01/2026): Adicionada seção VideoProduct (vídeo do produto)
  * - v1.x: SEO V2, FAQs dinâmicas, Schema.org
@@ -35,6 +51,9 @@ interface ProductPageContentProps {
   product: any // TODO: tipar corretamente
   breadcrumbItems: BreadcrumbItem[]
   subcategorySlug: string
+  // ⭐ NOVO v2.7: Props para reviews
+  reviews?: Review[]
+  reviewsSummary?: ReviewsSummaryType | null
 }
 
 // Formata preço em BRL
@@ -67,7 +86,9 @@ function formatDifficulty(difficulty: string): string {
 export default function ProductPageContent({ 
   product, 
   breadcrumbItems,
-  subcategorySlug 
+  subcategorySlug,
+  reviews = [],
+  reviewsSummary = null
 }: ProductPageContentProps) {
   const { parcelas, valorParcela } = getInstallments(product.price)
   const pixPrice = product.price * 0.95 // 5% desconto no Pix
@@ -99,9 +120,9 @@ export default function ProductPageContent({
     : generateProductFAQs(product, subcategorySlug)
 
   // ============================================
-  // SEO V2: Schema.org Product (com shippingDetails)
+  // SEO V2: Schema.org Product (com shippingDetails + aggregateRating)
   // ============================================
-  const productSchema = generateProductSchema({
+  const baseProductSchema = generateProductSchema({
     name: product.name,
     price: product.price,
     tv_max_size: product.tv_max_size,
@@ -119,6 +140,20 @@ export default function ProductPageContent({
     variants: product.variants
   }, canonicalUrl)
 
+  // ⭐ v2.6: Adiciona AggregateRating se houver avaliações
+  const productSchema = {
+    ...baseProductSchema,
+    ...(product.rating_count > 0 && product.rating_average > 0 && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        "ratingValue": product.rating_average.toFixed(1),
+        "reviewCount": product.rating_count.toString(),
+        "bestRating": "5",
+        "worstRating": "1"
+      }
+    })
+  }
+
   // ============================================
   // SEO V2: Schema.org FAQPage (dinâmico)
   // ============================================
@@ -134,6 +169,30 @@ export default function ProductPageContent({
       "name": item.label,
       "item": item.href ? `https://moveirama.com.br${item.href}` : canonicalUrl
     }))
+  }
+
+  // ============================================
+  // ⭐ v2.9: Dados para o botão de compra
+  // ⭐ v2.10: Adicionado dimensões e campos extras
+  // ============================================
+  const buyButtonProduct = {
+    id: product.id,
+    name: product.name,
+    slug: product.slug,
+    price: product.price,
+    imageUrl: product.images?.[0]?.cloudinary_path || '',
+    subcategorySlug: subcategorySlug,
+    sku: product.sku,
+    variantId: defaultVariant?.id,
+    variantName: defaultVariant?.name,
+    // Dimensões (para exibição no carrinho)
+    width_cm: product.width_cm,
+    height_cm: product.height_cm,
+    depth_cm: product.depth_cm,
+    // Extras
+    tv_max_size: product.tv_max_size,
+    main_material: product.main_material,
+    thickness_mm: product.thickness_mm
   }
 
   return (
@@ -178,7 +237,14 @@ export default function ProductPageContent({
               {h1Title}
             </h1>
             
-            {/* Resumo IA-friendly (SEO/AIO) - v2.1: removido "móvel de madeira" (material está nas specs) */}
+            {/* ⭐ v2.6: Rating/Avaliações */}
+            <ProductRating 
+              rating={product.rating_average ?? 0}
+              totalReviews={product.rating_count ?? 0}
+              productId={product.id}
+            />
+            
+            {/* Resumo IA-friendly (SEO/AIO) */}
             <p className="text-sm text-[var(--color-toffee)] mb-3 leading-relaxed break-words">
               <strong>{product.name}</strong>{product.tv_max_size ? ` para TV até ${product.tv_max_size} polegadas` : ''}. {formatPrice(product.price)} à vista ou {parcelas}x {formatPrice(valorParcela)} sem juros. Montagem {formatDifficulty(product.assembly_difficulty)} (~{product.assembly_time_minutes}min). Entrega própria em Curitiba e região metropolitana em até 3 dias úteis.
             </p>
@@ -187,6 +253,21 @@ export default function ProductPageContent({
             <p className="text-sm text-[var(--color-toffee)] mb-4">
               SKU: {product.sku}
             </p>
+
+            {/* ⭐ v2.6: Minha Lista - Salvar produto */}
+            <div className="mb-4">
+              <ProductSaveWrapper
+                product={{
+                  id: product.id,
+                  name: product.name,
+                  price: product.price,
+                  slug: product.slug,
+                  subcategorySlug: subcategorySlug,
+                  width_cm: product.width_cm || 0,
+                  imageUrl: product.images?.[0]?.cloudinary_path || ''
+                }}
+              />
+            </div>
 
             {/* Bloco de Preço */}
             <div className="mb-6">
@@ -202,12 +283,12 @@ export default function ProductPageContent({
                 em até <strong>{parcelas}x</strong> de <strong>{formatPrice(valorParcela)}</strong> sem juros
               </p>
               
-              {/* Preço Pix */}
+              {/* Preço Pix - v2.6: Badge terracota */}
               <div className="inline-flex items-center gap-2 mt-3 px-3 py-2 bg-[var(--color-sage-500)]/10 rounded-lg">
                 <span className="text-[var(--color-sage-700)] font-semibold">
                   {formatPrice(pixPrice)} no Pix
                 </span>
-                <span className="text-xs font-semibold text-[var(--color-sage-600)] bg-[var(--color-sage-500)]/20 px-2 py-0.5 rounded">
+                <span className="text-xs font-semibold text-[#B85C38] bg-[#B85C38]/15 px-2 py-0.5 rounded">
                   5% OFF
                 </span>
               </div>
@@ -261,12 +342,15 @@ export default function ProductPageContent({
               <ShippingCalculator />
             </div>
 
-            {/* Botões de Ação */}
+            {/* ⭐ v2.9: Botões de Ação com BuyNowButton */}
             <div className="flex flex-col gap-3 mb-6">
-              <button className="btn-primary w-full text-lg">
-                Comprar agora
-              </button>
-              <a href={whatsappLink} target="_blank" rel="noopener" className="btn-whatsapp w-full text-center">
+              <BuyNowButton product={buyButtonProduct} />
+              <a 
+                href={whatsappLink} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="w-full text-center bg-transparent border-2 border-[#25D366] text-[#25D366] hover:bg-[#25D366]/10 font-semibold py-3 px-6 rounded-lg min-h-[48px] inline-flex items-center justify-center gap-2 transition-colors"
+              >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                 </svg>
@@ -536,6 +620,18 @@ export default function ProductPageContent({
           </section>
         )}
 
+        {/* ============================================
+            ⭐ NOVO v2.7: SEÇÃO DE AVALIAÇÕES/REVIEWS
+            Posição: após FAQ, antes de Confiança
+            ============================================ */}
+        <ReviewsSection
+          productId={product.id}
+          productSlug={product.slug}
+          productName={product.name}
+          summary={reviewsSummary}
+          reviews={reviews}
+        />
+
         {/* Seção: Confiança */}
         <section className="mt-10 p-6 bg-[var(--color-cream)] rounded-lg">
           <h2 className="text-2xl font-semibold text-[var(--color-graphite)] mb-4">
@@ -556,17 +652,25 @@ export default function ProductPageContent({
             </div>
           </div>
         </section>
+
+        {/* ============================================
+            ⭐ NOVO v2.8: VIZINHOS QUE APROVARAM
+            Prova social regional com fotos de clientes
+            ============================================ */}
+        <VizinhosAprovaram 
+          productId={product.id}
+          productName={product.name}
+        />
+
       </div>
 
-      {/* Sticky Bar Mobile */}
+      {/* ⭐ v2.9: Sticky Bar Mobile com BuyNowButton */}
       <div className="fixed bottom-0 left-0 right-0 z-20 flex items-center gap-3 p-3 bg-white border-t border-[var(--color-sand-light)] shadow-lg md:hidden" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0))' }}>
         <div className="flex-1 min-w-0">
           <p className="text-lg font-bold text-[var(--color-graphite)]">{formatPrice(product.price)}</p>
           <p className="text-xs text-[var(--color-toffee)]">ou {parcelas}x de {formatPrice(valorParcela)}</p>
         </div>
-        <button className="btn-primary flex-shrink-0 px-6">
-          Comprar
-        </button>
+        <BuyNowButton product={buyButtonProduct} variant="sticky" />
       </div>
     </main>
   )

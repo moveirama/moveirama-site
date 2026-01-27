@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import MinhaListaProvider from "@/components/minha-lista/MinhaListaProvider";
+import { CartProvider, CartDrawer, ToastProvider } from "@/components/cart";
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://moveirama.com.br'),
@@ -71,11 +73,18 @@ export default function RootLayout({
         <link rel="canonical" href="https://moveirama.com.br" />
       </head>
       <body className="overflow-x-hidden">
-        <Header />
-        <div className="overflow-x-hidden">
-          {children}
-        </div>
-        <Footer />
+        <ToastProvider>
+          <CartProvider>
+            <MinhaListaProvider>
+              <Header />
+              <div className="overflow-x-hidden">
+                {children}
+              </div>
+              <Footer />
+              <CartDrawer />
+            </MinhaListaProvider>
+          </CartProvider>
+        </ToastProvider>
       </body>
     </html>
   );

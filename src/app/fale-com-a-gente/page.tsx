@@ -1,25 +1,7 @@
-import type { Metadata } from 'next'
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-
-// ============================================
-// METADATA SEO
-// ============================================
-
-export const metadata: Metadata = {
-  title: 'Fale com a Gente | Moveirama - Atendimento WhatsApp Curitiba',
-  description: 'Dúvida sobre medidas, entrega ou montagem? Fale com a Moveirama pelo WhatsApp. Atendimento de domingo a domingo. CNPJ: 61.154.643/0001-84',
-  alternates: {
-    canonical: 'https://moveirama.com.br/fale-com-a-gente',
-  },
-  openGraph: {
-    title: 'Fale com a Gente | Moveirama',
-    description: 'Atendimento rápido pelo WhatsApp. Curitiba e Região Metropolitana.',
-    url: 'https://moveirama.com.br/fale-com-a-gente',
-    siteName: 'Moveirama',
-    locale: 'pt_BR',
-    type: 'website',
-  },
-}
 
 // ============================================
 // ÍCONES SVG
@@ -51,31 +33,10 @@ const SunIcon = () => (
   </svg>
 )
 
-const PineTreeIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-    <path d="M12 2l-4 6h2l-3 5h2l-4 7h14l-4-7h2l-3-5h2l-4-6z" />
-    <path d="M12 22v-3" />
-  </svg>
-)
-
-const BuildingIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-  </svg>
-)
-
 const MapPinIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
     <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
     <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-  </svg>
-)
-
-const InfoIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
-    <circle cx="12" cy="12" r="10" />
-    <line x1="12" y1="16" x2="12" y2="12" />
-    <line x1="12" y1="8" x2="12.01" y2="8" />
   </svg>
 )
 
@@ -94,6 +55,15 @@ const InstagramIcon = () => (
 const FacebookIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+  </svg>
+)
+
+// Ícone de monitor/digital
+const MonitorIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+    <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+    <line x1="8" y1="21" x2="16" y2="21" />
+    <line x1="12" y1="17" x2="12" y2="21" />
   </svg>
 )
 
@@ -147,8 +117,36 @@ const RefreshIcon = () => (
 )
 
 // ============================================
+// COMPONENTE: PhoneDisplay (Anti-spam)
+// ============================================
+
+/**
+ * Exibe o número de telefone de forma protegida contra scrapers.
+ * O número é armazenado em Base64 e só é decodificado via JavaScript,
+ * o que impede que bots simples coletem o número do HTML.
+ */
+const PhoneDisplay = () => {
+  const [phone, setPhone] = useState('')
+  
+  useEffect(() => {
+    // Número codificado em Base64: (41) 98420-9323
+    const encoded = 'KDQxKSA5ODQyMC05MzIz'
+    setPhone(atob(encoded))
+  }, [])
+  
+  return (
+    <div className="text-[#2D2D2D] text-xl sm:text-2xl font-bold tracking-wide min-w-[180px]" aria-label="Telefone WhatsApp">
+      {phone || '•••• •••••-••••'}
+    </div>
+  )
+}
+
+// ============================================
 // DADOS
 // ============================================
+
+// Link WhatsApp com mensagem de triagem (anti-bot)
+const WHATSAPP_URL = 'https://wa.me/5541984209323?text=Olá!%20Gostaria%20de%20tirar%20uma%20dúvida%20sobre%20um%20móvel.'
 
 const duvidasFrequentes = [
   { icon: <TapeMeasureIcon />, text: 'Será que cabe no meu espaço?' },
@@ -204,11 +202,9 @@ export default function FaleComAGentePage() {
               </h2>
             </div>
 
-            {/* Número */}
+            {/* Número - PROTEGIDO via JavaScript */}
             <div className="bg-[#FAF7F4] rounded-xl p-4 mb-5 border border-[#E8DFD5]">
-              <p className="text-[#2D2D2D] text-xl sm:text-2xl font-bold tracking-wide">
-                (41) 98420-9323
-              </p>
+              <PhoneDisplay />
             </div>
 
             {/* Horário - Tom descontraído */}
@@ -221,9 +217,9 @@ export default function FaleComAGentePage() {
               </span>
             </div>
 
-            {/* Botão CTA */}
+            {/* Botão CTA - Com mensagem de triagem */}
             <a
-              href="https://wa.me/5541984209323"
+              href={WHATSAPP_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-3 w-full py-4 px-6 bg-[#25D366] text-white rounded-lg text-base font-semibold transition-all duration-200 hover:-translate-y-0.5 shadow-[0_4px_12px_rgba(37,211,102,0.3)] hover:shadow-[0_6px_16px_rgba(37,211,102,0.4)]"
@@ -233,58 +229,39 @@ export default function FaleComAGentePage() {
             </a>
           </div>
 
-          {/* Card "Somos de Curitiba" */}
+          {/* Card "Operação em Curitiba" - SIMPLIFICADO (sem CNPJ/endereço) */}
           <div className="bg-white rounded-2xl p-6 sm:p-8 border border-[#E8DFD5]">
             
-            <h2 className="text-[#2D2D2D] text-lg sm:text-xl font-semibold mb-6 flex items-center gap-2.5">
+            {/* Header */}
+            <div className="flex items-center gap-2 mb-4">
               <span className="text-[#6B8E7A]">
-                <PineTreeIcon />
+                <MapPinIcon />
               </span>
-              Somos de Curitiba
-            </h2>
-
-            {/* CNPJ */}
-            <div className="p-4 bg-[#FAF7F4] rounded-xl mb-4 border-l-4 border-[#6B8E7A]">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="text-[#6B8E7A]">
-                  <BuildingIcon />
-                </div>
-                <span className="text-[#8B7355] text-[13px] font-medium uppercase tracking-wide">
-                  CNPJ
-                </span>
-              </div>
-              <p className="text-[#2D2D2D] text-base font-semibold ml-8">
-                61.154.643/0001-84
-              </p>
-              <p className="text-[#8B7355] text-sm ml-8 mt-1">
-                Moveirama Eureka Móveis Ltda
-              </p>
+              <h2 className="text-[#2D2D2D] text-lg sm:text-xl font-semibold">
+                Operação em Curitiba
+              </h2>
             </div>
 
-            {/* Endereço */}
-            <div className="p-4 bg-[#FAF7F4] rounded-xl border-l-4 border-[#8B7355]">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="text-[#8B7355]">
-                  <MapPinIcon />
-                </div>
-                <span className="text-[#8B7355] text-[13px] font-medium uppercase tracking-wide">
-                  Endereço Fiscal
-                </span>
-              </div>
-              <p className="text-[#2D2D2D] text-[15px] ml-8 leading-relaxed">
-                Rua Barão de Guaraúna, 517 - Juvevê<br/>
-                Curitiba - PR
-              </p>
-            </div>
+            {/* Bairro */}
+            <p className="text-[#4A4A4A] text-base mb-4">
+              Bairro Juvevê
+            </p>
 
-            {/* Nota importante */}
-            <div className="mt-5 px-4 py-3 bg-[#E8F0EB] rounded-lg flex items-start gap-2.5">
-              <span className="text-[#5A7A68] mt-0.5 flex-shrink-0">
-                <InfoIcon />
-              </span>
-              <p className="text-[#4A4A4A] text-[13px] leading-relaxed">
-                Atendemos exclusivamente online. Não temos loja física para visitação.
-              </p>
+            {/* Box informativo - Loja 100% digital */}
+            <div className="bg-[#E8F0EB] rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <span className="text-[#6B8E7A] flex-shrink-0 mt-0.5">
+                  <MonitorIcon />
+                </span>
+                <div>
+                  <p className="text-[#2D2D2D] text-sm leading-relaxed">
+                    <strong>Somos uma loja 100% digital</strong> para garantir sua entrega em até 3 dias úteis.
+                  </p>
+                  <p className="text-[#5A7A68] text-sm mt-2">
+                    Não possuímos atendimento ao público neste endereço.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -299,7 +276,7 @@ export default function FaleComAGentePage() {
             {duvidasFrequentes.map((item, index) => (
               <a
                 key={index}
-                href="https://wa.me/5541984209323"
+                href={WHATSAPP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3.5 px-4 py-4 bg-[#FAF7F4] rounded-xl border border-[#E8DFD5] transition-all duration-200 hover:border-[#6B8E7A] hover:bg-[#E8F0EB] group"

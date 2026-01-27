@@ -1,0 +1,323 @@
+/**
+ * Moveirama Cart System - CSS Variables & Animations
+ * Versão: 1.0
+ * Data: Janeiro 2026
+ * 
+ * INSTRUÇÕES:
+ * Adicione este conteúdo ao seu globals.css (ou tailwind.css)
+ */
+
+/* ============================================
+   CSS VARIABLES DO CARRINHO
+   ============================================ */
+
+:root {
+  /* Drawer dimensions */
+  --cart-drawer-width: 360px;
+  --cart-drawer-max-height-mobile: 85vh;
+  
+  /* Shadows */
+  --cart-drawer-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+  --cart-overlay-bg: rgba(0, 0, 0, 0.5);
+  
+  /* Images */
+  --cart-item-image-size: 100px;
+  --cart-item-image-size-drawer: 80px;
+  
+  /* Prices */
+  --cart-price-pix-size: 24px;
+  --cart-price-pix-color: #6B8E7A;
+  
+  /* Controls */
+  --cart-qty-button-size: 36px;
+  --cart-qty-button-size-md: 40px;
+  
+  /* Animations */
+  --cart-drawer-duration: 300ms;
+  --cart-drawer-easing: cubic-bezier(0.32, 0.72, 0, 1);
+  --cart-transition-fast: 150ms ease-out;
+  --cart-transition-normal: 200ms ease-out;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+/* Fade in (overlay) */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 200ms ease-out;
+}
+
+/* Fade out */
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.animate-fade-out {
+  animation: fade-out 200ms ease-out forwards;
+}
+
+/* Slide up (mobile drawer) */
+@keyframes slide-up-mobile {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.animate-slide-up-mobile {
+  animation: slide-up-mobile var(--cart-drawer-duration) var(--cart-drawer-easing);
+}
+
+/* Slide down (mobile drawer close) */
+@keyframes slide-down-mobile {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+
+.animate-slide-down-mobile {
+  animation: slide-down-mobile var(--cart-drawer-duration) var(--cart-drawer-easing) forwards;
+}
+
+/* Slide in from right (desktop drawer) */
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right var(--cart-drawer-duration) var(--cart-drawer-easing);
+}
+
+/* Slide out to right (desktop drawer close) */
+@keyframes slide-out-right {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+.animate-slide-out-right {
+  animation: slide-out-right var(--cart-drawer-duration) var(--cart-drawer-easing) forwards;
+}
+
+/* Toast slide up */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 200ms ease-out;
+}
+
+/* Badge pulse */
+@keyframes badge-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.animate-badge-pulse {
+  animation: badge-pulse 300ms ease-out;
+}
+
+/* Skeleton loading */
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.animate-skeleton {
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+/* Item added flash */
+@keyframes item-added-flash {
+  0% { background-color: transparent; }
+  50% { background-color: #E8F5E9; }
+  100% { background-color: transparent; }
+}
+
+.animate-item-added {
+  animation: item-added-flash 600ms ease-out;
+}
+
+/* Item removed */
+@keyframes item-removed {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+.animate-item-removed {
+  animation: item-removed 200ms ease-out forwards;
+}
+
+/* Check mark (success icon) */
+@keyframes check-mark {
+  0% {
+    stroke-dashoffset: 50;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+.animate-check-mark {
+  animation: check-mark 500ms ease-out forwards;
+}
+
+/* Circle grow (success background) */
+@keyframes circle-grow {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-circle-grow {
+  animation: circle-grow 400ms ease-out forwards;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+/* Safe area padding for mobile */
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.pt-safe {
+  padding-top: max(1rem, env(safe-area-inset-top));
+}
+
+/* Hide scrollbar but keep functionality */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Prevent text selection during drag */
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Line clamp utilities */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ============================================
+   FOCUS STYLES
+   ============================================ */
+
+/* Focus visible for keyboard navigation */
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #FAF7F4, 0 0 0 4px #6B8E7A;
+}
+
+/* Remove default focus outline */
+.focus-none:focus {
+  outline: none;
+}
+
+/* ============================================
+   CART-SPECIFIC STYLES
+   ============================================ */
+
+/* Price with Pix emphasis */
+.price-pix {
+  font-size: var(--cart-price-pix-size);
+  font-weight: 700;
+  color: var(--cart-price-pix-color);
+}
+
+.price-pix-label {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #8B7355;
+}
+
+/* Cart item hover state */
+.cart-item-hover:hover {
+  background-color: #FAF7F4;
+}
+
+/* Quantity button states */
+.qty-btn {
+  width: var(--cart-qty-button-size);
+  height: var(--cart-qty-button-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  transition: background-color var(--cart-transition-fast);
+}
+
+.qty-btn:hover:not(:disabled) {
+  background-color: #F0E8DF;
+}
+
+.qty-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.qty-btn:disabled {
+  color: #D4C9BD;
+  cursor: not-allowed;
+}
+
+/* Checkout summary sticky */
+@media (min-width: 1024px) {
+  .checkout-summary-sticky {
+    position: sticky;
+    top: 24px;
+  }
+}

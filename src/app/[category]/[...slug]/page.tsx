@@ -2,6 +2,7 @@
 /**
  * Página dinâmica para subcategorias e produtos
  * 
+ * v2.4: Adicionada busca de reviews para PDP
  * v2.3: Simplificado para estrutura de 2 níveis (sem linhas intermediárias)
  * 
  * Rotas suportadas:
@@ -25,6 +26,8 @@ import {
   generateCategoryTitle,
   generateCategoryMetaDescription
 } from '@/lib/seo'
+// ⭐ v2.4: Import da função de reviews
+import { getProductReviews } from '@/lib/reviews'
 // Componentes de Listagem
 import Breadcrumb from '@/components/Breadcrumb'
 import ProductCardListing from '@/components/ProductCardListing'
@@ -357,6 +360,7 @@ async function ListingPage({
 
 // ============================================
 // PÁGINA DE PRODUTO (ex: /racks-tv/rack-theo)
+// v2.4: Adicionada busca de reviews
 // ============================================
 
 async function ProductPage({ 
@@ -371,6 +375,9 @@ async function ProductPage({
   if (!product) {
     notFound()
   }
+
+  // ⭐ v2.4: Buscar reviews do produto
+  const { reviews, summary: reviewsSummary } = await getProductReviews(product.id)
 
   const subcategory = await getSubcategoryBySlug(subcategorySlug)
   const parentCategory = await getParentOfSubcategory(subcategorySlug)
@@ -391,6 +398,8 @@ async function ProductPage({
       product={product} 
       breadcrumbItems={breadcrumbItems}
       subcategorySlug={subcategorySlug}
+      reviews={reviews}
+      reviewsSummary={reviewsSummary}
     />
   )
 }

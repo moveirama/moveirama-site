@@ -1,0 +1,722 @@
+/* =============================================================================
+   MOVEIRAMA CART - ANIMAÇÕES E ESTILOS GLOBAIS
+   
+   Este arquivo deve ser importado ou mesclado com globals.css
+   ============================================================================= */
+
+/* =============================================================================
+   KEYFRAMES - ANIMAÇÕES
+   ============================================================================= */
+
+/* Fade In - entrada suave */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Fade Out - saída suave */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Slide Up Mobile - drawer bottom sheet */
+@keyframes slideUpMobile {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Slide Down Mobile - fechar drawer */
+@keyframes slideDownMobile {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+/* Slide In Right - drawer desktop */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Slide Out Right - fechar drawer desktop */
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Pulse - badge contador */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Shake - erro/validação */
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-4px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(4px);
+  }
+}
+
+/* Bounce In - toast success */
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(-20px);
+  }
+  50% {
+    transform: scale(1.05) translateY(0);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Spin - loading */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Skeleton Loading */
+@keyframes skeletonPulse {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Ping - indicador de sucesso */
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* =============================================================================
+   CLASSES DE ANIMAÇÃO
+   ============================================================================= */
+
+.animate-fadeIn {
+  animation: fadeIn 200ms ease-out forwards;
+}
+
+.animate-fadeOut {
+  animation: fadeOut 200ms ease-out forwards;
+}
+
+.animate-slideUpMobile {
+  animation: slideUpMobile 300ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.animate-slideDownMobile {
+  animation: slideDownMobile 300ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.animate-slideInRight {
+  animation: slideInRight 300ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.animate-slideOutRight {
+  animation: slideOutRight 300ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.animate-pulse {
+  animation: pulse 200ms ease-in-out;
+}
+
+.animate-shake {
+  animation: shake 500ms ease-in-out;
+}
+
+.animate-bounceIn {
+  animation: bounceIn 400ms ease-out forwards;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-ping {
+  animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* =============================================================================
+   SKELETON LOADING
+   ============================================================================= */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #E8DFD5 0%,
+    #F0E8DF 50%,
+    #E8DFD5 100%
+  );
+  background-size: 200% 100%;
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.skeleton-text {
+  height: 1em;
+  margin-bottom: 0.5em;
+}
+
+.skeleton-text:last-child {
+  width: 80%;
+}
+
+.skeleton-image {
+  aspect-ratio: 1;
+  width: 100%;
+}
+
+.skeleton-button {
+  height: 48px;
+  border-radius: 8px;
+}
+
+/* =============================================================================
+   SAFE AREA - iOS
+   ============================================================================= */
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.mb-safe {
+  margin-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Sticky bar com safe area */
+.sticky-bar-safe {
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0));
+}
+
+/* =============================================================================
+   DRAWER ESPECÍFICOS
+   ============================================================================= */
+
+/* Overlay do drawer */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+}
+
+.drawer-overlay.entering {
+  animation: fadeIn 200ms ease-out forwards;
+}
+
+.drawer-overlay.exiting {
+  animation: fadeOut 200ms ease-out forwards;
+}
+
+/* Drawer mobile (bottom sheet) */
+.drawer-mobile {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 85vh;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  z-index: 9999;
+  background-color: #FFFFFF;
+}
+
+.drawer-mobile.entering {
+  animation: slideUpMobile 300ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.drawer-mobile.exiting {
+  animation: slideDownMobile 300ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* Drawer desktop (side panel) */
+.drawer-desktop {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 360px;
+  max-width: 90vw;
+  z-index: 9999;
+  background-color: #FFFFFF;
+}
+
+.drawer-desktop.entering {
+  animation: slideInRight 300ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.drawer-desktop.exiting {
+  animation: slideOutRight 300ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* Handle do drawer mobile */
+.drawer-handle {
+  width: 36px;
+  height: 4px;
+  background-color: #E8DFD5;
+  border-radius: 2px;
+  margin: 8px auto 0;
+}
+
+/* =============================================================================
+   TOAST
+   ============================================================================= */
+
+.toast-container {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  pointer-events: auto;
+  max-width: 90vw;
+}
+
+.toast.entering {
+  animation: bounceIn 400ms ease-out forwards;
+}
+
+.toast.exiting {
+  animation: fadeOut 200ms ease-out forwards;
+}
+
+.toast-success {
+  background-color: #E8F0EB;
+  color: #2D2D2D;
+  border: 1px solid #6B8E7A;
+}
+
+.toast-error {
+  background-color: #FEF2F2;
+  color: #2D2D2D;
+  border: 1px solid #DC2626;
+}
+
+.toast-info {
+  background-color: #F0E8DF;
+  color: #2D2D2D;
+  border: 1px solid #8B7355;
+}
+
+/* =============================================================================
+   QUANTITY CONTROL
+   ============================================================================= */
+
+.quantity-control {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #E8DFD5;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.quantity-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  color: #2D2D2D;
+  transition: background-color 150ms ease;
+}
+
+.quantity-btn:hover:not(:disabled) {
+  background-color: #F0E8DF;
+}
+
+.quantity-btn:disabled {
+  color: #E8DFD5;
+  cursor: not-allowed;
+}
+
+.quantity-value {
+  min-width: 40px;
+  text-align: center;
+  font-weight: 600;
+  color: #2D2D2D;
+  font-size: 16px;
+}
+
+/* Mobile: touch targets maiores */
+@media (max-width: 767px) {
+  .quantity-btn {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .quantity-value {
+    min-width: 44px;
+  }
+}
+
+/* =============================================================================
+   CART BADGE
+   ============================================================================= */
+
+.cart-badge {
+  position: relative;
+}
+
+.cart-badge-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  color: #FFFFFF;
+  background-color: #B85C38;
+  border-radius: 9px;
+}
+
+.cart-badge-count.animate {
+  animation: pulse 200ms ease-in-out;
+}
+
+/* =============================================================================
+   FORM INPUTS - CART/CHECKOUT
+   ============================================================================= */
+
+.input-cart {
+  width: 100%;
+  height: 48px;
+  padding: 12px 16px;
+  font-size: 16px; /* Evita zoom no iOS */
+  line-height: 1.5;
+  color: #2D2D2D;
+  background-color: #FFFFFF;
+  border: 1px solid #E8DFD5;
+  border-radius: 8px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.input-cart:focus {
+  outline: none;
+  border-color: #6B8E7A;
+  box-shadow: 0 0 0 3px rgba(107, 142, 122, 0.2);
+}
+
+.input-cart:disabled {
+  background-color: #F0E8DF;
+  color: #8B7355;
+  cursor: not-allowed;
+}
+
+.input-cart.error {
+  border-color: #DC2626;
+}
+
+.input-cart.error:focus {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+}
+
+.input-error-message {
+  margin-top: 4px;
+  font-size: 14px;
+  color: #DC2626;
+}
+
+/* =============================================================================
+   BUTTONS - CART/CHECKOUT
+   ============================================================================= */
+
+.btn-cart-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #FFFFFF;
+  background-color: #6B8E7A;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 150ms ease, transform 100ms ease;
+}
+
+.btn-cart-primary:hover:not(:disabled) {
+  background-color: #5A7A68;
+}
+
+.btn-cart-primary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn-cart-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-cart-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2D2D2D;
+  background-color: transparent;
+  border: 2px solid #2D2D2D;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.btn-cart-secondary:hover:not(:disabled) {
+  background-color: #F0E8DF;
+}
+
+.btn-cart-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* WhatsApp button */
+.btn-whatsapp {
+  background-color: #25D366;
+}
+
+.btn-whatsapp:hover:not(:disabled) {
+  background-color: #20BD5A;
+}
+
+/* =============================================================================
+   PRICE DISPLAY
+   ============================================================================= */
+
+/* Preço Pix - sempre maior e destacado */
+.price-pix {
+  font-size: 24px;
+  font-weight: 700;
+  color: #6B8E7A;
+}
+
+/* Preço cartão */
+.price-card {
+  font-size: 16px;
+  font-weight: 500;
+  color: #2D2D2D;
+}
+
+/* Preço riscado */
+.price-old {
+  font-size: 14px;
+  color: #8B7355;
+  text-decoration: line-through;
+}
+
+/* Badge de desconto */
+.discount-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #FFFFFF;
+  background-color: #B85C38;
+  border-radius: 4px;
+}
+
+/* =============================================================================
+   TRUST BADGES
+   ============================================================================= */
+
+.trust-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: #F0E8DF;
+  border-radius: 8px;
+}
+
+.trust-badge-icon {
+  width: 24px;
+  height: 24px;
+  color: #6B8E7A;
+  flex-shrink: 0;
+}
+
+.trust-badge-text {
+  font-size: 13px;
+  color: #2D2D2D;
+  line-height: 1.3;
+}
+
+/* =============================================================================
+   SHIPPING RESULT
+   ============================================================================= */
+
+.shipping-success {
+  padding: 16px;
+  background-color: #E8F0EB;
+  border: 1px solid #6B8E7A;
+  border-radius: 8px;
+}
+
+.shipping-error {
+  padding: 16px;
+  background-color: #FDF0EB;
+  border: 1px solid #B85C38;
+  border-radius: 8px;
+}
+
+.shipping-out-of-area {
+  padding: 16px;
+  background-color: #FFFBEB;
+  border: 1px solid #F59E0B;
+  border-radius: 8px;
+}
+
+/* =============================================================================
+   RESPONSIVE UTILITIES
+   ============================================================================= */
+
+/* Esconder em mobile */
+@media (max-width: 767px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+/* Esconder em desktop */
+@media (min-width: 768px) {
+  .hide-desktop {
+    display: none !important;
+  }
+}
+
+/* Full width em mobile */
+@media (max-width: 767px) {
+  .mobile-full {
+    width: 100% !important;
+  }
+}
+
+/* =============================================================================
+   SCROLLBAR CUSTOM
+   ============================================================================= */
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #E8DFD5 transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #E8DFD5;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #D9CFC4;
+}
+
+/* =============================================================================
+   FOCUS VISIBLE
+   ============================================================================= */
+
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(107, 142, 122, 0.4);
+}
+
+/* =============================================================================
+   BODY SCROLL LOCK
+   ============================================================================= */
+
+body.drawer-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+
+/* iOS specific fix */
+@supports (-webkit-touch-callout: none) {
+  body.drawer-open {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+}

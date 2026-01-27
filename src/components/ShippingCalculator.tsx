@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * ShippingCalculator — Calculadora de Frete
+ * 
+ * v1.1 — 25/01/2026
+ * Changelog:
+ * - v1.1 (25/01/2026): Botão "Calcular" alterado para outline (hierarquia visual)
+ * - v1.0: Versão inicial com cálculo de frete por CEP
+ */
+
 import { useState, useCallback } from 'react'
 import { 
   calculateShipping, 
@@ -102,7 +111,7 @@ export default function ShippingCalculator() {
         <button 
           onClick={handleCalculate}
           disabled={isLoading}
-          className="flex-shrink-0 px-4 py-3 text-sm font-semibold text-white bg-[var(--color-graphite)] rounded-lg hover:bg-[var(--color-espresso)] transition-colors whitespace-nowrap disabled:opacity-50"
+          className="flex-shrink-0 px-4 py-3 text-sm font-semibold bg-transparent border-2 border-[var(--color-graphite)] text-[var(--color-graphite)] rounded-lg hover:bg-[#F5F5F5] transition-colors whitespace-nowrap disabled:opacity-50"
         >
           {isLoading ? 'Calculando...' : 'Calcular'}
         </button>
