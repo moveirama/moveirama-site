@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { 
@@ -156,7 +156,6 @@ function getDeliveryDateRange(estimatedDays: { min: number; max: number }): stri
 function SuccessHeader({ orderNumber }: { orderNumber: string }) {
   return (
     <div className="text-center mb-8">
-      {/* Ícone de sucesso animado */}
       <div className="relative w-24 h-24 mx-auto mb-6">
         <div className="absolute inset-0 bg-[#6B8E7A]/20 rounded-full animate-ping" />
         <div className="relative flex items-center justify-center w-24 h-24 bg-[#6B8E7A] rounded-full">
@@ -171,7 +170,6 @@ function SuccessHeader({ orderNumber }: { orderNumber: string }) {
         Obrigado pela sua compra na Moveirama
       </p>
       
-      {/* Número do pedido */}
       <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-[#F0E8DF] rounded-lg">
         <span className="text-[#8B7355] text-sm">Pedido:</span>
         <span className="font-mono font-bold text-[#2D2D2D]">{orderNumber}</span>
@@ -211,31 +209,14 @@ function CopyButton({ text }: { text: string }) {
 
 function StatusTimeline({ status, paymentStatus }: { status: string; paymentStatus: string }) {
   const steps = [
-    { 
-      id: 'confirmed', 
-      label: 'Pedido Recebido', 
-      icon: FileText,
-      completed: true 
-    },
-    { 
-      id: 'paid', 
-      label: 'Pagamento Aprovado', 
-      icon: CreditCard,
-      completed: paymentStatus === 'approved' 
-    },
-    { 
-      id: 'preparing', 
-      label: 'Preparando Envio', 
-      icon: Package,
-      completed: false 
-    },
-    { 
-      id: 'shipping', 
-      label: 'Em Transporte', 
-      icon: Truck,
-      completed: false 
-    }
+    { id: 'confirmed', label: 'Pedido Recebido', icon: FileText, completed: true },
+    { id: 'paid', label: 'Pagamento Aprovado', icon: CreditCard, completed: paymentStatus === 'approved' },
+    { id: 'preparing', label: 'Preparando Envio', icon: Package, completed: false },
+    { id: 'shipping', label: 'Em Transporte', icon: Truck, completed: false }
   ]
+  
+  const completedCount = steps.filter(s => s.completed).length
+  const progressWidth = completedCount > 1 ? ((completedCount - 1) / (steps.length - 1)) * 100 : 0
   
   return (
     <div className="bg-white rounded-xl border border-[#E8DFD5] p-6 mb-6">
@@ -245,31 +226,20 @@ function StatusTimeline({ status, paymentStatus }: { status: string; paymentStat
       </h2>
       
       <div className="flex items-center justify-between relative">
-        {/* Linha de progresso */}
         <div className="absolute top-5 left-0 right-0 h-0.5 bg-[#E8DFD5]" />
         <div 
           className="absolute top-5 left-0 h-0.5 bg-[#6B8E7A] transition-all duration-500"
-          style={{ width: `${(steps.filter(s => s.completed).length - 1) / (steps.length - 1) * 100}%` }}
+          style={{ width: `${progressWidth}%` }}
         />
         
-        {steps.map((step, index) => {
+        {steps.map((step) => {
           const Icon = step.icon
           return (
             <div key={step.id} className="relative flex flex-col items-center z-10">
-              <div className={`
-                w-10 h-10 rounded-full flex items-center justify-center
-                transition-all duration-300
-                ${step.completed 
-                  ? 'bg-[#6B8E7A] text-white' 
-                  : 'bg-white border-2 border-[#E8DFD5] text-[#8B7355]'
-                }
-              `}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${step.completed ? 'bg-[#6B8E7A] text-white' : 'bg-white border-2 border-[#E8DFD5] text-[#8B7355]'}`}>
                 <Icon className="w-5 h-5" />
               </div>
-              <span className={`
-                mt-2 text-xs text-center max-w-[80px]
-                ${step.completed ? 'text-[#2D2D2D] font-medium' : 'text-[#8B7355]'}
-              `}>
+              <span className={`mt-2 text-xs text-center max-w-[80px] ${step.completed ? 'text-[#2D2D2D] font-medium' : 'text-[#8B7355]'}`}>
                 {step.label}
               </span>
             </div>
@@ -290,23 +260,15 @@ function DeliveryInfo({ shipping }: { shipping: OrderData['shipping'] }) {
         Entrega
       </h2>
       
-      {/* Endereço */}
       <div className="flex items-start gap-3 mb-4">
         <MapPin className="w-5 h-5 text-[#8B7355] flex-shrink-0 mt-0.5" />
         <div>
-          <p className="text-[#2D2D2D]">
-            {shipping.address}
-          </p>
-          <p className="text-[#8B7355] text-sm">
-            {shipping.neighborhood} - {shipping.city}/{shipping.state}
-          </p>
-          <p className="text-[#8B7355] text-sm">
-            CEP: {shipping.cep}
-          </p>
+          <p className="text-[#2D2D2D]">{shipping.address}</p>
+          <p className="text-[#8B7355] text-sm">{shipping.neighborhood} - {shipping.city}/{shipping.state}</p>
+          <p className="text-[#8B7355] text-sm">CEP: {shipping.cep}</p>
         </div>
       </div>
       
-      {/* Previsão */}
       <div className="bg-[#E8F0EB] rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div>
@@ -333,10 +295,7 @@ function OrderSummary({ order }: { order: OrderData }) {
   
   return (
     <div className="bg-white rounded-xl border border-[#E8DFD5] p-6 mb-6">
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between"
-      >
+      <button onClick={() => setExpanded(!expanded)} className="w-full flex items-center justify-between">
         <h2 className="font-semibold text-[#2D2D2D] flex items-center gap-2">
           <Package className="w-5 h-5 text-[#6B8E7A]" />
           Resumo do Pedido
@@ -351,40 +310,26 @@ function OrderSummary({ order }: { order: OrderData }) {
         )}
       </button>
       
-      {/* Items list (expandable) */}
-      <div className={`
-        overflow-hidden transition-all duration-300
-        ${expanded ? 'max-h-[500px] mt-4' : 'max-h-0'}
-      `}>
+      <div className={`overflow-hidden transition-all duration-300 ${expanded ? 'max-h-[500px] mt-4' : 'max-h-0'}`}>
         <div className="space-y-3 border-b border-[#E8DFD5] pb-4 mb-4">
           {order.items.map((item) => (
             <div key={item.id} className="flex items-center gap-3">
-              {/* Placeholder para imagem */}
               <div className="w-16 h-16 bg-[#F0E8DF] rounded-lg flex items-center justify-center flex-shrink-0">
                 <Package className="w-6 h-6 text-[#8B7355]" />
               </div>
-              
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-[#2D2D2D] line-clamp-1">
-                  {item.name}
-                </p>
-                {item.variant && (
-                  <p className="text-xs text-[#8B7355]">{item.variant}</p>
-                )}
+                <p className="text-sm font-medium text-[#2D2D2D] line-clamp-1">{item.name}</p>
+                {item.variant && <p className="text-xs text-[#8B7355]">{item.variant}</p>}
                 <p className="text-xs text-[#8B7355]">Qtd: {item.quantity}</p>
               </div>
-              
               <div className="text-right">
-                <p className="font-semibold text-[#2D2D2D]">
-                  {formatCurrency(item.price * item.quantity)}
-                </p>
+                <p className="font-semibold text-[#2D2D2D]">{formatCurrency(item.price * item.quantity)}</p>
               </div>
             </div>
           ))}
         </div>
       </div>
       
-      {/* Totals (always visible) */}
       <div className="space-y-2 text-sm">
         <div className="flex justify-between text-[#8B7355]">
           <span>Subtotal</span>
@@ -409,7 +354,6 @@ function OrderSummary({ order }: { order: OrderData }) {
         </div>
       </div>
       
-      {/* Payment method indicator */}
       <div className="mt-4 flex items-center gap-2 text-sm text-[#8B7355]">
         {order.paymentMethod === 'pix' ? (
           <>
@@ -430,42 +374,24 @@ function OrderSummary({ order }: { order: OrderData }) {
 function NextStepsCard() {
   return (
     <div className="bg-[#F0E8DF] rounded-xl p-6 mb-6">
-      <h2 className="font-semibold text-[#2D2D2D] mb-4">
-        📦 Próximos Passos
-      </h2>
+      <h2 className="font-semibold text-[#2D2D2D] mb-4">📦 Próximos Passos</h2>
       
       <ol className="space-y-3 text-sm">
         <li className="flex items-start gap-3">
-          <span className="flex-shrink-0 w-6 h-6 bg-[#6B8E7A] text-white rounded-full flex items-center justify-center text-xs font-bold">
-            1
-          </span>
-          <p className="text-[#2D2D2D]">
-            <strong>Confirmação por e-mail:</strong> Você receberá os detalhes do pedido no seu e-mail.
-          </p>
+          <span className="flex-shrink-0 w-6 h-6 bg-[#6B8E7A] text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
+          <p className="text-[#2D2D2D]"><strong>Confirmação por e-mail:</strong> Você receberá os detalhes do pedido no seu e-mail.</p>
         </li>
-        
         <li className="flex items-start gap-3">
-          <span className="flex-shrink-0 w-6 h-6 bg-[#6B8E7A] text-white rounded-full flex items-center justify-center text-xs font-bold">
-            2
-          </span>
-          <p className="text-[#2D2D2D]">
-            <strong>Preparação:</strong> Nossa equipe vai separar e embalar seus móveis com cuidado.
-          </p>
+          <span className="flex-shrink-0 w-6 h-6 bg-[#6B8E7A] text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
+          <p className="text-[#2D2D2D]"><strong>Preparação:</strong> Nossa equipe vai separar e embalar seus móveis com cuidado.</p>
         </li>
-        
         <li className="flex items-start gap-3">
-          <span className="flex-shrink-0 w-6 h-6 bg-[#6B8E7A] text-white rounded-full flex items-center justify-center text-xs font-bold">
-            3
-          </span>
-          <p className="text-[#2D2D2D]">
-            <strong>Entrega:</strong> Entraremos em contato para agendar a entrega no melhor horário pra você.
-          </p>
+          <span className="flex-shrink-0 w-6 h-6 bg-[#6B8E7A] text-white rounded-full flex items-center justify-center text-xs font-bold">3</span>
+          <p className="text-[#2D2D2D]"><strong>Entrega:</strong> Entraremos em contato para agendar a entrega no melhor horário pra você.</p>
         </li>
       </ol>
       
-      <p className="mt-4 text-xs text-[#8B7355]">
-        💡 Dica: Confira as medidas do ambiente antes da chegada dos móveis!
-      </p>
+      <p className="mt-4 text-xs text-[#8B7355]">💡 Dica: Confira as medidas do ambiente antes da chegada dos móveis!</p>
     </div>
   )
 }
@@ -477,25 +403,14 @@ function SupportCard() {
   
   return (
     <div className="bg-white rounded-xl border border-[#E8DFD5] p-6">
-      <h2 className="font-semibold text-[#2D2D2D] mb-2">
-        Precisa de ajuda?
-      </h2>
-      <p className="text-sm text-[#8B7355] mb-4">
-        Nossa equipe está pronta para tirar suas dúvidas sobre entrega, montagem ou qualquer outra coisa.
-      </p>
+      <h2 className="font-semibold text-[#2D2D2D] mb-2">Precisa de ajuda?</h2>
+      <p className="text-sm text-[#8B7355] mb-4">Nossa equipe está pronta para tirar suas dúvidas sobre entrega, montagem ou qualquer outra coisa.</p>
       
       <a
         href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="
-          flex items-center justify-center gap-2
-          w-full h-12 px-6
-          bg-[#25D366] hover:bg-[#20BD5A]
-          text-white font-semibold
-          rounded-lg
-          transition-colors duration-200
-        "
+        className="flex items-center justify-center gap-2 w-full h-12 px-6 bg-[#25D366] hover:bg-[#20BD5A] text-white font-semibold rounded-lg transition-colors duration-200"
       >
         <MessageCircle className="w-5 h-5" />
         Chamar no WhatsApp
@@ -509,14 +424,7 @@ function ActionButtons() {
     <div className="flex flex-col sm:flex-row gap-3 mt-8">
       <Link
         href="/"
-        className="
-          flex-1 flex items-center justify-center gap-2
-          h-12 px-6
-          bg-[#6B8E7A] hover:bg-[#5A7A68]
-          text-white font-semibold
-          rounded-lg
-          transition-colors duration-200
-        "
+        className="flex-1 flex items-center justify-center gap-2 h-12 px-6 bg-[#6B8E7A] hover:bg-[#5A7A68] text-white font-semibold rounded-lg transition-colors duration-200"
       >
         <Home className="w-5 h-5" />
         Voltar para a Loja
@@ -524,15 +432,7 @@ function ActionButtons() {
       
       <Link
         href="/meus-pedidos"
-        className="
-          flex-1 flex items-center justify-center gap-2
-          h-12 px-6
-          border-2 border-[#2D2D2D]
-          text-[#2D2D2D] font-semibold
-          rounded-lg
-          hover:bg-[#F0E8DF]
-          transition-colors duration-200
-        "
+        className="flex-1 flex items-center justify-center gap-2 h-12 px-6 border-2 border-[#2D2D2D] text-[#2D2D2D] font-semibold rounded-lg hover:bg-[#F0E8DF] transition-colors duration-200"
       >
         <Package className="w-5 h-5" />
         Meus Pedidos
@@ -542,10 +442,27 @@ function ActionButtons() {
 }
 
 // =============================================================================
-// PÁGINA PRINCIPAL
+// LOADING FALLBACK
 // =============================================================================
 
-export default function OrderConfirmationPage() {
+function LoadingFallback() {
+  return (
+    <main className="min-h-screen bg-[#FAF7F4] py-8 px-4">
+      <div className="max-w-2xl mx-auto">
+        <div className="text-center py-16">
+          <div className="w-16 h-16 mx-auto mb-4 border-4 border-[#6B8E7A] border-t-transparent rounded-full animate-spin" />
+          <p className="text-[#8B7355]">Carregando seu pedido...</p>
+        </div>
+      </div>
+    </main>
+  )
+}
+
+// =============================================================================
+// CONTEÚDO DA PÁGINA (usa useSearchParams)
+// =============================================================================
+
+function OrderConfirmationContent() {
   const searchParams = useSearchParams()
   const [order, setOrder] = useState<OrderData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -556,20 +473,12 @@ export default function OrderConfirmationPage() {
       const orderId = searchParams.get('id')
       
       if (!orderId) {
-        // Para demonstração, usa mock data
-        // Em produção: setError('Pedido não encontrado')
         setOrder(mockOrderData)
         setLoading(false)
         return
       }
       
       try {
-        // TODO: Implementar chamada real à API
-        // const response = await fetch(`/api/orders/${orderId}`)
-        // const data = await response.json()
-        // setOrder(data)
-        
-        // Mock para demonstração
         setOrder({ ...mockOrderData, orderId, orderNumber: `MOV-${orderId.slice(-6).toUpperCase()}` })
       } catch (err) {
         setError('Erro ao carregar dados do pedido')
@@ -581,21 +490,10 @@ export default function OrderConfirmationPage() {
     loadOrder()
   }, [searchParams])
   
-  // Loading state
   if (loading) {
-    return (
-      <main className="min-h-screen bg-[#FAF7F4] py-8 px-4">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center py-16">
-            <div className="w-16 h-16 mx-auto mb-4 border-4 border-[#6B8E7A] border-t-transparent rounded-full animate-spin" />
-            <p className="text-[#8B7355]">Carregando seu pedido...</p>
-          </div>
-        </div>
-      </main>
-    )
+    return <LoadingFallback />
   }
   
-  // Error state
   if (error || !order) {
     return (
       <main className="min-h-screen bg-[#FAF7F4] py-8 px-4">
@@ -604,12 +502,8 @@ export default function OrderConfirmationPage() {
             <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
               <Package className="w-8 h-8 text-red-500" />
             </div>
-            <h1 className="text-xl font-bold text-[#2D2D2D] mb-2">
-              {error || 'Pedido não encontrado'}
-            </h1>
-            <p className="text-[#8B7355] mb-6">
-              Não foi possível carregar os dados do pedido.
-            </p>
+            <h1 className="text-xl font-bold text-[#2D2D2D] mb-2">{error || 'Pedido não encontrado'}</h1>
+            <p className="text-[#8B7355] mb-6">Não foi possível carregar os dados do pedido.</p>
             <Link
               href="/"
               className="inline-flex items-center gap-2 px-6 py-3 bg-[#6B8E7A] text-white rounded-lg hover:bg-[#5A7A68] transition-colors"
@@ -626,36 +520,31 @@ export default function OrderConfirmationPage() {
   return (
     <main className="min-h-screen bg-[#FAF7F4] py-8 px-4">
       <div className="max-w-2xl mx-auto">
-        {/* Header com animação de sucesso */}
         <SuccessHeader orderNumber={order.orderNumber} />
-        
-        {/* Timeline de status */}
-        <StatusTimeline 
-          status={order.status} 
-          paymentStatus={order.paymentStatus} 
-        />
-        
-        {/* Informações de entrega */}
+        <StatusTimeline status={order.status} paymentStatus={order.paymentStatus} />
         <DeliveryInfo shipping={order.shipping} />
-        
-        {/* Resumo do pedido (expandível) */}
         <OrderSummary order={order} />
-        
-        {/* Próximos passos */}
         <NextStepsCard />
-        
-        {/* Suporte WhatsApp */}
         <SupportCard />
-        
-        {/* Botões de ação */}
         <ActionButtons />
         
-        {/* Footer info */}
         <div className="mt-8 text-center text-xs text-[#8B7355]">
           <p>Pedido realizado em {formatDate(order.createdAt)}</p>
           <p className="mt-1">Moveirama • CNPJ: XX.XXX.XXX/0001-XX</p>
         </div>
       </div>
     </main>
+  )
+}
+
+// =============================================================================
+// PÁGINA PRINCIPAL (com Suspense boundary)
+// =============================================================================
+
+export default function OrderConfirmationPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <OrderConfirmationContent />
+    </Suspense>
   )
 }
