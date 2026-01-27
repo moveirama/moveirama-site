@@ -21,4 +21,4 @@ export { default as SaveButton } from './SaveButton'
 export { default as ProductSaveWrapper } from './ProductSaveWrapper'
 
 // Toast
-export { Toast, StandaloneToast } from './Toast'
+export { default as Toast, StandaloneToast } from './Toast'
