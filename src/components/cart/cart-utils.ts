@@ -1,7 +1,14 @@
 /**
  * Moveirama Cart System - Utility Functions
- * Versão: 1.0
+ * Versão: 1.2
  * Data: Janeiro 2026
+ * 
+ * v1.2 — 28/01/2026
+ * - Fix: formatDimensions converte para metros quando >= 100cm
+ *   (100 cm → 1 m | 136 cm → 1,36 m | 73 cm → 73 cm)
+ * 
+ * v1.1 — 28/01/2026
+ * - Fix: formatDimensions não mostra mais decimais desnecessárias
  */
 
 import { CartState, CartItemData, CART_CONSTANTS } from './cart-types'
@@ -61,21 +68,61 @@ export function formatInstallments(total: number, installments: number = 12): st
  */
 export function formatWidth(widthCm: number): string {
   if (widthCm < 100) {
-    return `${Math.round(widthCm)}cm`
+    return `${Math.round(widthCm)} cm`
   }
-  return `${(widthCm / 100).toFixed(2).replace('.', ',')}m`
+  const meters = widthCm / 100
+  // Se for exatamente 1m, 2m, etc, não mostra decimal
+  if (Number.isInteger(meters)) {
+    return `${meters} m`
+  }
+  return `${meters.toFixed(2).replace('.', ',')} m`
+}
+
+/**
+ * Formata uma dimensão individual
+ * - >= 100cm → converte para metros (100 → "1 m", 136 → "1,36 m")
+ * - < 100cm → mantém em cm (73 → "73 cm", 45.5 → "45,5 cm")
+ */
+function formatSingleDimension(valueCm: number): string {
+  // Se >= 100cm, converte para metros
+  if (valueCm >= 100) {
+    const meters = valueCm / 100
+    // Se for exatamente 1m, 2m, etc, não mostra decimal
+    if (Number.isInteger(meters)) {
+      return `${meters} m`
+    }
+    // Remove zeros à direita desnecessários (1,50 → 1,5)
+    return `${meters.toFixed(2).replace('.', ',').replace(/,?0+$/, '')} m`
+  }
+  
+  // Se < 100cm, mantém em cm
+  if (Number.isInteger(valueCm)) {
+    return `${Math.round(valueCm)} cm`
+  }
+  // Com decimal significativo
+  return `${valueCm.toFixed(1).replace('.', ',').replace(',0', '')} cm`
 }
 
 /**
  * Formata dimensões completas (L × A × P)
- * Retorna string vazia se alguma dimensão for undefined/null
+ * v1.2: Converte para metros quando >= 100cm
+ * 
+ * Exemplos:
+ * - (100, 73, 45) → "1 m × 73 cm × 45 cm"
+ * - (136, 45, 38) → "1,36 m × 45 cm × 38 cm"
+ * - (80, 60, 40) → "80 cm × 60 cm × 40 cm"
  */
 export function formatDimensions(width?: number | null, height?: number | null, depth?: number | null): string {
   // Se alguma dimensão não existir, retorna vazio
   if (width == null || height == null || depth == null) {
     return ''
   }
-  return `${width.toFixed(1).replace('.', ',')} × ${height.toFixed(1).replace('.', ',')} × ${depth.toFixed(1).replace('.', ',')} cm`
+  
+  const w = formatSingleDimension(width)
+  const h = formatSingleDimension(height)
+  const d = formatSingleDimension(depth)
+  
+  return `${w} × ${h} × ${d}`
 }
 
 // ============================================

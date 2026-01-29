@@ -87,16 +87,16 @@ const ShieldWoodIcon = () => (
 // ===========================================
 
 const CITIES_DATA = [
-  { name: 'Curitiba', prazo: '1-2 dias úteis', tipo: 'Frota própria' },
-  { name: 'São José dos Pinhais', prazo: '1-2 dias úteis', tipo: 'Frota própria' },
-  { name: 'Colombo', prazo: '1-2 dias úteis', tipo: 'Frota própria' },
-  { name: 'Pinhais', prazo: '1-2 dias úteis', tipo: 'Frota própria' },
-  { name: 'Araucária', prazo: '2-3 dias úteis', tipo: 'Frota própria' },
-  { name: 'Fazenda Rio Grande', prazo: '2-3 dias úteis', tipo: 'Frota própria' },
-  { name: 'Almirante Tamandaré', prazo: '2-3 dias úteis', tipo: 'Frota própria' },
-  { name: 'Piraquara', prazo: '2-3 dias úteis', tipo: 'Frota própria' },
-  { name: 'Quatro Barras', prazo: '2-3 dias úteis', tipo: 'Frota própria' },
-  { name: 'Campina Grande do Sul', prazo: '2-3 dias úteis', tipo: 'Frota própria' },
+  { name: 'Curitiba', prazo: '1-3 dias úteis', tipo: 'Frota própria' },
+  { name: 'São José dos Pinhais', prazo: '1-3 dias úteis', tipo: 'Frota própria' },
+  { name: 'Colombo', prazo: '1-3 dias úteis', tipo: 'Frota própria' },
+  { name: 'Pinhais', prazo: '1-3 dias úteis', tipo: 'Frota própria' },
+  { name: 'Araucária', prazo: '1-3 dias úteis', tipo: 'Frota própria' },
+  { name: 'Fazenda Rio Grande', prazo: '1-3 dias úteis', tipo: 'Frota própria' },
+  { name: 'Almirante Tamandaré', prazo: '1-3 dias úteis', tipo: 'Frota própria' },
+  { name: 'Piraquara', prazo: '1-3 dias úteis', tipo: 'Frota própria' },
+  { name: 'Quatro Barras', prazo: '1-3 dias úteis', tipo: 'Frota própria' },
+  { name: 'Campina Grande do Sul', prazo: '1-3 dias úteis', tipo: 'Frota própria' },
 ]
 
 const NEIGHBORHOODS = [
@@ -143,7 +143,7 @@ const FAQS = [
   },
   {
     question: 'Qual o prazo de entrega?',
-    answer: 'Curitiba e cidades próximas: 1 a 2 dias úteis. Cidades mais distantes da RMC: 2 a 3 dias úteis. O prazo começa a contar após confirmação do pagamento.',
+    answer: 'Curitiba e Região Metropolitana: 1 a 3 dias úteis. O prazo começa a contar após confirmação do pagamento.',
   },
   {
     question: 'E se o móvel chegar com avaria?',
@@ -199,16 +199,16 @@ function CEPChecker() {
       // Lógica de frete simplificada (baseada em shipping.ts do MAPA)
       const city = data.localidade?.toLowerCase()
       const shippingRates: Record<string, { fee: number; days: string }> = {
-        'curitiba': { fee: 25, days: '1-2 dias úteis' },
-        'pinhais': { fee: 35, days: '1-2 dias úteis' },
-        'são josé dos pinhais': { fee: 35, days: '1-2 dias úteis' },
-        'colombo': { fee: 35, days: '1-2 dias úteis' },
-        'piraquara': { fee: 40, days: '2-3 dias úteis' },
-        'quatro barras': { fee: 40, days: '2-3 dias úteis' },
-        'campina grande do sul': { fee: 40, days: '2-3 dias úteis' },
-        'almirante tamandaré': { fee: 40, days: '2-3 dias úteis' },
-        'fazenda rio grande': { fee: 40, days: '2-3 dias úteis' },
-        'araucária': { fee: 40, days: '2-3 dias úteis' },
+        'curitiba': { fee: 25, days: '1-3 dias úteis' },
+        'pinhais': { fee: 35, days: '1-3 dias úteis' },
+        'são josé dos pinhais': { fee: 35, days: '1-3 dias úteis' },
+        'colombo': { fee: 35, days: '1-3 dias úteis' },
+        'piraquara': { fee: 40, days: '1-3 dias úteis' },
+        'quatro barras': { fee: 40, days: '1-3 dias úteis' },
+        'campina grande do sul': { fee: 40, days: '1-3 dias úteis' },
+        'almirante tamandaré': { fee: 40, days: '1-3 dias úteis' },
+        'fazenda rio grande': { fee: 40, days: '1-3 dias úteis' },
+        'araucária': { fee: 40, days: '1-3 dias úteis' },
       }
 
       const shipping = shippingRates[city]

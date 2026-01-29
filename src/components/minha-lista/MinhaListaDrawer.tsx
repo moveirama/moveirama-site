@@ -3,6 +3,10 @@
 /**
  * MinhaListaDrawer — Gaveta lateral com lista de produtos salvos
  * 
+ * v2.3 — 28/01/2026
+ * - Botão remover (X) sempre visível no mobile
+ * - Desktop mantém comportamento hover
+ * 
  * v2.2 — 24/01/2026
  * - Footer v2: "Sua seleção está pronta" + totalizador + enviar lista
  * - WhatsApp SEM número fixo (cliente escolhe pra quem enviar)
@@ -262,7 +266,7 @@ export default function MinhaListaDrawer({
             <h2 className="text-lg font-semibold text-[#2D2D2D]">
               Móveis que mais gostei
             </h2>
-            <span className="text-sm text-[#8B7355]">
+            <span className="text-sm text-[#8B7355] whitespace-nowrap">
               ({count} {count === 1 ? 'item' : 'itens'})
             </span>
           </div>
@@ -387,7 +391,7 @@ export default function MinhaListaDrawer({
 }
 
 // ============================================
-// ITEM DA LISTA (v2.1 - fontes maiores + medidas inteligentes)
+// ITEM DA LISTA (v2.3 - botão X visível no mobile)
 // ============================================
 
 function DrawerItem({ item, onRemove }: { item: ListaItem; onRemove: () => void }) {
@@ -463,7 +467,7 @@ function DrawerItem({ item, onRemove }: { item: ListaItem; onRemove: () => void 
         </Link>
       </div>
 
-      {/* Botão remover */}
+      {/* Botão remover - v2.3: sempre visível no mobile, hover no desktop */}
       <button
         onClick={onRemove}
         aria-label={`Remover ${item.name}`}
@@ -475,7 +479,7 @@ function DrawerItem({ item, onRemove }: { item: ListaItem; onRemove: () => void 
           text-[#B8A99A]
           hover:text-[#D94F4F] hover:bg-red-50
           transition-colors duration-150
-          opacity-0 group-hover:opacity-100
+          opacity-100 md:opacity-0 md:group-hover:opacity-100
           focus:opacity-100
           focus-visible:outline focus-visible:outline-2 
           focus-visible:outline-[#D94F4F] focus-visible:outline-offset-2

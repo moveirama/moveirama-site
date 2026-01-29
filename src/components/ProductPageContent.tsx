@@ -24,8 +24,12 @@ import {
 /**
  * ProductPageContent — Página de Produto (PDP)
  * 
- * v2.10 — 27/01/2026
+ * v2.11 — 28/01/2026
  * Changelog:
+ * - v2.11 (28/01/2026): Formatação de medidas amigável para Classe C
+ *                       ≥100cm converte para metros (160 → "1,6 m")
+ *                       <100cm mantém em cm (77 → "77 cm")
+ *                       Aplicado na seção "Medidas do produto" e especificações
  * - v2.10 (27/01/2026): Fix buyButtonProduct com dimensões (width_cm, height_cm, depth_cm)
  *                       Adicionado campos extras (tv_max_size, main_material, thickness_mm)
  * - v2.9 (27/01/2026): Integração com sistema de carrinho (BuyNowButton)
@@ -81,6 +85,43 @@ function formatDifficulty(difficulty: string): string {
     'dificil': 'difícil'
   }
   return map[difficulty] || difficulty
+}
+
+/**
+ * ⭐ v2.11: Formata medida em cm para exibição amigável
+ * - Valores ≥ 100cm são convertidos para metros (ex: 160 → "1,6 m")
+ * - Valores < 100cm permanecem em centímetros (ex: 77 → "77 cm")
+ * - Decimais são arredondados para inteiro quando < 100cm
+ */
+function formatarMedidaDetalhada(valorCm: number | null | undefined): { valor: string; unidade: string } {
+  if (valorCm == null) {
+    return { valor: '-', unidade: '' }
+  }
+  
+  if (valorCm >= 100) {
+    // Converte para metros
+    const metros = valorCm / 100
+    // Formata com vírgula, remove zeros desnecessários
+    let formatado = metros.toFixed(2).replace('.', ',')
+    formatado = formatado.replace(/,?0+$/, '')
+    return { valor: formatado, unidade: 'm' }
+  } else {
+    // Mantém em centímetros, arredonda para inteiro
+    const valorArredondado = Math.round(valorCm)
+    return { valor: valorArredondado.toString(), unidade: 'cm' }
+  }
+}
+
+/**
+ * ⭐ v2.11: Formata dimensões L×A×P para exibição na tabela de specs
+ * Converte cada dimensão individualmente
+ */
+function formatarDimensoesCompletas(largura: number | null, altura: number | null, profundidade: number | null): string {
+  const l = formatarMedidaDetalhada(largura)
+  const a = formatarMedidaDetalhada(altura)
+  const p = formatarMedidaDetalhada(profundidade)
+  
+  return `${l.valor} ${l.unidade} × ${a.valor} ${a.unidade} × ${p.valor} ${p.unidade}`
 }
 
 export default function ProductPageContent({ 
@@ -194,6 +235,12 @@ export default function ProductPageContent({
     main_material: product.main_material,
     thickness_mm: product.thickness_mm
   }
+
+  // ⭐ v2.11: Pré-formata medidas para uso no template
+  const larguraFormatada = formatarMedidaDetalhada(product.width_cm)
+  const alturaFormatada = formatarMedidaDetalhada(product.height_cm)
+  const profundidadeFormatada = formatarMedidaDetalhada(product.depth_cm)
+  const dimensoesCompletas = formatarDimensoesCompletas(product.width_cm, product.height_cm, product.depth_cm)
 
   return (
     <main className="min-h-screen pb-24 md:pb-8">
@@ -474,23 +521,29 @@ export default function ProductPageContent({
           </ul>
         </section>
 
-        {/* Seção: Medidas */}
+        {/* ⭐ v2.11: Seção: Medidas - com conversão amigável */}
         <section id="medidas-detalhadas" className="mt-8 scroll-mt-4">
           <h2 className="text-2xl font-semibold text-[var(--color-graphite)] mb-4">
             Medidas do produto
           </h2>
           <div className="grid grid-cols-3 gap-4 p-4 bg-white rounded-lg border border-[var(--color-sand-light)]">
             <div className="text-center">
-              <p className="text-2xl font-bold text-[var(--color-graphite)]">{product.width_cm}</p>
-              <p className="text-sm text-[var(--color-toffee)]">Largura (cm)</p>
+              <p className="text-2xl font-bold text-[var(--color-graphite)]">
+                {larguraFormatada.valor} <span className="text-lg font-semibold">{larguraFormatada.unidade}</span>
+              </p>
+              <p className="text-sm text-[var(--color-toffee)]">Largura</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-[var(--color-graphite)]">{product.height_cm}</p>
-              <p className="text-sm text-[var(--color-toffee)]">Altura (cm)</p>
+              <p className="text-2xl font-bold text-[var(--color-graphite)]">
+                {alturaFormatada.valor} <span className="text-lg font-semibold">{alturaFormatada.unidade}</span>
+              </p>
+              <p className="text-sm text-[var(--color-toffee)]">Altura</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-[var(--color-graphite)]">{product.depth_cm}</p>
-              <p className="text-sm text-[var(--color-toffee)]">Profundidade (cm)</p>
+              <p className="text-2xl font-bold text-[var(--color-graphite)]">
+                {profundidadeFormatada.valor} <span className="text-lg font-semibold">{profundidadeFormatada.unidade}</span>
+              </p>
+              <p className="text-sm text-[var(--color-toffee)]">Profundidade</p>
             </div>
           </div>
         </section>
@@ -528,7 +581,7 @@ export default function ProductPageContent({
           </div>
         </section>
 
-        {/* Seção: Especificações Técnicas */}
+        {/* ⭐ v2.11: Especificações Técnicas - com dimensões formatadas */}
         <section className="mt-8">
           <h2 className="text-2xl font-semibold text-[var(--color-graphite)] mb-4">
             Especificações técnicas
@@ -551,7 +604,7 @@ export default function ProductPageContent({
                 </tr>
                 <tr className="border-b border-[var(--color-sand-light)]">
                   <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Dimensões (L×A×P)</th>
-                  <td className="px-4 py-3">{product.width_cm} × {product.height_cm} × {product.depth_cm} cm</td>
+                  <td className="px-4 py-3">{dimensoesCompletas}</td>
                 </tr>
                 <tr className="border-b border-[var(--color-sand-light)]">
                   <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Peso</th>

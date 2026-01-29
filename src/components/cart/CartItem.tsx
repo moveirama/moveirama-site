@@ -2,8 +2,12 @@
 
 /**
  * Moveirama Cart System - Cart Item Component
- * Versão: 1.0
+ * Versão: 1.1
  * Data: Janeiro 2026
+ * 
+ * v1.1 — 28/01/2026
+ * - Fix: Aumentado tamanho da fonte das medidas (text-xs → text-sm)
+ * - Fix: Adicionado font-medium e cor mais escura para destaque
  * 
  * Item do carrinho com duas variantes:
  * - compact: Para uso no drawer (80px imagem)
@@ -195,6 +199,7 @@ function CartItemCompact({
               p-1.5 rounded
               text-[#8B7355] hover:text-[#D94F4F] hover:bg-[#FEF2F2]
               transition-colors
+              cursor-pointer
             "
             aria-label="Remover item"
           >
@@ -285,9 +290,9 @@ function CartItemFull({
           </p>
         )}
         
-        {/* Dimensões - só mostra se tiver todas as medidas */}
+        {/* Dimensões - v1.1: text-sm (14px), font-medium, cor mais escura (#5C4D3C) */}
         {product.width && product.height && product.depth && (
-          <p className="text-xs text-[#8B7355] mb-2">
+          <p className="text-sm text-[#5C4D3C] mb-2 font-medium">
             {formatDimensions(product.width, product.height, product.depth)}
           </p>
         )}
@@ -335,6 +340,7 @@ function CartItemFull({
                 p-2 rounded-lg
                 text-[#8B7355] hover:text-[#D94F4F] hover:bg-[#FEF2F2]
                 transition-colors
+                cursor-pointer
               "
               aria-label="Remover item"
             >
@@ -395,6 +401,7 @@ function RemoveConfirmOverlay({
               rounded-lg
               hover:bg-[#F0E8DF]
               transition-colors
+              cursor-pointer
             `}
           >
             Cancelar
@@ -409,6 +416,7 @@ function RemoveConfirmOverlay({
               text-white
               rounded-lg
               transition-colors
+              cursor-pointer
             `}
           >
             Remover

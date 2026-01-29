@@ -1,26 +1,27 @@
 'use client'
 
 /**
- * Moveirama Cart System - Checkout Page
- * Versão: 1.0
+ * Moveirama Checkout Page - REFATORADO
+ * Spec: SPEC_Checkout_Trust_Elements_v1.1.md
+ * Versão: 2.0 (com elementos de confiança)
  * Data: Janeiro 2026
- * Rota: /checkout
  * 
- * Página de checkout com:
- * - Resumo do pedido (colapsável)
- * - Dados pessoais
- * - Endereço de entrega
- * - Forma de pagamento (Pix ou Cartão)
+ * NOVIDADES:
+ * - Layout 2 colunas desktop (form + sidebar sticky)
+ * - Trust Bar (Site Seguro, NF, Entrega)
+ * - Steps de progresso (①Dados → ②Endereço → ③Pagamento)
+ * - Sidebar com foto grande, benefícios, WhatsApp
+ * - Microcopy emocional ("Pode ficar tranquilo", "Usamos só pra NF")
+ * - CNPJ visível + selos de segurança
+ * - Mini-resumo sticky mobile
  */
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { 
   ArrowLeft, 
-  ChevronDown, 
-  ChevronUp,
   Copy,
   Check,
   Loader2,
@@ -28,6 +29,9 @@ import {
   QrCode,
   AlertCircle,
   Clock,
+  Lock,
+  MapPin,
+  PartyPopper,
 } from 'lucide-react'
 
 import { useCart } from '@/components/cart/CartProvider'
@@ -36,7 +40,6 @@ import { CheckoutPageSkeleton } from '@/components/cart/CartLoading'
 import { CustomerData, DeliveryAddress } from '@/components/cart/cart-types'
 import {
   formatCurrency,
-  formatDeliveryTime,
   maskCPF,
   maskPhone,
   unmaskCPF,
@@ -45,6 +48,15 @@ import {
   isValidEmail,
   isValidPhone,
 } from '@/components/cart/cart-utils'
+
+// Componentes de confiança
+import { CheckoutLayout } from '@/components/checkout/CheckoutLayout'
+import { CheckoutTrustBar } from '@/components/checkout/CheckoutTrustBar'
+import { CheckoutSteps } from '@/components/checkout/CheckoutSteps'
+import { CheckoutSummaryCard } from '@/components/checkout/CheckoutSummaryCard'
+import { CheckoutMiniSummary } from '@/components/checkout/CheckoutMiniSummary'
+import { CheckoutSeals } from '@/components/checkout/CheckoutSeals'
+import { CheckoutIdentity } from '@/components/checkout/CheckoutIdentity'
 
 // ============================================
 // TIPOS LOCAIS
@@ -61,6 +73,7 @@ interface FormErrors {
 }
 
 type PaymentMethod = 'pix' | 'card'
+type CheckoutStep = 1 | 2 | 3
 
 // ============================================
 // COMPONENTE DA PÁGINA
@@ -76,12 +89,14 @@ export default function CheckoutPage() {
     total,
     totalPix,
     isEmpty,
-    canCheckout,
     clearCart,
   } = useCart()
   const { showToast } = useToast()
   
   const { items, shipping } = state
+  
+  // Ref para o summary card (usado pelo mini-summary)
+  const summaryCardRef = useRef<HTMLDivElement>(null)
   
   // Estado do formulário
   const [customerData, setCustomerData] = useState<CustomerData>({
@@ -105,14 +120,14 @@ export default function CheckoutPage() {
   const [installments, setInstallments] = useState(1)
   const [errors, setErrors] = useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showSummary, setShowSummary] = useState(false)
+  const [currentStep, setCurrentStep] = useState<CheckoutStep>(1)
   
   // Pix state
   const [pixCode, setPixCode] = useState<string | null>(null)
   const [pixQrCode, setPixQrCode] = useState<string | null>(null)
   const [pixCopied, setPixCopied] = useState(false)
   const [pixExpiry, setPixExpiry] = useState<Date | null>(null)
-  const [timeLeft, setTimeLeft] = useState<number>(30 * 60) // 30 minutos em segundos
+  const [timeLeft, setTimeLeft] = useState<number>(30 * 60)
   
   // Redireciona se carrinho vazio ou sem frete
   useEffect(() => {
@@ -174,7 +189,6 @@ export default function CheckoutPage() {
     
     setCustomerData(prev => ({ ...prev, [field]: formattedValue }))
     
-    // Limpa erro do campo
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }))
     }
@@ -183,17 +197,29 @@ export default function CheckoutPage() {
   const handleAddressChange = useCallback((field: keyof DeliveryAddress, value: string) => {
     setAddressData(prev => ({ ...prev, [field]: value }))
     
-    // Limpa erro do campo
     if (errors[field as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [field]: undefined }))
     }
   }, [errors])
   
+  // Atualiza step baseado no preenchimento
+  useEffect(() => {
+    const hasCustomerData = customerData.fullName && customerData.cpf && customerData.email && customerData.whatsapp
+    const hasAddressData = addressData.street && addressData.number && addressData.neighborhood
+    
+    if (hasCustomerData && hasAddressData) {
+      setCurrentStep(3)
+    } else if (hasCustomerData) {
+      setCurrentStep(2)
+    } else {
+      setCurrentStep(1)
+    }
+  }, [customerData, addressData])
+  
   // Validação do formulário
   const validateForm = useCallback((): boolean => {
     const newErrors: FormErrors = {}
     
-    // Dados pessoais
     if (!customerData.fullName.trim()) {
       newErrors.fullName = 'Nome completo é obrigatório'
     }
@@ -210,7 +236,6 @@ export default function CheckoutPage() {
       newErrors.whatsapp = 'WhatsApp inválido'
     }
     
-    // Endereço
     if (!addressData.street.trim()) {
       newErrors.street = 'Rua é obrigatória'
     }
@@ -236,7 +261,7 @@ export default function CheckoutPage() {
       setPixCopied(true)
       showToast('success', 'Código Pix copiado!')
       setTimeout(() => setPixCopied(false), 3000)
-    } catch (err) {
+    } catch {
       showToast('error', 'Erro ao copiar código')
     }
   }, [pixCode, showToast])
@@ -251,7 +276,6 @@ export default function CheckoutPage() {
     setIsSubmitting(true)
     
     try {
-      // Cria o pedido no backend
       const orderData = {
         customer: {
           ...customerData,
@@ -287,21 +311,17 @@ export default function CheckoutPage() {
       }
       
       if (paymentMethod === 'pix') {
-        // Exibe o QR Code do Pix
         setPixCode(data.pixCode)
         setPixQrCode(data.pixQrCode)
-        setPixExpiry(new Date(Date.now() + 30 * 60 * 1000)) // 30 minutos
-        
-        // Inicia polling para verificar pagamento
+        setPixExpiry(new Date(Date.now() + 30 * 60 * 1000))
         startPaymentPolling(data.orderId)
       } else {
-        // Redireciona para Mercado Pago
         if (data.checkoutUrl) {
           window.location.href = data.checkoutUrl
         }
       }
       
-    } catch (error) {
+    } catch {
       showToast('error', 'Erro ao processar pedido. Tente novamente.')
     } finally {
       setIsSubmitting(false)
@@ -324,10 +344,7 @@ export default function CheckoutPage() {
       }
     }
     
-    // Verifica a cada 5 segundos
     const interval = setInterval(checkPayment, 5000)
-    
-    // Para após 30 minutos
     setTimeout(() => clearInterval(interval), 30 * 60 * 1000)
   }, [clearCart, router])
   
@@ -351,99 +368,80 @@ export default function CheckoutPage() {
     )
   }
   
+  // Prepara dados para o sidebar (type assertion para compatibilidade com CartVariant)
+  const sidebarData = {
+    items: items.map(item => ({
+      product: {
+        id: item.product.id,
+        name: item.product.name,
+        imageUrl: item.product.imageUrl,
+        price: item.product.price,
+        pricePix: item.product.pricePix,
+        variant: item.product.variant as { name?: string; color?: string } | undefined,
+      },
+      quantity: item.quantity,
+    })),
+    subtotal,
+    subtotalPix,
+    shipping: {
+      cep: shipping.cep,
+      city: shipping.city,
+      state: shipping.state,
+      neighborhood: shipping.neighborhood,
+      address: shipping.address,
+      fee: shipping.fee,
+      deliveryDaysMin: shipping.deliveryDaysMin,
+      deliveryDaysMax: shipping.deliveryDaysMax,
+    },
+    total,
+    totalPix,
+    pixDiscount,
+  }
+  
   return (
-    <div className="min-h-screen bg-[#FAF7F4]">
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+    <>
+      {/* Mini-summary mobile sticky */}
+      <CheckoutMiniSummary
+        items={sidebarData.items}
+        totalPix={totalPix}
+        summaryCardRef={summaryCardRef}
+      />
+      
+      <CheckoutLayout
+        trustBar={<CheckoutTrustBar />}
+        steps={<CheckoutSteps currentStep={currentStep} />}
+        sidebar={
+          <CheckoutSummaryCard
+            ref={summaryCardRef}
+            {...sidebarData}
+          />
+        }
+      >
         {/* Voltar */}
         <Link 
           href="/carrinho"
-          className="inline-flex items-center gap-2 text-[#8B7355] hover:text-[#2D2D2D] mb-8 transition-colors"
+          className="inline-flex items-center gap-2 text-[#8B7355] hover:text-[#2D2D2D] mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Voltar ao carrinho
         </Link>
         
         {/* Título */}
-        <h1 className="text-2xl font-semibold text-[#2D2D2D] mb-8">
+        <h1 className="text-2xl font-semibold text-[#2D2D2D] mb-6">
           Finalizar Compra
         </h1>
         
-        {/* Resumo colapsável */}
-        <div className="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
-          <button
-            type="button"
-            onClick={() => setShowSummary(!showSummary)}
-            className="w-full px-6 py-4 flex items-center justify-between"
-          >
-            <span className="font-medium text-[#2D2D2D]">
-              Resumo do pedido ({items.length} {items.length === 1 ? 'item' : 'itens'})
-            </span>
-            <div className="flex items-center gap-3">
-              <span className="font-bold text-[#6B8E7A]">
-                {formatCurrency(totalPix)}
-              </span>
-              {showSummary ? (
-                <ChevronUp className="w-5 h-5 text-[#8B7355]" />
-              ) : (
-                <ChevronDown className="w-5 h-5 text-[#8B7355]" />
-              )}
-            </div>
-          </button>
-          
-          {showSummary && (
-            <div className="px-6 pb-4 border-t border-[#E8DFD5]">
-              <div className="divide-y divide-[#E8DFD5]">
-                {items.map(item => (
-                  <div key={item.product.id} className="py-3 flex gap-3">
-                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#F0E8DF] flex-shrink-0">
-                      <Image
-                        src={item.product.imageUrl}
-                        alt={item.product.name}
-                        width={64}
-                        height={64}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[#2D2D2D] line-clamp-1">
-                        {item.product.name}
-                      </p>
-                      <p className="text-xs text-[#8B7355]">
-                        Qtd: {item.quantity}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-[#6B8E7A]">
-                        {formatCurrency((item.product.pricePix || item.product.price * 0.95) * item.quantity)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-3 pt-3 border-t border-[#E8DFD5] space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-[#8B7355]">Subtotal</span>
-                  <span>{formatCurrency(subtotalPix)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#8B7355]">Frete</span>
-                  <span>{shipping.fee === 0 ? 'Grátis' : formatCurrency(shipping.fee)}</span>
-                </div>
-                <div className="flex justify-between font-semibold">
-                  <span>Total no Pix</span>
-                  <span className="text-[#6B8E7A]">{formatCurrency(totalPix)}</span>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-        
-        {/* Dados Pessoais */}
-        <fieldset className="bg-white rounded-xl p-6 shadow-sm mb-6">
-          <legend className="text-base font-semibold text-[#2D2D2D] mb-4">
+        {/* ===== SEÇÃO: DADOS PESSOAIS ===== */}
+        <fieldset className="checkout-section">
+          <legend className="checkout-section__title">
             Dados Pessoais
           </legend>
+          
+          {/* Microcopy de confiança */}
+          <div className="checkout-section__helper checkout-section__helper--trust">
+            <Lock className="checkout-helper-icon" />
+            <span>Pode ficar tranquilo: seus dados estão protegidos</span>
+          </div>
           
           <div className="space-y-4">
             {/* Nome */}
@@ -492,6 +490,8 @@ export default function CheckoutPage() {
                   `}
                   aria-invalid={!!errors.cpf}
                 />
+                {/* Helper CPF */}
+                <span className="form-field__helper">Usamos só pra nota fiscal</span>
                 {errors.cpf && (
                   <p className="mt-1 text-sm text-[#D94F4F]">{errors.cpf}</p>
                 )}
@@ -550,11 +550,17 @@ export default function CheckoutPage() {
           </div>
         </fieldset>
         
-        {/* Endereço */}
-        <fieldset className="bg-white rounded-xl p-6 shadow-sm mb-6">
-          <legend className="text-base font-semibold text-[#2D2D2D] mb-4">
+        {/* ===== SEÇÃO: ENDEREÇO ===== */}
+        <fieldset className="checkout-section">
+          <legend className="checkout-section__title">
             Endereço de Entrega
           </legend>
+          
+          {/* Microcopy local */}
+          <div className="checkout-section__helper checkout-section__helper--local">
+            <MapPin className="checkout-helper-icon" />
+            <span>Entregamos em Curitiba e região com frota própria</span>
+          </div>
           
           <div className="space-y-4">
             {/* CEP (readonly) */}
@@ -574,6 +580,8 @@ export default function CheckoutPage() {
                     border border-[#E8DFD5] rounded-lg
                   "
                 />
+                {/* Helper CEP */}
+                <span className="form-field__helper">Digite e preenchemos o resto</span>
               </div>
               
               <div className="col-span-2">
@@ -689,9 +697,9 @@ export default function CheckoutPage() {
           </div>
         </fieldset>
         
-        {/* Forma de Pagamento */}
-        <fieldset className="bg-white rounded-xl p-6 shadow-sm mb-6">
-          <legend className="text-base font-semibold text-[#2D2D2D] mb-4">
+        {/* ===== SEÇÃO: PAGAMENTO ===== */}
+        <fieldset className="checkout-section">
+          <legend className="checkout-section__title">
             Forma de Pagamento
           </legend>
           
@@ -753,6 +761,14 @@ export default function CheckoutPage() {
               <p className="text-xs text-[#8B7355]">
                 O código Pix será gerado após confirmar o pedido
               </p>
+              
+              {/* Mensagem friendly */}
+              <div className="checkout-payment-message">
+                <PartyPopper className="w-6 h-6 mx-auto text-[#6B8E7A]" />
+                <p className="checkout-payment-message__friendly">
+                  A equipe Moveirama já vai preparar seu pedido! 🎉
+                </p>
+              </div>
             </div>
           ) : (
             <div role="tabpanel" className="py-4">
@@ -785,6 +801,9 @@ export default function CheckoutPage() {
           )}
         </fieldset>
         
+        {/* CNPJ da loja */}
+        <CheckoutIdentity />
+        
         {/* Botão Finalizar */}
         <button
           type="button"
@@ -798,6 +817,7 @@ export default function CheckoutPage() {
             rounded-lg
             transition-colors
             disabled:opacity-50 disabled:cursor-not-allowed
+            min-h-[48px]
           "
         >
           {isSubmitting ? (
@@ -810,18 +830,23 @@ export default function CheckoutPage() {
           )}
         </button>
         
-        <p className="mt-4 text-xs text-center text-[#8B7355]">
-          Ao finalizar, você concorda com nossos{' '}
-          <Link href="/politica-privacidade" className="underline">
-            termos de uso
-          </Link>{' '}
-          e{' '}
-          <Link href="/politica-trocas-devolucoes" className="underline">
-            política de trocas
-          </Link>
-        </p>
-      </div>
-    </div>
+        {/* Selos de segurança */}
+        <CheckoutSeals />
+        
+        {/* Footer */}
+        <div className="checkout-footer">
+          <p className="checkout-footer__terms">
+            Ao finalizar, você concorda com nossos{' '}
+            <Link href="/politica-privacidade">termos de uso</Link>{' '}
+            e{' '}
+            <Link href="/politica-trocas-devolucoes">política de trocas</Link>
+          </p>
+          <p className="checkout-footer__friendly">
+            Qualquer dúvida é só chamar no WhatsApp!
+          </p>
+        </div>
+      </CheckoutLayout>
+    </>
   )
 }
 
@@ -856,9 +881,11 @@ function PixPaymentScreen({
         {/* QR Code */}
         <div className="mb-6">
           {!isExpired ? (
-            <img
+            <Image
               src={pixQrCode}
               alt="QR Code Pix"
+              width={192}
+              height={192}
               className="w-48 h-48 mx-auto"
             />
           ) : (

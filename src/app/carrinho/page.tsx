@@ -2,9 +2,16 @@
 
 /**
  * Moveirama Cart System - Cart Page
- * Versão: 1.2
+ * Versão: 1.4
  * Data: Janeiro 2026
  * Rota: /carrinho
+ * 
+ * v1.4 — 28/01/2026
+ * - Fix: Botão "Calcular" não estoura mais da div em telas grandes
+ *   (max-w-full no container, min-w-0 no input, flex-shrink-0 no botão)
+ * 
+ * v1.3 — 27/01/2026
+ * - Fix: Trust badge "7 dias" → "Manual + Vídeo" (HANDOFF_Trust_Badges_v2.md)
  * 
  * v1.2 — 27/01/2026
  * - Add: Link "Continuar comprando" abaixo do botão FINALIZAR (UX)
@@ -26,7 +33,6 @@ import { useRouter } from 'next/navigation'
 import { 
   ArrowLeft, 
   Truck, 
-  Shield, 
   FileText, 
   Wrench,
   MessageCircle,
@@ -229,7 +235,9 @@ export default function CartPage() {
                 Calcular frete e prazo
               </h2>
               
-              <div className="flex gap-2">
+              {/* v1.4: max-w-full no container para não estourar */}
+              <div className="flex gap-2 max-w-full">
+                {/* v1.4: min-w-0 no input para flex-1 não estourar */}
                 <input
                   type="text"
                   value={cep}
@@ -237,7 +245,7 @@ export default function CartPage() {
                   placeholder="00000-000"
                   maxLength={9}
                   className="
-                    flex-1 h-12 px-4
+                    flex-1 min-w-0 h-12 px-4
                     text-base text-[#2D2D2D]
                     bg-white
                     border border-[#E8DFD5] rounded-lg
@@ -245,12 +253,13 @@ export default function CartPage() {
                     focus:outline-none focus:ring-2 focus:ring-[#6B8E7A]/40 focus:border-[#6B8E7A]
                   "
                 />
+                {/* v1.4: flex-shrink-0 no botão para não encolher */}
                 <button
                   type="button"
                   onClick={handleCalculateShipping}
                   disabled={isCalculatingShipping}
                   className="
-                    h-12 px-6
+                    flex-shrink-0 h-12 px-6
                     font-semibold text-white
                     bg-[#2D2D2D] hover:bg-[#1A1A1A]
                     rounded-lg
@@ -504,10 +513,32 @@ export default function CartPage() {
 // TRUST BADGES
 // ============================================
 
+// Ícone de livro aberto (manual)
+function BookOpenIcon({ className }: { className?: string }) {
+  return (
+    <svg 
+      className={className}
+      xmlns="http://www.w3.org/2000/svg" 
+      width="20" 
+      height="20" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2.5" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+    </svg>
+  )
+}
+
 function TrustBadges() {
   const badges = [
     { icon: FileText, title: 'Nota Fiscal', subtitle: 'em todos os pedidos' },
-    { icon: Shield, title: '7 dias', subtitle: 'para trocar grátis' },
+    { icon: BookOpenIcon, title: 'Manual + Vídeo', subtitle: 'montagem fácil' },
     { icon: Wrench, title: 'Garantia', subtitle: 'de fábrica' },
     { icon: Truck, title: 'Entrega própria', subtitle: 'em Curitiba e região' },
   ]
