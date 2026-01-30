@@ -20,6 +20,7 @@ function getSupabaseAdmin() {
 const BUCKET = 'product-images'
 
 // Função para gerar nome SEO Elite
+// Padrão: {slug}-tv-ate-{pol}-polegadas-{cor}-curitiba-moveirama-{n}.webp
 function generateSEOFilename(
   productSlug: string,
   tvMaxSize: number | null,
@@ -45,13 +46,14 @@ function generateSEOFilename(
     filename += `-${colorSlug}`
   }
 
-  // Adicionar número
-  filename += `-${position}.webp`
+  // Adicionar sufixo SEO local + número
+  filename += `-curitiba-moveirama-${position}.webp`
 
   return filename
 }
 
 // Função para gerar alt text SEO
+// Padrão: {Nome} para TV até {pol} polegadas - {Cor} - Móveis Curitiba | Moveirama
 function generateAltText(
   productName: string,
   tvMaxSize: number | null,
@@ -66,6 +68,9 @@ function generateAltText(
   if (variantName) {
     alt += ` - ${variantName}`
   }
+
+  // Sufixo SEO local + branding
+  alt += ' - Móveis Curitiba | Moveirama'
 
   return alt
 }

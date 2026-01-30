@@ -28,9 +28,6 @@ export {
 // BuyNowButton (único default export)
 export { default as BuyNowButton } from './BuyNowButton'
 
-// Checkout (default export)
-export { default as CheckoutMiniSummary } from './CheckoutMiniSummary'
-
 // Types
 export * from './cart-types'
 

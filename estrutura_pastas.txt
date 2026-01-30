@@ -26392,6 +26392,7 @@ Raiz: C:\Users\sandr\Desktop\moveirama-site
         📄 update_artany_dimensoes_imagens_v3.sql
     📂 src/
         📄 middleware.ts
+        📄 useCheckoutMiniSummary.ts
         📂 app/
             📄 favicon.ico
             📄 globals.css
@@ -26502,9 +26503,19 @@ Raiz: C:\Users\sandr\Desktop\moveirama-site
                 📄 CartItem.tsx
                 📄 CartLoading.tsx
                 📄 CartProvider.tsx
+                📄 CheckoutMiniSummary.tsx
                 📄 index.ts
                 📄 QuantityControl.tsx
                 📄 Toast.tsx
+                📄 useCheckoutMiniSummary.ts
+            📂 checkout/
+                📄 CheckoutIdentity.tsx
+                📄 CheckoutLayout.tsx
+                📄 CheckoutSeals.tsx
+                📄 CheckoutSteps.tsx
+                📄 CheckoutSummaryCard.tsx
+                📄 CheckoutTrustBar.tsx
+                📄 index.ts
             📂 home/
                 📄 CategoriesSection.tsx
                 📄 CoberturaSection.tsx
@@ -26518,6 +26529,9 @@ Raiz: C:\Users\sandr\Desktop\moveirama-site
                 📄 SocialSection.tsx
                 📄 TrustBar.tsx
                 📄 WhatsAppFloat.tsx
+            📂 hooks/
+                📄 index.ts
+                📄 useCheckoutMiniSummary.ts
             📂 minha-lista/
                 📄 index.ts
                 📄 MinhaListaDrawer.tsx
@@ -26547,6 +26561,7 @@ Raiz: C:\Users\sandr\Desktop\moveirama-site
                 📄 SearchButton.tsx
                 📄 SearchModal.tsx
                 📄 useSearchShortcut.ts
+        📂 hooks/
         📂 lib/
             📄 cart.ts
             📄 minha-lista.ts

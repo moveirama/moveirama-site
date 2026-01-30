@@ -1,8 +1,8 @@
 # 🗺️ MAPA DO PROJETO MOVEIRAMA
 
 > **Documento de referência para o Squad Dev**  
-> **Última atualização:** 27 de Janeiro de 2026  
-> **Versão do projeto:** v2.9.0
+> **Última atualização:** 29 de Janeiro de 2026  
+> **Versão do projeto:** v2.10.0
 
 ---
 
@@ -29,80 +29,36 @@ moveirama-site/
 │   └── images/
 │       └── categories/        # Imagens cut-out das categorias
 ├── docs/                      # Documentação (handoffs)
-│   ├── CHANGELOG_24_Janeiro_2026.md
-│   ├── GUIA_Upload_Imagens.md
-│   ├── HANDOFF_Paginas_Categoria_v1.md
-│   ├── MAPA_PROJETO_MOVEIRAMA.md
-│   ├── REF_Tecnicas_Avancadas_Design.md
-│   └── SETUP_LOCAL.md
 ├── sql/                       # Scripts SQL para Supabase
-│   ├── categories_2_niveis_v3.sql
-│   ├── insert_artany_products.sql
-│   └── ...
 ├── src/
 │   ├── app/                   # Next.js App Router
 │   │   ├── [category]/        # Rota dinâmica categoria pai
 │   │   │   ├── page.tsx       # Lista subcategorias
 │   │   │   ├── [...slug]/     # Catch-all (listagem/produto)
-│   │   │   │   └── page.tsx
 │   │   │   └── not-found.tsx
 │   │   ├── admin/             # Painel administrativo
 │   │   │   ├── page.tsx       # Admin principal
-│   │   │   └── imagens/       # Admin de imagens (separado)
-│   │   │       ├── page.tsx
-│   │   │       └── components/
-│   │   │           ├── FilterBar.tsx
-│   │   │           ├── ImageGrid.tsx
-│   │   │           ├── ImageUploader.tsx
-│   │   │           ├── ProductCard.tsx
-│   │   │           └── index.ts
+│   │   │   └── imagens/       # Admin de imagens
 │   │   ├── api/               # API Routes
 │   │   │   ├── admin/         # APIs do admin
-│   │   │   │   ├── images/    # Upload e gestão de imagens
-│   │   │   │   │   ├── upload/
-│   │   │   │   │   ├── upload-medidas/
-│   │   │   │   │   ├── process-batch/
-│   │   │   │   │   ├── sync/
-│   │   │   │   │   └── [id]/
-│   │   │   │   └── products/  # CRUD de produtos
-│   │   │   │       └── [id]/
 │   │   │   ├── customer-photos/   # (v2.8) - Fotos de clientes
-│   │   │   │   └── route.ts
-│   │   │   ├── shipping/          # ⭐ NOVO (v2.9) - Cálculo de frete
-│   │   │   │   └── route.ts
-│   │   │   ├── payment/           # ⭐ NOVO (v2.9) - Pagamentos
-│   │   │   │   ├── card/
-│   │   │   │   │   └── route.ts
-│   │   │   │   ├── pix/
-│   │   │   │   │   └── route.ts
-│   │   │   │   └── webhook/
-│   │   │   │       └── route.ts
-│   │   │   ├── orders/            # ⭐ NOVO (v2.9) - Pedidos
-│   │   │   │   └── route.ts
+│   │   │   ├── shipping/          # (v2.9) - Cálculo de frete
+│   │   │   ├── payment/           # (v2.9) - Pagamentos
+│   │   │   ├── orders/            # (v2.9) - Pedidos
 │   │   │   ├── debug/         # Diagnóstico
 │   │   │   └── search/        # API de busca
 │   │   ├── busca/             # Página de busca
-│   │   ├── carrinho/          # ⭐ NOVO (v2.9) - Página do carrinho
-│   │   │   └── page.tsx
-│   │   ├── checkout/          # ⭐ NOVO (v2.9) - Checkout
-│   │   │   └── page.tsx
-│   │   ├── pedido/            # ⭐ NOVO (v2.9) - Confirmação
+│   │   ├── carrinho/          # (v2.9) - Página do carrinho
+│   │   ├── checkout/          # ⭐ (v2.10) - Checkout COMPLETO
+│   │   │   └── page.tsx       # CheckoutPage com formulários
+│   │   ├── pedido/            # (v2.9) - Confirmação
 │   │   │   └── confirmado/
-│   │   │       └── page.tsx
-│   │   ├── produto/[slug]/    # Rota alternativa (redirect)
 │   │   ├── entrega-moveis-curitiba-rmc/  # Página de cobertura (v2.6)
-│   │   │   ├── page.tsx
-│   │   │   └── OndeEntregamosContent.tsx
 │   │   ├── fale-com-a-gente/  # Página de contato (v2.6)
-│   │   │   ├── layout.tsx
-│   │   │   └── page.tsx
 │   │   ├── ofertas-moveis-curitiba/  # Página de ofertas (v2.6)
-│   │   │   └── page.tsx
 │   │   ├── politica-privacidade/     # (v2.7)
-│   │   │   └── page.tsx
 │   │   ├── politica-trocas-devolucoes/  # (v2.7)
-│   │   │   └── page.tsx
-│   │   ├── globals.css        # Design System CSS + vizinhos.css
+│   │   ├── globals.css        # ⭐ Design System + Checkout CSS (v2.10)
 │   │   ├── layout.tsx         # Layout principal (+ CartProvider)
 │   │   ├── page.tsx           # HOME PAGE (v2.5)
 │   │   ├── robots.ts          # SEO robots
@@ -110,7 +66,7 @@ moveirama-site/
 │   ├── components/            # Componentes React
 │   │   ├── Header.tsx         # Mega menu (+ CartBadge)
 │   │   ├── Footer.tsx
-│   │   ├── cart/              # ⭐ NOVO (v2.9) - Sistema de Carrinho
+│   │   ├── cart/              # Sistema de Carrinho (v2.9)
 │   │   │   ├── index.ts       # Barrel export
 │   │   │   ├── CartProvider.tsx      # Context API + useReducer
 │   │   │   ├── CartDrawer.tsx        # Drawer lateral
@@ -124,59 +80,24 @@ moveirama-site/
 │   │   │   ├── cart-types.ts         # Interfaces TypeScript
 │   │   │   ├── cart-utils.ts         # Utilitários
 │   │   │   └── cart.css              # Estilos específicos
+│   │   ├── checkout/          # ⭐ NOVO (v2.10) - Componentes Checkout
+│   │   │   ├── index.ts       # Barrel export
+│   │   │   ├── CheckoutSummaryCard.tsx   # Sidebar resumo
+│   │   │   ├── CheckoutMiniSummary.tsx   # Banner mobile sticky
+│   │   │   ├── CheckoutSteps.tsx         # Progress indicator
+│   │   │   └── CheckoutTrustBar.tsx      # Barra de confiança
 │   │   ├── home/              # Componentes HOME (v2.5)
-│   │   │   ├── index.ts       # Barrel export
-│   │   │   ├── HeroSection.tsx
-│   │   │   ├── TrustBar.tsx
-│   │   │   ├── CategoriesSection.tsx
-│   │   │   ├── FeaturedProducts.tsx
-│   │   │   ├── DiferenciaisSection.tsx
-│   │   │   ├── KnowledgeBlock.tsx
-│   │   │   ├── HomeFAQ.tsx
-│   │   │   ├── CoberturaSection.tsx
-│   │   │   ├── SocialSection.tsx
-│   │   │   ├── CTAFinal.tsx
-│   │   │   └── WhatsAppFloat.tsx
 │   │   ├── minha-lista/       # FEATURE MINHA LISTA (v2.6)
-│   │   │   ├── index.ts       # Barrel export
-│   │   │   ├── MinhaListaProvider.tsx  # Context API
-│   │   │   ├── MinhaListaDrawer.tsx    # Drawer lateral (v2.2)
-│   │   │   ├── MinhaListaFAB.tsx       # Botão flutuante
-│   │   │   ├── SaveButton.tsx          # Botão coração
-│   │   │   ├── ProductSaveWrapper.tsx  # Wrapper para PDP
-│   │   │   └── Toast.tsx               # Notificações
 │   │   ├── ofertas/           # Componentes de ofertas (v2.6)
-│   │   │   ├── index.ts
-│   │   │   ├── OfertaProductCard.tsx
-│   │   │   ├── OfertasConfianca.tsx
-│   │   │   ├── OfertasFiltros.tsx
-│   │   │   ├── OfertasHero.tsx
-│   │   │   └── TabelaSemantica.tsx
 │   │   ├── reviews/           # Sistema de Reviews (v2.8)
-│   │   │   ├── index.ts       # Barrel export
-│   │   │   ├── ReviewsSection.tsx      # Container principal
-│   │   │   ├── ReviewsSummary.tsx      # Resumo (média + barras)
-│   │   │   └── ReviewCard.tsx          # Card individual de review
 │   │   ├── search/            # Componentes de busca
-│   │   │   ├── SearchModal.tsx
-│   │   │   ├── SearchButton.tsx
-│   │   │   ├── useSearchShortcut.ts
-│   │   │   └── index.ts
 │   │   ├── ProductPageContent.tsx  # PDP principal (v2.9 + BuyNowButton)
 │   │   ├── ProductGallery.tsx
 │   │   ├── ProductFAQ.tsx
 │   │   ├── ProductRating.tsx      # (v2.7) - Estrelas de avaliação
 │   │   ├── VizinhosAprovaram.tsx  # (v2.8) - Fotos de clientes
 │   │   ├── ShippingCalculator.tsx
-│   │   ├── MedidasCompactas.tsx
-│   │   ├── VideoProduct.tsx
-│   │   ├── RecursosMontagem.tsx
-│   │   ├── Breadcrumb.tsx
-│   │   ├── Pagination.tsx
-│   │   ├── ProductCardListing.tsx
-│   │   ├── SortControl.tsx
-│   │   ├── SubcategoryCard.tsx
-│   │   └── EmptyState.tsx
+│   │   └── ...
 │   ├── lib/                   # Funções utilitárias
 │   │   ├── supabase.ts        # Cliente server + funções DB
 │   │   ├── supabase-browser.ts # Cliente browser
@@ -184,22 +105,19 @@ moveirama-site/
 │   │   ├── shipping.ts        # Cálculo de frete
 │   │   ├── smart-search.ts    # Busca inteligente
 │   │   ├── minha-lista.ts     # Lógica da lista de favoritos (v2.6)
-│   │   ├── cart.ts            # ⭐ NOVO (v2.9) - Lógica do carrinho
+│   │   ├── cart.ts            # (v2.9) - Lógica do carrinho
 │   │   └── schemas/           # SCHEMAS JSON-LD
-│   │       ├── home-schemas.ts
-│   │       └── rating-schema.ts   # (v2.7) - Schema AggregateRating
-│   ├── styles/                # ⭐ NOVO (v2.9)
+│   ├── styles/                # (v2.9)
 │   │   └── cart-animations.css    # Animações do carrinho
 │   ├── types/                 # TypeScript types
-│   │   └── images.ts
-│   └── middleware.ts          # Middleware Next.js (Supabase Auth)
+│   └── middleware.ts          # Middleware Next.js
 ├── package.json
 └── tsconfig.json
 ```
 
 ---
 
-## 🛒 FEATURE: CARRINHO DE COMPRAS v1.1 (v2.9 - Janeiro 2026)
+## 🛒 FEATURE: CARRINHO DE COMPRAS v1.1 (v2.9)
 
 ### Visão Geral
 
@@ -207,7 +125,7 @@ Sistema completo de carrinho de compras com drawer lateral, página dedicada, ch
 
 **Status atual:**
 - ✅ Carrinho: **COMPLETO** — Context API, drawer, página, persistência
-- ✅ Checkout: **ESTRUTURA** — Fluxo cadastro → pagamento
+- ✅ Checkout: **COMPLETO** — Formulários, validação, layout 2 colunas (v2.10)
 - ⏳ Pagamento: **SIMULADO** — APIs preparadas, integração pendente
 
 ### Arquitetura
@@ -243,7 +161,7 @@ Sistema completo de carrinho de compras com drawer lateral, página dedicada, ch
 │                                       ▼                         │
 │                              ┌────────────────┐                │
 │                              │   /checkout    │                │
-│                              │  (3 etapas)    │                │
+│                              │  (v2.10)       │                │
 │                              └────────────────┘                │
 │                                       │                         │
 │                    ┌──────────────────┼──────────────────┐     │
@@ -278,65 +196,7 @@ export const CART_STORAGE_KEY = 'moveirama_cart'
 export const CART_EXPIRATION_DAYS = 30
 ```
 
-### Interfaces TypeScript (cart-types.ts)
-
-```typescript
-// Produto no carrinho
-interface CartProduct {
-  id: string
-  slug: string
-  name: string
-  price: number
-  imageUrl: string
-  subcategorySlug: string
-  // Dimensões para cálculo de frete
-  width?: number
-  height?: number
-  depth?: number
-  weight?: number
-}
-
-// Item do carrinho (produto + quantidade)
-interface CartItem {
-  product: CartProduct
-  quantity: number
-  addedAt: number  // timestamp
-}
-
-// Informações de frete
-interface ShippingInfo {
-  cep: string
-  city: string
-  neighborhood: string
-  fee: number
-  deliveryDays: {
-    min: number
-    max: number
-  }
-  needsConfirmation: boolean
-}
-
-// Estado completo do carrinho
-interface CartState {
-  items: CartItem[]
-  isOpen: boolean
-  shipping: ShippingInfo | null
-}
-
-// Ações do reducer
-type CartAction =
-  | { type: 'ADD_ITEM'; payload: { product: CartProduct; quantity: number } }
-  | { type: 'REMOVE_ITEM'; payload: string }  // product id
-  | { type: 'UPDATE_QUANTITY'; payload: { productId: string; quantity: number } }
-  | { type: 'SET_SHIPPING'; payload: ShippingInfo }
-  | { type: 'CLEAR_SHIPPING' }
-  | { type: 'CLEAR_CART' }
-  | { type: 'OPEN_DRAWER' }
-  | { type: 'CLOSE_DRAWER' }
-  | { type: 'LOAD_FROM_STORAGE'; payload: CartState }
-```
-
-### Arquivos da Feature
+### Arquivos da Feature Carrinho
 
 | Arquivo | Descrição |
 |---------|-----------|
@@ -359,7 +219,7 @@ type CartAction =
 | `src/components/cart/index.ts` | Barrel export |
 | **Páginas** | |
 | `src/app/carrinho/page.tsx` | Página completa do carrinho |
-| `src/app/checkout/page.tsx` | Fluxo de checkout (3 etapas) |
+| `src/app/checkout/page.tsx` | ⭐ Checkout completo (v2.10) |
 | `src/app/pedido/confirmado/page.tsx` | Confirmação de pedido |
 | **APIs** | |
 | `src/app/api/shipping/route.ts` | Cálculo de frete por CEP |
@@ -368,316 +228,176 @@ type CartAction =
 | `src/app/api/payment/webhook/route.ts` | Webhooks de pagamento |
 | `src/app/api/orders/route.ts` | Criação/consulta de pedidos |
 
-### Componente CartProvider
+---
 
-**Responsabilidades:**
-- Gerenciar estado global do carrinho via Context API
-- Persistir automaticamente em localStorage
-- Expor valores computados (subtotal, total, itemCount)
-- Controlar abertura/fechamento do drawer
+## ⭐ FEATURE: CHECKOUT v2.0 (v2.10 - Janeiro 2026)
 
-**Hook useCart():**
-```typescript
-const {
-  // Estado
-  items,
-  isOpen,
-  shipping,
-  
-  // Valores computados
-  itemCount,
-  subtotal,
-  subtotalPix,
-  pixDiscount,
-  total,
-  totalPix,
-  isEmpty,
-  canCheckout,
-  
-  // Ações
-  addItem,
-  removeItem,
-  updateQuantity,
-  setShipping,
-  clearShipping,
-  clearCart,
-  openDrawer,
-  closeDrawer,
-} = useCart()
+### Visão Geral
+
+Sistema completo de checkout com layout 2 colunas (desktop) e single-column (mobile), formulários com validação, progress steps visual, e componentes de confiança.
+
+**Status atual:**
+- ✅ Layout: **COMPLETO** — 2 colunas desktop, responsivo mobile
+- ✅ Formulários: **COMPLETO** — Identificação, Endereço, Pagamento
+- ✅ Validação: **COMPLETO** — CPF, email, telefone, CEP
+- ✅ Componentes visuais: **COMPLETO** — Steps, Summary, Trust bar
+- ⏳ Gateway: **PENDENTE** — Integração Mercado Pago/Stripe
+
+### Arquitetura Visual
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      CHECKOUT PAGE (v2.10)                      │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  DESKTOP (≥1024px):              MOBILE (<1024px):             │
+│  ┌─────────────┬───────────┐     ┌─────────────────────┐       │
+│  │             │           │     │   Mini Summary      │←sticky│
+│  │   MAIN      │  SIDEBAR  │     │   (banner)          │       │
+│  │   (forms)   │  (sticky) │     ├─────────────────────┤       │
+│  │             │           │     │                     │       │
+│  │  • Steps    │  Summary  │     │   MAIN (forms)      │       │
+│  │  • Form 1   │  Card     │     │   • Steps           │       │
+│  │  • Form 2   │           │     │   • Form 1          │       │
+│  │  • Form 3   │  Trust    │     │   • Form 2          │       │
+│  │             │  Seals    │     │   • Form 3          │       │
+│  │             │           │     │                     │       │
+│  │             │  Identity │     │   Summary Card      │       │
+│  │             │  (CNPJ)   │     │   (no final)        │       │
+│  └─────────────┴───────────┘     └─────────────────────┘       │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-### Componente CartDrawer
+### Componentes do Checkout
 
-**Características:**
-- Largura: 360px desktop, max 85vh mobile (bottom sheet)
-- Animações: slide-in-right desktop, slide-up mobile
-- Focus trap: navegação por teclado fica dentro do drawer
-- Body scroll lock: previne scroll da página quando aberto
-- ESC para fechar
-- Click fora para fechar
+| Componente | Descrição | Classes CSS |
+|------------|-----------|-------------|
+| **CheckoutPage** | Página principal com formulários | `.checkout-page`, `.checkout-layout` |
+| **CheckoutSummaryCard** | Sidebar com resumo do pedido | `.checkout-summary-card` |
+| **CheckoutMiniSummary** | Banner mobile sticky (v2.2) | `.checkout-mini-summary` |
+| **CheckoutSteps** | Progress indicator (3 etapas) | `.checkout-steps` |
+| **CheckoutTrustBar** | Barra de confiança | `.checkout-trust-bar` |
 
-**Estrutura:**
+### Progress Steps (v2.1)
+
 ```
-┌─────────────────────────────┐
-│ [X]  Seu Carrinho (n)       │  ← Header
-├─────────────────────────────┤
-│                             │
-│  ┌─────────────────────┐   │
-│  │ CartItem            │   │  ← Lista de itens
-│  │ [img] Nome          │   │
-│  │       R$ 299,00     │   │
-│  │       [-] 1 [+]     │   │
-│  └─────────────────────┘   │
-│                             │
-│  ┌─────────────────────┐   │
-│  │ CartItem            │   │
-│  └─────────────────────┘   │
-│                             │
-├─────────────────────────────┤
-│ Subtotal:       R$ 598,00   │  ← Footer
-│ Com Pix (-5%):  R$ 568,10   │
-│                             │
-│ [    Ver Carrinho    ]      │  ← CTA secundário
-│ [   Finalizar Compra ]      │  ← CTA principal
-└─────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│     ①────────────②────────────③                            │
+│  Identificação   Endereço    Pagamento                     │
+│                                                             │
+│  • Círculos: 40px (desktop), 32px (mobile)                 │
+│  • Labels: font-size 13px                                   │
+│  • Cores: Sage 500 (ativo), Gray 300 (inativo)             │
+│  • Linhas conectoras: 2px                                   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Componente BuyNowButton v1.3
+### Mini Summary Mobile (v2.2)
 
-**Props:**
-```typescript
-interface BuyNowButtonProps {
-  product: {
-    id: string
-    slug: string
-    name: string
-    price: number
-    width_cm?: number
-    height_cm?: number
-    depth_cm?: number
-    weight_kg?: number
-    images?: Array<{ cloudinary_path?: string }>
-  }
-  subcategorySlug: string
-  variant?: 'primary' | 'secondary'
-  size?: 'sm' | 'md' | 'lg'
-  className?: string
-}
+```
+┌─────────────────────────────────────────────────────────────┐
+│  STICKY BANNER (topo, mobile only)                         │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  🛒 2 itens  •  Total: R$ 598,00                    │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  • Aparece no scroll (após 100px)                          │
+│  • Fundo: Warm White com sombra                            │
+│  • Height: 48px                                             │
+│  • z-index: 40 (abaixo do header)                          │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-**Comportamento:**
-1. Valida se produto já está no carrinho (limite de 5)
-2. Extrai imagem de `product.images[0].cloudinary_path`
-3. Converte dimensões para números (evita NaN)
-4. Adiciona ao carrinho via Context
-5. Abre drawer automaticamente
-6. Exibe toast de confirmação
+### CheckoutSummaryCard (Sidebar)
 
-### Componente CartBadge
-
-**Variantes:**
-```typescript
-type BadgeVariant = 'full' | 'text' | 'mini'
+```
+┌─────────────────────────────────────────────────────────────┐
+│  RESUMO DO PEDIDO                                          │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  [img] Rack Theo Cinamomo           R$ 299,00       │   │
+│  │        Qtd: 1                                        │   │
+│  ├─────────────────────────────────────────────────────┤   │
+│  │  [img] Escrivaninha Dubai           R$ 299,00       │   │
+│  │        Qtd: 1                                        │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  Subtotal:                              R$ 598,00          │
+│  Frete (Curitiba):                      R$ 25,00           │
+│  ─────────────────────────────────────────────────         │
+│  TOTAL:                                 R$ 623,00          │
+│                                                             │
+│  💚 Com Pix: R$ 591,85 (5% off)                           │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  ✓ Compra 100% segura                               │   │
+│  │  ✓ Dados protegidos                                 │   │
+│  │  ✓ Nota fiscal garantida                            │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  [logos gateways]                                          │
+│                                                             │
+│  CNPJ: 00.000.000/0001-00                                  │
+│  Moveirama Móveis LTDA                                     │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-| Variante | Aparência | Uso |
-|----------|-----------|-----|
-| `full` | Ícone + "Carrinho" + badge | Header desktop |
-| `text` | "Carrinho (n)" | Menu mobile |
-| `mini` | Só ícone + badge | Header compacto |
+### Etapas do Checkout
 
-### Componente CartLoading
+| Etapa | Campos | Validação |
+|-------|--------|-----------|
+| **1. Identificação** | Nome, Email, Telefone, CPF | CPF válido, email formato, telefone DDD |
+| **2. Endereço** | CEP, Rua, Número, Complemento, Bairro, Cidade | CEP região atendida, campos obrigatórios |
+| **3. Pagamento** | Pix ou Cartão | Seleção obrigatória |
 
-**Variantes:**
-```typescript
-type LoadingVariant = 'compact' | 'full' | 'drawer' | 'page' | 'checkout'
-```
-
-| Variante | Uso |
-|----------|-----|
-| `compact` | Skeleton de item único |
-| `full` | Skeleton de item expandido |
-| `drawer` | 3 itens compact para drawer |
-| `page` | Layout completo da página |
-| `checkout` | Layout do checkout |
-
-### Página /carrinho
-
-**Seções:**
-1. Breadcrumb (Home > Carrinho)
-2. Título + contador
-3. Lista de itens (CartItem)
-4. Calculadora de frete
-5. Resumo (subtotal, frete, total)
-6. CTAs (Continuar Comprando, Finalizar)
-
-**Estados:**
-- **Vazio:** Mostra CartEmpty com sugestões
-- **Com itens:** Mostra lista + resumo
-- **Carregando:** Mostra CartLoading variant="page"
-
-### Página /checkout
-
-**Etapas:**
-1. **Identificação:** Nome, email, telefone, CPF
-2. **Endereço:** CEP (auto-preenche), complemento
-3. **Pagamento:** Pix ou Cartão
-
-**Validações:**
-- CPF válido (algoritmo de verificação)
-- Email válido
-- Telefone com DDD
-- CEP da região atendida
-
-### APIs do Carrinho
-
-#### GET/POST /api/shipping
-
-**Request:**
-```typescript
-POST /api/shipping
-{
-  "cep": "80250-104",
-  "items": [
-    {
-      "productId": "uuid",
-      "quantity": 2,
-      "weight": 25.5,
-      "dimensions": { width: 136, height: 45, depth: 38 }
-    }
-  ]
-}
-```
-
-**Response:**
-```typescript
-{
-  "success": true,
-  "data": {
-    "cep": "80250-104",
-    "city": "Curitiba",
-    "neighborhood": "Centro",
-    "fee": 25.00,
-    "deliveryDays": { "min": 1, "max": 3 },
-    "needsConfirmation": false
-  }
-}
-```
-
-#### POST /api/payment/pix
-
-**Request:**
-```typescript
-{
-  "orderId": "uuid",
-  "amount": 568.10,
-  "customer": {
-    "name": "João Silva",
-    "email": "joao@email.com",
-    "cpf": "12345678900"
-  }
-}
-```
-
-**Response:**
-```typescript
-{
-  "success": true,
-  "data": {
-    "qrCode": "00020126...",
-    "qrCodeBase64": "data:image/png;base64,...",
-    "expiresAt": "2026-01-27T18:00:00Z",
-    "pixKey": "pix@moveirama.com.br"
-  }
-}
-```
-
-### Funções Utilitárias (cart-utils.ts)
-
-```typescript
-// Formatação
-formatCurrency(value: number): string  // "R$ 299,00"
-formatDimensions(w, h, d): string      // "136 × 45 × 38 cm"
-
-// Máscaras
-maskCEP(value: string): string         // "80250-104"
-maskCPF(value: string): string         // "123.456.789-00"
-maskPhone(value: string): string       // "(41) 98420-9323"
-
-// Validação
-isValidCEP(cep: string): boolean
-isValidCPF(cpf: string): boolean
-isValidEmail(email: string): boolean
-
-// Storage
-saveCartToStorage(state: CartState): void
-loadCartFromStorage(): CartState | null
-clearCartStorage(): void
-```
-
-### Animações (cart-animations.css)
+### Classes CSS do Checkout (globals.css)
 
 ```css
-/* Fade in */
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+/* Layout principal */
+.checkout-page { }
+.checkout-layout { }           /* Grid 2 colunas */
+.checkout-main { }             /* Coluna formulários */
+.checkout-sidebar { }          /* Coluna resumo (sticky) */
 
-/* Slide up (mobile bottom sheet) */
-@keyframes slide-up-mobile {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
+/* Progress Steps */
+.checkout-steps { }
+.checkout-step { }
+.checkout-step--active { }
+.checkout-step--completed { }
+.checkout-step-circle { }      /* 40px desktop, 32px mobile */
+.checkout-step-label { }       /* 13px */
+.checkout-step-line { }        /* Linha conectora */
 
-/* Slide in (desktop drawer) */
-@keyframes slide-in-right {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
-}
+/* Summary Card */
+.checkout-summary-card { }
+.checkout-summary-items { }
+.checkout-summary-item { }
+.checkout-summary-totals { }
+.checkout-summary-pix { }
+
+/* Mini Summary (mobile) */
+.checkout-mini-summary { }     /* Sticky banner */
+.checkout-mini-summary--visible { }
+
+/* Trust elements */
+.checkout-trust-bar { }
+.checkout-seals { }
+.checkout-gateway-logos { }
+.checkout-identity { }         /* CNPJ */
+
+/* Form sections */
+.checkout-form-section { }
+.checkout-form-title { }
+.checkout-form-grid { }        /* Grid de campos */
 ```
 
-### Integração no Layout
-
-**Arquivo:** `src/app/layout.tsx`
-
-```tsx
-import { CartProvider, ToastProvider } from '@/components/cart'
-
-export default function RootLayout({ children }) {
-  return (
-    <html>
-      <body>
-        <CartProvider>
-          <ToastProvider>
-            <Header />  {/* CartBadge integrado */}
-            {children}
-            <CartDrawer />
-          </ToastProvider>
-        </CartProvider>
-      </body>
-    </html>
-  )
-}
-```
-
-### Integração na PDP
-
-**Arquivo:** `src/components/ProductPageContent.tsx`
-
-```tsx
-import { BuyNowButton } from '@/components/cart'
-
-// Na seção de CTAs:
-<BuyNowButton
-  product={product}
-  subcategorySlug={subcategorySlug}
-  variant="primary"
-  size="lg"
-/>
-```
-
-### Fluxo Completo de Compra
+### Fluxo Completo de Compra (v2.10)
 
 ```
 1. PDP: Cliente clica "Comprar Agora"
@@ -695,10 +415,12 @@ import { BuyNowButton } from '@/components/cart'
    ├── Vê total com desconto Pix
    └── Clica "Finalizar Compra"
 
-4. /checkout: Cadastro + Pagamento
-   ├── Etapa 1: Dados pessoais
-   ├── Etapa 2: Endereço de entrega
-   └── Etapa 3: Forma de pagamento
+4. /checkout: Cadastro + Pagamento (v2.10)
+   ├── Mini Summary aparece no mobile (sticky)
+   ├── Etapa 1: Dados pessoais (CPF validado)
+   ├── Etapa 2: Endereço (CEP auto-preenche)
+   ├── Etapa 3: Forma de pagamento
+   └── Sidebar com resumo sempre visível (desktop)
 
 5. /pedido/confirmado: Confirmação
    ├── Número do pedido
@@ -707,35 +429,9 @@ import { BuyNowButton } from '@/components/cart'
    └── Prazo de entrega
 ```
 
-### Decisões Técnicas do Carrinho
-
-#### Por que Context API e não Redux/Zustand?
-- Complexidade adequada para o escopo
-- Menos dependências externas
-- Performance suficiente para ~5 itens
-- Integração nativa com React 19
-
-#### Por que localStorage e não banco de dados?
-- Não requer login (friction-free para Classe C)
-- Funciona offline
-- Reduz chamadas ao servidor
-- Expiração de 30 dias é suficiente
-
-#### Por que limite de 5 produtos diferentes?
-- Móveis são compras planejadas, não impulsivas
-- Simplifica logística de entrega
-- Evita carrinhos abandonados muito grandes
-- Classe C/D compra 1-3 móveis por vez
-
-#### Por que bottom sheet no mobile?
-- Padrão familiar (apps de e-commerce)
-- Área de toque maior que drawer lateral
-- Não bloqueia visualização do header
-- Gesture-friendly para fechar (swipe down)
-
 ---
 
-## ⭐ FEATURE: REVIEWS E VIZINHOS QUE APROVARAM (v2.8 - Janeiro 2026)
+## ⭐ FEATURE: REVIEWS E VIZINHOS QUE APROVARAM (v2.8)
 
 ### Visão Geral
 
@@ -747,18 +443,6 @@ Sistema completo de prova social na PDP com duas seções:
 - ✅ Reviews: **DINÂMICO** — dados vêm da tabela `reviews`
 - ✅ Vizinhos: **DINÂMICO** — fotos vêm da tabela `customer_photos` + Storage
 - ❌ Coleta de reviews: **NÃO IMPLEMENTADO** — cliente não pode deixar review pelo site
-
-### Arquivos da Feature
-
-| Arquivo | Descrição |
-|---------|-----------|
-| `src/components/reviews/index.ts` | Barrel export |
-| `src/components/reviews/ReviewsSection.tsx` | Container principal |
-| `src/components/reviews/ReviewsSummary.tsx` | Resumo: média, total, barras de distribuição |
-| `src/components/reviews/ReviewCard.tsx` | Card individual de review |
-| `src/components/VizinhosAprovaram.tsx` | Galeria de fotos de clientes |
-| `src/app/api/customer-photos/route.ts` | API para buscar fotos |
-| `src/app/globals.css` | CSS do vizinhos (adicionado no final) |
 
 ### Tabelas no Banco de Dados
 
@@ -794,66 +478,13 @@ CREATE TABLE customer_photos (
 );
 ```
 
-### API: GET /api/customer-photos
-
-**Query params:**
-- `productId` (opcional): Prioriza fotos deste produto
-- `limit` (opcional): Máximo de fotos, default 4
-
-**Retorno:**
-```json
-{
-  "photos": [
-    {
-      "id": "uuid",
-      "image_url": "https://...",
-      "bairro": "Boqueirão",
-      "cidade": "Curitiba",
-      "product": { "name": "Rack Duetto", "slug": "rack-duetto" }
-    }
-  ]
-}
-```
-
-### Ordem das Seções na PDP (v2.9)
-
-```
-[Breadcrumb]
-[Galeria + Info]
-[ProductRating] (estrelas)
-[Medidas]
-[Calculadora Frete]
-[CTAs: BuyNowButton + WhatsApp]  ← Atualizado v2.9
-[SaveButton]
-[Trust Badges]
-[VideoProduct]
-[RecursosMontagem]
-[Especificações]
-[ProductFAQ]
-[ReviewsSection]
-[Compre com segurança]
-[VizinhosAprovaram]
-[Sticky Bar Mobile]
-```
-
 ---
 
-## ⭐ FEATURE: PRODUCT RATING (v2.7 - Janeiro 2026)
+## ⭐ FEATURE: PRODUCT RATING (v2.7)
 
 ### Visão Geral
 
-Sistema de avaliação de produtos com estrelas visuais e Schema.org AggregateRating para Rich Snippets no Google e Google Merchant Center.
-
-**Status atual:** Implementação visual completa. Aguardando:
-1. Bloco de comentários de clientes (design do Squad Visual)
-2. Sistema de validação/coleta de avaliações
-
-### Arquivos da Feature
-
-| Arquivo | Descrição |
-|---------|-----------|
-| `src/components/ProductRating.tsx` | Componente visual de estrelas (5 estrelas com fill parcial) |
-| `src/lib/schemas/rating-schema.ts` | Gerador de Schema.org AggregateRating |
+Sistema de avaliação de produtos com estrelas visuais e Schema.org AggregateRating para Rich Snippets no Google.
 
 ### Campos no Banco de Dados
 
@@ -863,45 +494,19 @@ rating_average DECIMAL(2,1) DEFAULT 0   -- Ex: 4.8
 rating_count INTEGER DEFAULT 0           -- Ex: 127
 ```
 
-### Componente ProductRating.tsx
-
-```tsx
-interface ProductRatingProps {
-  rating: number      // 0-5 (aceita decimais como 4.8)
-  reviewCount: number // quantidade de avaliações
-  size?: 'sm' | 'md' | 'lg'
-  showCount?: boolean // exibir "(127 avaliações)"
-}
-```
-
 ---
 
-## ❤️ FEATURE: MINHA LISTA (v2.6 - Janeiro 2026)
-
-### Visão Geral
+## ❤️ FEATURE: MINHA LISTA (v2.6)
 
 Feature de lista de favoritos que permite ao cliente salvar produtos para comparar depois. Dados salvos em localStorage (sem necessidade de login).
 
-**Nome na UI:** "Móveis que mais gostei" (literal e afetivo para público Classe C)
-
-### Arquivos da Feature
-
-| Arquivo | Descrição |
-|---------|-----------|
-| `src/lib/minha-lista.ts` | Interface `ListaItem` + funções de localStorage |
-| `src/components/minha-lista/MinhaListaProvider.tsx` | Context API global (estado + ações) |
-| `src/components/minha-lista/MinhaListaDrawer.tsx` | Drawer lateral com lista de produtos **(v2.2)** |
-| `src/components/minha-lista/MinhaListaFAB.tsx` | Botão flutuante "Móveis que gostei" |
-| `src/components/minha-lista/SaveButton.tsx` | Botão coração (salvar/remover) |
-| `src/components/minha-lista/ProductSaveWrapper.tsx` | Wrapper que adiciona SaveButton à PDP |
-| `src/components/minha-lista/Toast.tsx` | Notificações de feedback |
-| `src/components/minha-lista/index.ts` | Barrel export |
+**Nome na UI:** "Móveis que mais gostei"
 
 ---
 
-## 🏠 HOME PAGE (v2.5 - Implementada)
+## 🏠 HOME PAGE (v2.5)
 
-### Estrutura de Seções (ordem no layout)
+### Estrutura de Seções
 
 | # | Seção | Componente | Descrição |
 |---|-------|------------|-----------|
@@ -916,22 +521,6 @@ Feature de lista de favoritos que permite ao cliente salvar produtos para compar
 | 9 | Social | `SocialSection.tsx` | Links Instagram/Facebook |
 | 10 | CTA Final | `CTAFinal.tsx` | Fundo Sage + 2 botões |
 | + | Flutuante | `WhatsAppFloat.tsx` | Botão fixo canto inferior |
-
-### Schemas JSON-LD (home-schemas.ts)
-
-9 schemas implementados para SEO máximo:
-
-| # | Schema | Função |
-|---|--------|--------|
-| 1 | Organization | Dados da empresa |
-| 2 | LocalBusiness | Loja física/local |
-| 3 | WebSite | SearchAction para busca |
-| 4 | FAQPage | Perguntas da home |
-| 5 | BreadcrumbList | Navegação |
-| 6 | WebPage | Página principal |
-| 7 | DeliveryService | Informações de entrega |
-| 8 | OfferCatalog | Catálogo de produtos |
-| 9 | AggregateRating | Avaliações |
 
 ---
 
@@ -954,23 +543,17 @@ Feature de lista de favoritos que permite ao cliente salvar produtos para compar
 /admin → Painel administrativo (login com senha)
 /admin/imagens → Admin de imagens (interface separada)
 
-⭐ ROTAS DO CARRINHO (v2.9):
+⭐ ROTAS DO CARRINHO (v2.9/v2.10):
 /carrinho → Página completa do carrinho
-/checkout → Fluxo de checkout (3 etapas)
+/checkout → Fluxo de checkout (v2.10 - completo)
 /pedido/confirmado → Confirmação de pedido
 
-⭐ ROTAS INSTITUCIONAIS (v2.6/v2.7):
+⭐ ROTAS INSTITUCIONAIS:
 /entrega-moveis-curitiba-rmc → Página de cobertura de entrega
 /fale-com-a-gente → Página de contato
 /ofertas-moveis-curitiba → Página de ofertas
-/politica-privacidade → Política de privacidade (v2.7)
-/politica-trocas-devolucoes → Política de trocas (v2.7)
-```
-
-### Categorias Pai Conhecidas
-
-```typescript
-const PARENT_CATEGORIES = ['moveis-para-casa', 'moveis-para-escritorio'];
+/politica-privacidade → Política de privacidade
+/politica-trocas-devolucoes → Política de trocas
 ```
 
 ---
@@ -991,8 +574,8 @@ const PARENT_CATEGORIES = ['moveis-para-casa', 'moveis-para-escritorio'];
 | `shipping_zones` | Zonas de frete |
 | `reviews` | (v2.8) — Avaliações de produtos |
 | `customer_photos` | (v2.8) — Fotos de clientes |
-| `orders` | ⭐ (v2.9) — Pedidos |
-| `order_items` | ⭐ (v2.9) — Itens dos pedidos |
+| `orders` | (v2.9) — Pedidos |
+| `order_items` | (v2.9) — Itens dos pedidos |
 
 ### IDs Importantes
 
@@ -1000,40 +583,6 @@ const PARENT_CATEGORIES = ['moveis-para-casa', 'moveis-para-escritorio'];
 |----------|------|
 | Supplier Artely | `5c34ee22-445a-45ac-bec7-e9ac3a1a2b04` |
 | Supplier Artany | `f2f7a7d0-68d0-4e0a-aac7-293780d1bf4d` |
-| Categoria `moveis-para-casa` | Buscar por slug |
-| Categoria `moveis-para-escritorio` | Buscar por slug |
-
-### Campos Importantes de Produto
-
-```sql
--- Campos obrigatórios (NOT NULL)
-slug, sku, name, supplier_id, category_id, short_description,
-price, width_cm, height_cm, depth_cm, weight_kg, main_material,
-assembly_difficulty, assembly_time_minutes
-
--- Campos de mídia
-assembly_video_url      -- URL YouTube vídeo montagem
-video_product_url       -- URL YouTube vídeo do produto
-manual_pdf_url          -- URL PDF do manual
-medidas_image_url       -- URL imagem de medidas
-
--- Campos de compatibilidade (racks/painéis)
-tv_max_size             -- Polegadas máximas TV
-weight_capacity         -- Peso suportado kg
-requires_wall_mount     -- Precisa furar parede?
-
--- Campos de características
-num_doors, num_drawers, num_shelves, num_niches
-has_wheels, has_mirror, has_lighting
-door_type, feet_type
-
--- Campo para Home Page
-is_featured             -- Boolean: aparece em "Mais Vendidos"
-
--- Campos de avaliação (v2.7)
-rating_average          -- DECIMAL(2,1): média de 0.0 a 5.0
-rating_count            -- INTEGER: quantidade de avaliações
-```
 
 ### Campo de Imagem Correto
 
@@ -1047,101 +596,6 @@ product.images?.[0]?.cloudinary_path
 product.images?.[0]?.image_url
 product.images?.[0]?.url
 ```
-
----
-
-## 🧩 COMPONENTES PRINCIPAIS
-
-### Header.tsx (Mega Menu)
-- Menu desktop com hover dropdowns
-- Menu mobile acordeão
-- Dropdown simples para Casa
-- Dropdown 2 painéis para Escritório (linhas: Home Office, Profissional)
-- Busca (abre SearchModal)
-- **CartBadge** (v2.9) — Badge do carrinho
-- Link WhatsApp fixo
-- Fechamento automático ao navegar
-
-### ProductPageContent.tsx (PDP) — v2.9
-- **Seções:**
-  1. Schema.org JSON-LD (Product, FAQ, Breadcrumb, AggregateRating*)
-  2. Breadcrumb
-  3. Galeria de imagens (ProductGallery)
-  4. Info: H1, preço, Pix, parcelas
-  5. **ProductRating (estrelas)** - v2.7
-  6. MedidasCompactas (L × A × P)
-  7. ShippingCalculator
-  8. **BuyNowButton** (v2.9) + WhatsApp
-  9. **SaveButton (Minha Lista)** - v2.6
-  10. Trust badges
-  11. VideoProduct (se tiver vídeo)
-  12. RecursosMontagem
-  13. Especificações técnicas
-  14. ProductFAQ (dinâmico ou do banco)
-  15. **ReviewsSection** - v2.8 (avaliações de texto)
-  16. Compre com segurança
-  17. **VizinhosAprovaram** - v2.8 (fotos de clientes)
-  18. Sticky bar mobile
-
-*AggregateRating só é injetado se produto tiver avaliações reais
-
----
-
-## 📌 APIs
-
-### /api/admin/products
-- `GET`: Lista produtos com imagens, filtros (busca, categoria)
-- Campos: id, sku, name, slug, price, category_slug, product_images
-
-### /api/admin/products/[id]
-- `GET`: Produto específico com detalhes
-- `PATCH`: Atualiza campos (video_product_url, tv_max_size, rating_average, rating_count, etc.)
-
-### /api/admin/images/upload
-- `POST`: Upload de imagem
-- Converte para WebP com sharp
-- Gera filename SEO Elite
-- Gera alt_text otimizado
-- Salva em Supabase Storage
-
-### /api/shipping (⭐ v2.9)
-- `POST`: Calcula frete por CEP
-- Retorna: fee, deliveryDays, needsConfirmation
-
-### /api/payment/pix (⭐ v2.9)
-- `POST`: Gera QR Code Pix
-- Retorna: qrCode, qrCodeBase64, expiresAt
-
-### /api/payment/card (⭐ v2.9)
-- `POST`: Processa pagamento cartão
-- Retorna: status, transactionId
-
-### /api/orders (⭐ v2.9)
-- `POST`: Cria novo pedido
-- `GET`: Consulta pedido por ID
-
-### /api/customer-photos
-- `GET`: Busca fotos de clientes para seção "Vizinhos que Aprovaram"
-
-### /api/search
-- `GET`: Busca inteligente (smart-search.ts)
-
----
-
-## 🔍 SEO (lib/seo.ts)
-
-### Funções Principais
-
-| Função | Descrição |
-|--------|-----------|
-| `generateProductH1()` | H1 otimizado (inclui TV para racks) |
-| `generateProductMetaDescription()` | Meta description com preço e prazo |
-| `generateProductSchema()` | Schema.org Product com shippingDetails |
-| `generateFAQSchema()` | Schema.org FAQPage |
-| `generateProductFAQs()` | FAQs dinâmicas baseadas no tipo |
-| `inferCategoryType()` | Detecta tipo (rack, painel, escrivaninha) |
-| `generateCategoryH1()` | H1 para páginas de listagem |
-| `generateCategoryTitle()` | Meta title para categorias |
 
 ---
 
@@ -1167,22 +621,6 @@ product.images?.[0]?.url
 
 ---
 
-## 👨‍💼 ADMIN
-
-### /admin (Principal)
-**Arquivo:** `src/app/admin/page.tsx`
-
-#### Funcionalidades
-- Login com senha (ADMIN_PASSWORD env var)
-- Lista produtos com filtros (busca, com/sem imagens)
-- Upload de imagens (drag & drop, múltiplas)
-- Reordenação de imagens (drag & drop com dnd-kit)
-- Edição de campos
-- Exclusão de imagens
-- Estatísticas (total, com/sem imagens)
-
----
-
 ## ⚠️ PONTOS DE ATENÇÃO
 
 ### Sempre Lembrar
@@ -1194,11 +632,10 @@ product.images?.[0]?.url
 6. **Prazo entrega:** 1-3 dias úteis
 7. **Supabase joins:** Retornam arrays, não objetos
 8. **Minha Lista:** Dados em localStorage, key `minha-lista`
-9. **⭐ Carrinho:** Dados em localStorage, key `moveirama_cart`
-10. **⭐ Limite carrinho:** 5 produtos diferentes, 5 unidades cada
+9. **Carrinho:** Dados em localStorage, key `moveirama_cart`
+10. **Limite carrinho:** 5 produtos diferentes, 5 unidades cada
 11. **Rating:** Schema AggregateRating SÓ se tiver avaliações reais
-12. **Reviews:** Dados dinâmicos da tabela `reviews`
-13. **Vizinhos:** Fotos dinâmicas da tabela `customer_photos`
+12. **⭐ Checkout CSS:** Classes em globals.css (seção checkout)
 
 ### Não Fazer
 - Não usar branco puro (#FFFFFF) como fundo
@@ -1225,20 +662,11 @@ product.images?.[0]?.url
 - Reduz chamadas ao servidor
 - Expiração de 30 dias é suficiente
 
-### Por que limite de 5 produtos no carrinho? (v2.9)
-- Móveis são compras planejadas, não impulsivas
-- Simplifica logística de entrega
-- Evita carrinhos abandonados muito grandes
-- Classe C/D compra 1-3 móveis por vez
-
-### Por que bottom sheet no mobile para CartDrawer? (v2.9)
-- Padrão familiar (apps de e-commerce)
-- Área de toque maior que drawer lateral
-- Não bloqueia visualização do header
-- Gesture-friendly para fechar (swipe down)
-
-### Por que `export { default as X }` no index.ts?
-Componentes React geralmente usam `export default`. Para fazer barrel export (re-exportar tudo de um index.ts), usamos a sintaxe `export { default as NomeComponente } from './NomeComponente'`.
+### Por que Mini Summary sticky no checkout mobile? (v2.10)
+- Mantém total visível sem scroll
+- Reduz ansiedade do cliente
+- Padrão de grandes e-commerces
+- Ocupa apenas 48px de altura
 
 ### Por que normalizar category do Supabase?
 Supabase com `.select('category:categories(slug)')` retorna array, não objeto. Por isso fazemos: `product.category?.[0]?.slug`
@@ -1261,10 +689,11 @@ Supabase com `.select('category:categories(slug)')` retorna array, não objeto. 
 7. ~~**Implementar Vizinhos que Aprovaram (fotos)**~~ ✅ Feito (v2.8)
 8. ~~**Implementar carrinho de compras**~~ ✅ Feito (v2.9)
 9. ~~**Implementar checkout básico**~~ ✅ Feito (v2.9)
-10. **⏳ Integrar gateway de pagamento real** (Mercado Pago/Stripe)
-11. **⏳ Sistema de coleta de reviews** (formulário no site)
-12. **⏳ Moderação de reviews no admin**
-13. **⏳ Notificações por email** (confirmação de pedido)
+10. ~~**Checkout completo com formulários**~~ ✅ Feito (v2.10)
+11. **⏳ Integrar gateway de pagamento real** (Mercado Pago/Stripe)
+12. **⏳ Sistema de coleta de reviews** (formulário no site)
+13. **⏳ Moderação de reviews no admin**
+14. **⏳ Notificações por email** (confirmação de pedido)
 
 ---
 
@@ -1272,17 +701,17 @@ Supabase com `.select('category:categories(slug)')` retorna array, não objeto. 
 
 | Data | Versão | Mudança |
 |------|--------|---------|
-| **27/01/2026** | **v2.9.0** | **Sistema de Carrinho v1.1:** CartProvider com Context API, CartDrawer (360px desktop, bottom sheet mobile), BuyNowButton v1.3, página /carrinho, checkout 3 etapas, localStorage com expiração 30 dias |
-| **27/01/2026** | **v2.9.0** | **APIs de Compra:** /api/shipping, /api/payment/pix, /api/payment/card, /api/orders |
-| **27/01/2026** | **v2.9.0** | **Componentes Carrinho:** CartBadge (3 variantes), CartItem, CartEmpty, CartLoading (5 variantes), QuantityControl, Toast |
-| **27/01/2026** | **v2.9.0** | **Integração PDP:** BuyNowButton substitui botão de compra anterior |
+| **29/01/2026** | **v2.10.0** | **Checkout v2.0 Completo:** Layout 2 colunas, formulários com validação, CheckoutSummaryCard, Mini Summary mobile sticky v2.2, Progress Steps v2.1 (40px circles) |
+| **29/01/2026** | **v2.10.0** | **globals.css expandido:** +150 linhas de CSS para checkout (layout, steps, summary, trust, seals, identity) |
+| **29/01/2026** | **v2.10.0** | **Componentes checkout:** CheckoutSummaryCard, CheckoutMiniSummary, CheckoutSteps, CheckoutTrustBar |
+| 27/01/2026 | v2.9.0 | **Sistema de Carrinho v1.1:** CartProvider com Context API, CartDrawer, BuyNowButton v1.3, página /carrinho |
+| 27/01/2026 | v2.9.0 | **APIs de Compra:** /api/shipping, /api/payment/pix, /api/payment/card, /api/orders |
 | 26/01/2026 | v2.8.0 | **Reviews:** Componentes ReviewsSection, ReviewsSummary, ReviewCard |
 | 26/01/2026 | v2.8.0 | **Vizinhos que Aprovaram:** Componente VizinhosAprovaram, API `/api/customer-photos` |
 | 26/01/2026 | v2.7.0 | **ProductRating:** Estrelas com preenchimento parcial, Schema AggregateRating condicional |
-| 24/01/2026 | v2.6.1 | MinhaListaDrawer v2.2: compartilhamento WhatsApp |
 | 24/01/2026 | v2.6 | Feature "Minha Lista" (favoritos) |
 | 23/01/2026 | v2.5 | Home Page completa: 11 componentes, 9 schemas JSON-LD |
 
 ---
 
-*Documento atualizado pelo Squad Dev — 27 de Janeiro de 2026*
+*Documento atualizado pelo Squad Dev — 29 de Janeiro de 2026*
