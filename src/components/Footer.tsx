@@ -1,5 +1,13 @@
 import Link from 'next/link'
 
+// ============================================
+// FOOTER v2.1
+// Atualizado: 31/01/2026
+// Changelog:
+// - v2.1 (31/01/2026): Logo novo (SVG negativo para fundo escuro)
+// - v2.0 (Jan/2026): Versão inicial com Schema.org
+// ============================================
+
 export default function Footer() {
   return (
     <footer className="bg-[#2D2D2D] text-[#FAF7F4] mt-16 overflow-x-hidden">
@@ -13,7 +21,7 @@ export default function Footer() {
             "name": "Moveirama",
             "description": "Loja de móveis em Curitiba. Racks, painéis, escrivaninhas e mais com entrega rápida em Curitiba e Região Metropolitana.",
             "url": "https://moveirama.com.br",
-            "logo": "https://moveirama.com.br/logo.png",
+            "logo": "https://moveirama.com.br/logo/logo-completo.svg",
             "telephone": "+55-41-98420-9323",
             "email": "contato@moveirama.com.br",
             "address": {
@@ -55,9 +63,25 @@ export default function Footer() {
 
       <div className="max-w-[1280px] mx-auto px-4 py-12 overflow-x-hidden">
         <div className="grid md:grid-cols-4 gap-8 text-center md:text-left">
-          {/* Sobre */}
+          {/* Sobre - com logo novo */}
           <div className="flex flex-col items-center md:items-start">
-            <h3 className="text-2xl font-bold mb-4 text-[#FAF7F4]">moveirama</h3>
+            {/* ============================================
+                LOGO v2.6 - 48px fixo (mobile e desktop)
+                ============================================ */}
+            <Link href="/" className="mb-4 hover:opacity-90 transition-opacity">
+              <svg 
+                viewBox="0 0 280 80" 
+                className="h-12 w-auto"
+                aria-label="Moveirama"
+              >
+                {/* Ícone True Squircle */}
+                <path d="M40,10 C10,10 10,10 10,40 S10,70 40,70 S70,70 70,40 S70,10 40,10 Z" fill="#A85628" transform="scale(1.1)"/>
+                {/* Letra "m" - 65% da altura */}
+                <text x="44" y="55" fontFamily="Inter, sans-serif" fontWeight="600" fontSize="42" textAnchor="middle" fill="#FFFFFF">m</text>
+                {/* Wordmark BRANCO com kerning NEGATIVO */}
+                <text x="85" y="54" fontFamily="Inter, sans-serif" fontWeight="600" fontSize="34" letterSpacing="-0.68" fill="#FFFFFF">moveirama</text>
+              </svg>
+            </Link>
             <p className="text-[#FAF7F4]/70 text-sm leading-relaxed">
               Móveis novos com entrega rápida em Curitiba e Região Metropolitana. 
               Preço justo, montagem fácil e suporte de verdade.

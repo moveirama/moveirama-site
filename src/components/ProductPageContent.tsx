@@ -12,6 +12,9 @@ import VizinhosAprovaram from '@/components/VizinhosAprovaram'
 import { BuyNowButton } from '@/components/cart'
 import type { Review, ReviewsSummaryType } from '@/components/reviews'
 
+// ⭐ v2.13: Import dos ícones Lucide para seção de medidas
+import { MoveHorizontal, MoveVertical, Box } from 'lucide-react'
+
 // SEO V2: Imports das funções de SEO
 import { 
   generateProductH1, 
@@ -24,8 +27,13 @@ import {
 /**
  * ProductPageContent — Página de Produto (PDP)
  * 
- * v2.11 — 28/01/2026
+ * v2.13 — 30/01/2026
  * Changelog:
+ * - v2.13 (30/01/2026): Ícones Lucide na seção "Medidas do produto"
+ *                       MoveHorizontal (Largura), MoveVertical (Altura), Box (Profundidade)
+ *                       Cor Toffee #8B7355, stroke 2.5, tamanho 24px
+ * - v2.12 (30/01/2026): Ajuste de inclusividade: "apartamento ou casa compacta"
+ *                       Padronização: travessão "—" substituído por hífen "-"
  * - v2.11 (28/01/2026): Formatação de medidas amigável para Classe C
  *                       ≥100cm converte para metros (160 → "1,6 m")
  *                       <100cm mantém em cm (77 → "77 cm")
@@ -459,11 +467,12 @@ export default function ProductPageContent({
                 <span className="text-[var(--color-graphite)]">Quem tem TV de até {product.tv_max_size}&quot; e quer um móvel bonito sem gastar muito</span>
               </li>
             )}
+            {/* ⭐ v2.12: Corrigido para incluir casas */}
             <li className="flex items-start gap-3">
               <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
-              <span className="text-[var(--color-graphite)]">Quem mora em apartamento compacto e precisa otimizar cada cantinho</span>
+              <span className="text-[var(--color-graphite)]">Quem mora em apartamento ou casa compacta e precisa otimizar cada cantinho</span>
             </li>
             <li className="flex items-start gap-3">
               <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -521,25 +530,43 @@ export default function ProductPageContent({
           </ul>
         </section>
 
-        {/* ⭐ v2.11: Seção: Medidas - com conversão amigável */}
+        {/* ⭐ v2.13: Seção: Medidas - com ícones Lucide */}
         <section id="medidas-detalhadas" className="mt-8 scroll-mt-4">
           <h2 className="text-2xl font-semibold text-[var(--color-graphite)] mb-4">
             Medidas do produto
           </h2>
           <div className="grid grid-cols-3 gap-4 p-4 bg-white rounded-lg border border-[var(--color-sand-light)]">
-            <div className="text-center">
+            {/* Largura */}
+            <div className="flex flex-col items-center gap-2 text-center">
+              <MoveHorizontal 
+                className="w-6 h-6 text-[#8B7355]" 
+                strokeWidth={2.5}
+                aria-hidden="true"
+              />
               <p className="text-2xl font-bold text-[var(--color-graphite)]">
                 {larguraFormatada.valor} <span className="text-lg font-semibold">{larguraFormatada.unidade}</span>
               </p>
               <p className="text-sm text-[var(--color-toffee)]">Largura</p>
             </div>
-            <div className="text-center">
+            {/* Altura */}
+            <div className="flex flex-col items-center gap-2 text-center">
+              <MoveVertical 
+                className="w-6 h-6 text-[#8B7355]" 
+                strokeWidth={2.5}
+                aria-hidden="true"
+              />
               <p className="text-2xl font-bold text-[var(--color-graphite)]">
                 {alturaFormatada.valor} <span className="text-lg font-semibold">{alturaFormatada.unidade}</span>
               </p>
               <p className="text-sm text-[var(--color-toffee)]">Altura</p>
             </div>
-            <div className="text-center">
+            {/* Profundidade */}
+            <div className="flex flex-col items-center gap-2 text-center">
+              <Box 
+                className="w-6 h-6 text-[#8B7355]" 
+                strokeWidth={2.5}
+                aria-hidden="true"
+              />
               <p className="text-2xl font-bold text-[var(--color-graphite)]">
                 {profundidadeFormatada.valor} <span className="text-lg font-semibold">{profundidadeFormatada.unidade}</span>
               </p>
@@ -564,7 +591,7 @@ export default function ProductPageContent({
           </h2>
           <div className="prose prose-sm max-w-none text-[var(--color-graphite)] space-y-4">
             <p>
-              O <strong>{product.name}</strong> é a escolha certa para quem busca um móvel bonito, funcional e com ótimo custo-benefício em Curitiba. {product.tv_max_size && `Se você tem uma TV de até ${product.tv_max_size} polegadas e quer organizar seu espaço sem gastar muito, esse é o móvel.`} Ideal pra apartamento compacto onde cada centímetro conta.
+              O <strong>{product.name}</strong> é a escolha certa para quem busca um móvel bonito, funcional e com ótimo custo-benefício em Curitiba. {product.tv_max_size && `Se você tem uma TV de até ${product.tv_max_size} polegadas e quer organizar seu espaço sem gastar muito, esse é o móvel.`} Ideal pra apartamento ou casa compacta onde cada centímetro conta.
             </p>
             <div>
               <h3 className="text-base font-semibold text-[var(--color-graphite)] mb-2">Feito para durar</h3>

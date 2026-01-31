@@ -1,8 +1,21 @@
 # 📸 GUIA: Upload de Imagens de Produtos
 
 > **Para:** Sandro (Moveirama)  
-> **Última atualização:** Janeiro 2026  
+> **Última atualização:** 30/01/2026  
 > **Tempo estimado:** 10-15 minutos por lote
+
+---
+
+## ✨ O que mudou (30/01/2026)
+
+Agora o sistema gera **automaticamente** nomes e textos otimizados para SEO:
+
+| Campo | Exemplo gerado automaticamente |
+|-------|-------------------------------|
+| **Nome do arquivo** | `rack-theo-tv-ate-55-polegadas-cinamomo-curitiba-moveirama-1.webp` |
+| **Alt text** | `Rack Theo para TV até 55 polegadas - Cinamomo - Móveis Curitiba \| Moveirama` |
+
+Você só precisa fazer o upload das imagens originais — o resto é automático!
 
 ---
 
@@ -150,6 +163,35 @@ No Console você verá algo assim:
 
 1. Acesse a página do produto no site
 2. Verifique se as imagens aparecem na galeria
+3. **Inspecione a imagem (F12)** para confirmar que o alt text está com "Móveis Curitiba | Moveirama"
+
+---
+
+## 🔍 SEO Automático — O que é gerado
+
+Quando você processa as imagens, o sistema gera automaticamente:
+
+### Nome do arquivo (SEO para Google Imagens)
+```
+{slug}-tv-ate-{polegadas}-{cor}-curitiba-moveirama-{numero}.webp
+```
+
+**Exemplo:**
+```
+rack-theo-tv-ate-55-polegadas-cinamomo-curitiba-moveirama-1.webp
+```
+
+### Alt text (SEO + Acessibilidade)
+```
+{Nome do Produto} para TV até {polegadas} polegadas - {Cor} - Móveis Curitiba | Moveirama
+```
+
+**Exemplo:**
+```
+Rack Theo para TV até 55 polegadas - Cinamomo - Móveis Curitiba | Moveirama
+```
+
+> 💡 **Por que isso importa?** Ajuda o Google a entender que somos uma loja de móveis em Curitiba, melhorando nosso ranking nas buscas locais.
 
 ---
 
@@ -160,6 +202,7 @@ No Console você verá algo assim:
 | `Product not found` | Slug da pasta está errado | Verificar se o nome da pasta é igual ao slug no banco |
 | `No images found` | Pasta vazia | Fazer upload das imagens 1.jpg, 2.jpg... |
 | Imagens não aparecem no site | Processamento não foi feito | Rodar o script novamente |
+| Alt text sem "Móveis Curitiba" | Imagem antiga (antes de 30/01/2026) | Já foi corrigido no banco para imagens existentes |
 
 ---
 
@@ -204,6 +247,14 @@ const ADMIN_PASSWORD = 'minhasenha123';
 [3/3] ✅ mesa-de-reuniao-modular-y37-nogal-preto: 1 imagem(ns)
 ```
 
+**5. Arquivos gerados automaticamente:**
+```
+gaveteiro-day-olmo-branco-curitiba-moveirama-1.webp
+gaveteiro-day-olmo-branco-curitiba-moveirama-2.webp
+estante-hit-carvalho-branco-curitiba-moveirama-1.webp
+...
+```
+
 ---
 
 ## 🔗 Links Úteis
@@ -223,6 +274,7 @@ const ADMIN_PASSWORD = 'minhasenha123';
 □ Upload feito no Supabase → originais/
 □ Script executado no Console do Admin
 □ Verificado no site se imagens aparecem
+□ Conferido alt text com "Móveis Curitiba | Moveirama" (F12 → inspecionar imagem)
 ```
 
 ---

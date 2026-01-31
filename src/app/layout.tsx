@@ -5,6 +5,20 @@ import Footer from "@/components/Footer";
 import MinhaListaProvider from "@/components/minha-lista/MinhaListaProvider";
 import { CartProvider, CartDrawer, ToastProvider } from "@/components/cart";
 
+// ============================================
+// LAYOUT v2.2
+// Atualizado: 31/01/2026
+// Changelog:
+// - v2.2 (31/01/2026): noindex dinâmico para preview Vercel (só moveirama.com.br aparece no Google)
+// - v2.1 (31/01/2026): Novos ícones (favicon, apple-touch, android-chrome), manifest, themeColor #A85628
+// - v2.0 (Jan/2026): Versão inicial
+// ============================================
+
+// Detecta se está em produção (domínio oficial) ou preview (Vercel)
+const isProduction = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' 
+  || process.env.VERCEL_ENV === 'production'
+  || (process.env.NODE_ENV === 'production' && !process.env.VERCEL_URL?.includes('vercel.app'));
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://moveirama.com.br'),
   title: {
@@ -20,6 +34,24 @@ export const metadata: Metadata = {
     telephone: true,
     email: true,
   },
+  
+  // ============================================
+  // ÍCONES v2.1 - Logo novo (True Squircle Terracota)
+  // ============================================
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-32.png', type: 'image/png', sizes: '32x32' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180' },
+    ],
+  },
+  manifest: '/site.webmanifest',
+  
+  // Cor do tema (terracota do novo logo)
+  themeColor: '#A85628',
+  
   openGraph: {
     type: "website",
     locale: "pt_BR",
@@ -42,17 +74,24 @@ export const metadata: Metadata = {
     description: "Loja de móveis em Curitiba com entrega rápida. Racks, painéis, escrivaninhas e mais.",
     images: ["/og-image.png"],
   },
+  
+  // ============================================
+  // ROBOTS v2.2 - noindex para preview Vercel
+  // Produção (moveirama.com.br): index, follow
+  // Preview (*.vercel.app): noindex, nofollow
+  // ============================================
   robots: {
-    index: true,
-    follow: true,
+    index: isProduction,
+    follow: isProduction,
     googleBot: {
-      index: true,
-      follow: true,
+      index: isProduction,
+      follow: isProduction,
       'max-video-preview': -1,
       'max-image-preview': 'large',
       'max-snippet': -1,
     },
   },
+  
   verification: {
     // google: "seu-codigo-google-search-console",
   },
@@ -70,6 +109,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
+        {/* Canonical sempre aponta para o domínio oficial */}
         <link rel="canonical" href="https://moveirama.com.br" />
       </head>
       <body className="overflow-x-hidden">

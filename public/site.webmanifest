@@ -1,0 +1,23 @@
+{
+  "name": "Moveirama",
+  "short_name": "Moveirama",
+  "description": "Móveis na caixa em Curitiba - Racks, Painéis e Escrivaninhas",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#A85628",
+  "background_color": "#FAF7F4",
+  "icons": [
+    {
+      "src": "/android-chrome-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

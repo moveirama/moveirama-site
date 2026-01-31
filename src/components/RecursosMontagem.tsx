@@ -2,6 +2,12 @@
  * Componente: Tudo pra montar tranquilo
  * Spec: SPEC_Secao_Montagem_Recursos.md
  * Squad Visual → Squad Dev
+ * 
+ * v1.1 — 30/01/2026
+ * Changelog:
+ * - v1.1 (30/01/2026): Ícones alterados para Toffee (#8B7355)
+ *                      Travessão "—" substituído por hífen "-"
+ * - v1.0: Versão inicial
  */
 
 interface RecursosMontagem {
@@ -13,21 +19,21 @@ interface RecursosMontagem {
   whatsappNumber?: string
 }
 
-// Ícones inline para não depender de biblioteca externa
+// ⭐ v1.1: Ícones em Toffee (#8B7355) para sofisticação visual
 const FileTextIcon = () => (
-  <svg className="w-12 h-12 text-[var(--color-sage-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+  <svg className="w-12 h-12 text-[var(--color-toffee)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
   </svg>
 )
 
 const RulerIcon = () => (
-  <svg className="w-12 h-12 text-[var(--color-sage-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+  <svg className="w-12 h-12 text-[var(--color-toffee)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
   </svg>
 )
 
 const PlayIcon = () => (
-  <svg className="w-12 h-12 text-[var(--color-sage-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+  <svg className="w-12 h-12 text-[var(--color-toffee)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
   </svg>
@@ -40,7 +46,7 @@ const DownloadIcon = () => (
 )
 
 const ClipboardIcon = () => (
-  <svg className="w-12 h-12 text-[var(--color-sage-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+  <svg className="w-12 h-12 text-[var(--color-toffee)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
   </svg>
 )
@@ -63,7 +69,7 @@ export default function RecursosMontagem({
   videoUrl,
   datasheetUrl,
   productName,
-  whatsappNumber = '5541999999999'
+  whatsappNumber = '5541984209323'
 }: RecursosMontagem) {
   // Se nenhum recurso disponível, não renderizar a seção
   const temRecursos = manualUrl || medidasImagemUrl || videoUrl || datasheetUrl
@@ -84,8 +90,9 @@ export default function RecursosMontagem({
       >
         Tudo pra montar tranquilo
       </h2>
+      {/* ⭐ v1.1: Travessão substituído por hífen */}
       <p className="text-base text-[var(--color-toffee)] mb-6">
-        Manual, medidas e vídeo — tudo pronto pra você montar sem dor de cabeça.
+        Manual, medidas e vídeo - tudo pronto pra você montar sem dor de cabeça.
       </p>
 
       {/* Grid de Cards */}

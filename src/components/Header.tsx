@@ -2,14 +2,16 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import SearchModal from '@/components/search/SearchModal'
 import { CartBadge } from '@/components/cart'
 
 // ============================================
-// ESTRUTURA DE NAVEGAÇÃO v2.4
-// Atualizado: 27/01/2026
+// ESTRUTURA DE NAVEGAÇÃO v2.5
+// Atualizado: 31/01/2026
 // Changelog:
+// - v2.5 (31/01/2026): Logo novo (SVG True Squircle + wordmark)
 // - v2.4 (27/01/2026): Adicionado CartBadge, removido WhatsApp do header (usar flutuante)
 // - v2.3 (25/01/2026): Corrigido link Ofertas -> /ofertas-moveis-curitiba
 // - v2.2 (23/01/2026): Link "Fale Conosco" -> "Fale com a Gente" (/fale-com-a-gente)
@@ -471,12 +473,26 @@ export default function Header() {
         {/* Barra Principal */}
         <div className="bg-white border-b border-[var(--color-sand-light)]">
           <div className="max-w-[1280px] mx-auto px-4 lg:px-8 h-[72px] flex items-center justify-between">
+            {/* ============================================
+                LOGO v3.1 - 48px fixo (mobile e desktop)
+                ============================================ */}
             <Link 
               href="/" 
-              className="text-2xl font-bold text-[var(--color-graphite)] hover:text-[var(--color-sage-600)] transition-colors"
+              className="flex items-center hover:opacity-90 transition-opacity"
               aria-label="Moveirama - Página inicial"
             >
-              moveirama
+              <svg 
+                viewBox="0 0 280 80" 
+                className="h-12 w-auto"
+                aria-label="Moveirama"
+              >
+                {/* Ícone True Squircle */}
+                <path d="M40,10 C10,10 10,10 10,40 S10,70 40,70 S70,70 70,40 S70,10 40,10 Z" fill="#A85628" transform="scale(1.1)"/>
+                {/* Letra "m" - 65% da altura */}
+                <text x="44" y="55" fontFamily="Inter, sans-serif" fontWeight="600" fontSize="42" textAnchor="middle" fill="#FFFFFF">m</text>
+                {/* Wordmark com kerning NEGATIVO */}
+                <text x="85" y="54" fontFamily="Inter, sans-serif" fontWeight="600" fontSize="34" letterSpacing="-0.68" fill="#2D2D2D">moveirama</text>
+              </svg>
             </Link>
 
             <nav className="hidden lg:block" aria-label="Menu principal">

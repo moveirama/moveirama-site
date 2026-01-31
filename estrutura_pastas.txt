@@ -20,6 +20,7 @@ Raiz: C:\Users\sandr\Desktop\moveirama-site
         📄 GUIA_Upload_Imagens.md
         📄 HANDOFF_Paginas_Categoria_v1.md
         📄 MAPA_PROJETO_MOVEIRAMA.md
+        📄 PROCESSO_Upload_Imagens_Lote.md
         📄 REF_Tecnicas_Avancadas_Design.md
         📄 SETUP_LOCAL.md
     📂 node_modules/
@@ -26392,7 +26393,6 @@ Raiz: C:\Users\sandr\Desktop\moveirama-site
         📄 update_artany_dimensoes_imagens_v3.sql
     📂 src/
         📄 middleware.ts
-        📄 useCheckoutMiniSummary.ts
         📂 app/
             📄 favicon.ico
             📄 globals.css
@@ -26480,6 +26480,7 @@ Raiz: C:\Users\sandr\Desktop\moveirama-site
             📄 Footer.tsx
             📄 Header.tsx
             📄 MedidasCompactas.tsx
+            📄 MedidasProduto.tsx
             📄 Pagination.tsx
             📄 ProductCardListing.tsx
             📄 ProductFAQ.tsx
@@ -26503,11 +26504,9 @@ Raiz: C:\Users\sandr\Desktop\moveirama-site
                 📄 CartItem.tsx
                 📄 CartLoading.tsx
                 📄 CartProvider.tsx
-                📄 CheckoutMiniSummary.tsx
                 📄 index.ts
                 📄 QuantityControl.tsx
                 📄 Toast.tsx
-                📄 useCheckoutMiniSummary.ts
             📂 checkout/
                 📄 CheckoutIdentity.tsx
                 📄 CheckoutLayout.tsx
@@ -26529,9 +26528,6 @@ Raiz: C:\Users\sandr\Desktop\moveirama-site
                 📄 SocialSection.tsx
                 📄 TrustBar.tsx
                 📄 WhatsAppFloat.tsx
-            📂 hooks/
-                📄 index.ts
-                📄 useCheckoutMiniSummary.ts
             📂 minha-lista/
                 📄 index.ts
                 📄 MinhaListaDrawer.tsx

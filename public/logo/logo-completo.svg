@@ -1,0 +1,10 @@
+<svg width="280" height="80" viewBox="0 0 280 80" xmlns="http://www.w3.org/2000/svg">
+  <!-- Moveirama Logo 2026 — FUNDO CLARO — FINAL APROVADO -->
+  
+  <!-- Ícone True Squircle -->
+  <path d="M40,10 C10,10 10,10 10,40 S10,70 40,70 S70,70 70,40 S70,10 40,10 Z" fill="#A85628" transform="scale(1.1)"/>
+  <text x="44" y="55" font-family="Inter, sans-serif" font-weight="600" font-size="42" text-anchor="middle" fill="#FFFFFF">m</text>
+  
+  <!-- Wordmark com kerning NEGATIVO -->
+  <text x="85" y="54" font-family="Inter, sans-serif" font-weight="600" font-size="34" letter-spacing="-0.68" fill="#2D2D2D">moveirama</text>
+</svg>

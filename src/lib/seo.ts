@@ -4,8 +4,12 @@
  * Moveirama SEO Utilities
  * Funções para gerar H1, meta description, schema.org e FAQ
  * 
- * Versão: 2.3 - Taxonomia v2 (novos slugs de categoria)
+ * Versão: 2.5 - FAQ montagem detalhada + garantia corrigida
  * Changelog:
+ *   - v2.5 (30/01/2026): FAQ montagem com resposta detalhada e persuasiva
+ *                        Menciona vídeo na página, ferragens identificadas, tempo estimado
+ *   - v2.4 (30/01/2026): Corrigida resposta FAQ garantia/defeito em TODAS as funções
+ *                        Removido "7 dias para arrependimento", texto humanizado
  *   - v2.3: Atualizado mapeamentos para nova estrutura de URLs
  *           (racks-tv, paineis-tv, escrivaninha-home-office, etc.)
  */
@@ -51,6 +55,31 @@ interface ProductForSchema {
 export interface FAQItem {
   question: string
   answer: string
+}
+
+// ============================================
+// ⭐ v2.4: RESPOSTA PADRÃO PARA FAQ DE GARANTIA
+// Centralizada para manter consistência
+// ============================================
+const FAQ_GARANTIA_RESPOSTA = `O móvel tem 3 meses de garantia de fábrica. Caso alguma peça chegue avariada ou apresente defeito, a gente resolve rápido: providenciamos a troca da peça específica para o seu móvel ficar perfeito. Basta mandar uma foto do problema no nosso WhatsApp com o número do pedido.`
+
+// ============================================
+// ⭐ v2.5: RESPOSTA PADRÃO PARA FAQ DE MONTAGEM
+// Detalhada para reduzir ansiedade e incentivar autoatendimento
+// ============================================
+/**
+ * Gera resposta de montagem personalizada
+ * @param difficulty - facil, medio, dificil
+ * @param timeMinutes - tempo estimado em minutos
+ */
+function generateMontageAnswer(difficulty: string | null | undefined, timeMinutes: number | null | undefined): string {
+  const difficultyText = difficulty === 'facil' ? 'Fácil' : 
+                         difficulty === 'medio' ? 'Médio' : 
+                         difficulty === 'dificil' ? 'Difícil' : 'Médio'
+  
+  const timeText = timeMinutes ? ` (~${timeMinutes}min)` : ''
+  
+  return `Nível ${difficultyText}${timeText}. O móvel foi projetado para uma montagem intuitiva: acompanha um manual ilustrado passo a passo e todas as ferragens já vêm separadas e identificadas. Você só vai precisar de ferramentas básicas (como uma chave de fenda). Para facilitar ainda mais, deixamos um vídeo de montagem completo logo acima nesta página.`
 }
 
 // ============================================
@@ -346,16 +375,11 @@ export function generateRackFAQs(product: {
     })
   }
   
-  // 3. Montagem (dúvida #3 - medo de não conseguir)
-  const difficultyText = product.assembly_difficulty === 'facil' ? 'Fácil' : 
-                         product.assembly_difficulty === 'medio' ? 'Médio' : 
-                         product.assembly_difficulty === 'dificil' ? 'Difícil' : 'Médio'
-  if (product.assembly_time_minutes) {
-    faqs.push({
-      question: `É difícil montar o ${baseName}?`,
-      answer: `Nível ${difficultyText} (~${product.assembly_time_minutes}min). Acompanha manual ilustrado e kit completo de ferragens. Se travar em algum passo, manda foto no WhatsApp que a gente ajuda.`
-    })
-  }
+  // 3. Montagem (dúvida #3 - medo de não conseguir) - ⭐ v2.5: Resposta detalhada
+  faqs.push({
+    question: `É difícil montar o ${baseName}?`,
+    answer: generateMontageAnswer(product.assembly_difficulty, product.assembly_time_minutes)
+  })
   
   // 4. Material (dúvida sobre qualidade)
   if (product.main_material) {
@@ -387,10 +411,10 @@ export function generateRackFAQs(product: {
     answer: `Entrega própria em Curitiba e Região Metropolitana em até 3 dias úteis. Frota própria - a gente conhece as ruas da cidade e cuida do seu móvel.`
   })
   
-  // 8. Garantia e troca
+  // 8. Garantia e troca - ⭐ v2.4: CORRIGIDO
   faqs.push({
-    question: `E se chegar com defeito ou eu me arrepender?`,
-    answer: `Garantia do fabricante + 7 dias para arrependimento (direito do consumidor). Chegou com problema? Manda foto no WhatsApp com número do pedido que a gente resolve rápido.`
+    question: `E se chegar com defeito?`,
+    answer: FAQ_GARANTIA_RESPOSTA
   })
   
   return faqs
@@ -433,15 +457,11 @@ export function generateEscrivaninhaFAQs(product: {
     })
   }
   
-  // 3. Montagem
-  const difficultyText = product.assembly_difficulty === 'facil' ? 'Fácil' : 
-                         product.assembly_difficulty === 'medio' ? 'Médio' : 'Médio'
-  if (product.assembly_time_minutes) {
-    faqs.push({
-      question: `É difícil montar a ${baseName}?`,
-      answer: `Nível ${difficultyText} (~${product.assembly_time_minutes}min). Vem com manual e ferragens. Dúvida na montagem? WhatsApp.`
-    })
-  }
+  // 3. Montagem - ⭐ v2.5: Resposta detalhada
+  faqs.push({
+    question: `É difícil montar a ${baseName}?`,
+    answer: generateMontageAnswer(product.assembly_difficulty, product.assembly_time_minutes)
+  })
   
   // 4. Material
   if (product.main_material) {
@@ -457,10 +477,10 @@ export function generateEscrivaninhaFAQs(product: {
     answer: `Entrega própria em Curitiba e Região Metropolitana em até 3 dias úteis.`
   })
   
-  // 6. Garantia
+  // 6. Garantia - ⭐ v2.4: CORRIGIDO
   faqs.push({
     question: `E se chegar com defeito?`,
-    answer: `Garantia do fabricante + 7 dias para arrependimento. Problema? WhatsApp.`
+    answer: FAQ_GARANTIA_RESPOSTA
   })
   
   return faqs
@@ -540,7 +560,7 @@ export function generateProductFAQs(product: {
     return generateEscrivaninhaFAQs(product)
   }
   
-  // Fallback: FAQs genéricas
+  // Fallback: FAQs genéricas - ⭐ v2.4/v2.5: CORRIGIDO
   return [
     {
       question: `Qual o prazo de entrega do ${baseName}?`,
@@ -548,11 +568,11 @@ export function generateProductFAQs(product: {
     },
     {
       question: `É difícil montar o ${baseName}?`,
-      answer: `Vem com manual e ferragens. Dúvida? WhatsApp.`
+      answer: generateMontageAnswer(product.assembly_difficulty, product.assembly_time_minutes)
     },
     {
       question: `E se chegar com defeito?`,
-      answer: `Garantia do fabricante + 7 dias para arrependimento.`
+      answer: FAQ_GARANTIA_RESPOSTA
     }
   ]
 }
@@ -687,6 +707,7 @@ export function generateCategoryMetaDescription(
  * Diferente das FAQs de produto que são técnicas
  * 
  * v2.3: Atualizado para novos slugs
+ * v2.4: Corrigida FAQ de defeito/troca
  */
 export function generateCategoryFAQs(
   categoryName: string,
@@ -712,9 +733,10 @@ export function generateCategoryFAQs(
       question: `Os ${seoNameLower} vêm montados ou na caixa?`,
       answer: `Nossos móveis vêm na caixa, desmontados. Isso garante preço mais baixo e protege o produto durante o transporte. Cada peça vem com manual ilustrado e todas as ferragens necessárias.`
     },
+    // ⭐ v2.4: FAQ de troca/devolução CORRIGIDA
     {
-      question: `Como funciona a troca ou devolução?`,
-      answer: `Você tem 7 dias após o recebimento para solicitar troca ou devolução. Basta entrar em contato pelo WhatsApp com o número do pedido. Resolvemos de forma rápida e sem burocracia.`
+      question: `E se o móvel chegar com defeito?`,
+      answer: FAQ_GARANTIA_RESPOSTA
     }
   ]
   
