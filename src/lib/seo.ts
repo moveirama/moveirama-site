@@ -4,8 +4,14 @@
  * Moveirama SEO Utilities
  * Funções para gerar H1, meta description, schema.org e FAQ
  * 
- * Versão: 2.5 - FAQ montagem detalhada + garantia corrigida
+ * Versão: 2.7 - Title e Meta Description otimizados para SEO local
  * Changelog:
+ *   - v2.7 (01/02/2026): Title Tag sem duplicação "Moveirama | Moveirama"
+ *                        Meta Description com template otimizado (140-155 chars)
+ *                        Palavras-chave obrigatórias: "Curitiba" e "Entrega"
+ *                        72h em vez de "3 dias" (mais impactante)
+ *   - v2.6 (01/02/2026): Nova função generateProductTitle() com diferencial local
+ *                        Title tags otimizados para CTR em buscas locais
  *   - v2.5 (30/01/2026): FAQ montagem com resposta detalhada e persuasiva
  *                        Menciona vídeo na página, ferragens identificadas, tempo estimado
  *   - v2.4 (30/01/2026): Corrigida resposta FAQ garantia/defeito em TODAS as funções
@@ -123,56 +129,152 @@ export function generateProductH1(product: ProductForH1): string {
 }
 
 // ============================================
-// META DESCRIPTION
+// ⭐ v2.7: TITLE TAG OTIMIZADO COM "ENTREGA CURITIBA"
 // ============================================
 
 /**
- * Gera meta description otimizada para CTR
+ * Gera Title Tag otimizado para SEO e CTR
  * 
- * V2: Inclui "Região Metropolitana" e "Sem Juros" (gatilhos de confiança local)
+ * v2.7: Corrigido duplicação "Moveirama | Moveirama"
+ *       Formato final: "Rack Duetto TV 65" Cinamomo | Entrega Curitiba | Moveirama"
  * 
- * Exemplo:
- * "Rack Theo para TV até 60". R$ 269,00 à vista ou 5x R$ 53,80 sem juros. 
- * Montagem em ~45min. Entrega em Curitiba e Região Metropolitana em até 3 dias."
+ * Para racks/painéis:
+ *   "Rack Duetto TV 65" Cinamomo | Entrega Curitiba | Moveirama"
+ * 
+ * Para outros produtos:
+ *   "Escrivaninha Home Branco | Entrega Curitiba | Moveirama"
+ * 
+ * Limite: 50-60 caracteres para não truncar no Google
+ */
+export function generateProductTitle(product: ProductForH1): string {
+  const { name, tv_max_size, category_type, variant_name } = product
+  
+  // Verifica se é rack ou painel
+  const isRackOrPanel = category_type === 'rack' || category_type === 'painel'
+  
+  // Extrai nome base (sem cor)
+  const nameParts = name.split(' - ')
+  const baseName = nameParts[0]
+  const colorFromName = nameParts.length > 1 ? nameParts[1] : null
+  
+  // Simplifica a cor (pega só a primeira parte se for muito longa)
+  // "Cinamomo C / Off White" → "Cinamomo"
+  const color = variant_name || colorFromName
+  const shortColor = color ? color.split(' / ')[0].split(' C ')[0].trim() : null
+  
+  let productPart = ''
+  
+  if (isRackOrPanel && tv_max_size) {
+    // Formato compacto: "Rack Duetto TV 65" Cinamomo"
+    productPart = shortColor 
+      ? `${baseName} TV ${tv_max_size}" ${shortColor}`
+      : `${baseName} TV ${tv_max_size}"`
+  } else {
+    // Formato: "Escrivaninha Home Branco"
+    productPart = shortColor && !baseName.includes(shortColor)
+      ? `${baseName} ${shortColor}`
+      : baseName
+  }
+  
+  // Sufixo fixo (NÃO duplicar Moveirama)
+  const suffix = "Entrega Curitiba | Moveirama"
+  
+  // Monta título completo
+  const fullTitle = `${productPart} | ${suffix}`
+  
+  // Se cabe no limite, retorna
+  if (fullTitle.length <= 60) {
+    return fullTitle
+  }
+  
+  // Se muito longo, encurta o productPart
+  if (isRackOrPanel && tv_max_size) {
+    return `${baseName} ${tv_max_size}" | ${suffix}`
+  }
+  
+  return `${baseName} | ${suffix}`
+}
+
+// ============================================
+// META DESCRIPTION - v2.7
+// ============================================
+
+/**
+ * Gera meta description otimizada para CTR e SEO local
+ * 
+ * v2.7: Novo template focado em conversão e buscas locais
+ * 
+ * Template: "[Nome] [Cor]. [Benefício]. Entrega própria em Curitiba e RMC em até 72h. Confira na Moveirama!"
+ * 
+ * Exemplos por categoria:
+ * - Rack: "Rack Duetto Cinamomo. Ideal para TVs até 65" em apartamentos e casas compactas. Entrega própria em Curitiba e RMC em até 72h. Confira na Moveirama!"
+ * - Escrivaninha: "Escrivaninha Office Branco. Perfeita para home office em apartamentos e casas compactas. Entrega própria em Curitiba e RMC em até 72h. Confira na Moveirama!"
+ * - Penteadeira: "Penteadeira Camarim Carvalho. Design funcional com espelho para quartos e closets. Entrega própria em Curitiba e RMC em até 72h. Confira na Moveirama!"
+ * 
+ * Requisitos:
+ * - 140-155 caracteres (não trunca no Google)
+ * - Palavras-chave: "Curitiba" e "Entrega" OBRIGATÓRIAS
+ * - CTA no final
  */
 export function generateProductMetaDescription(product: ProductForMeta): string {
-  const { name, price, tv_max_size, assembly_time_minutes, category_type } = product
+  const { name, tv_max_size, category_type } = product
   
-  // Calcula parcelas (mínimo R$ 50 por parcela)
-  const parcelas = Math.min(10, Math.floor(price / 50)) || 1
-  const valorParcela = (price / parcelas).toLocaleString('pt-BR', { 
-    minimumFractionDigits: 2, 
-    maximumFractionDigits: 2 
-  })
-  const priceFormatted = price.toLocaleString('pt-BR', { 
-    minimumFractionDigits: 2, 
-    maximumFractionDigits: 2 
-  })
+  // Extrai nome base e cor
+  const nameParts = name.split(' - ')
+  const baseName = nameParts[0]
+  const colorPart = nameParts.length > 1 ? nameParts[1] : null
   
-  const parts: string[] = []
+  // Simplifica a cor
+  const shortColor = colorPart 
+    ? colorPart.split(' / ').join(' e ').replace(' C ', ' ')
+    : null
   
-  // Parte 1: Nome + compatibilidade (se rack/painel)
-  if (tv_max_size && (category_type === 'rack' || category_type === 'painel')) {
-    parts.push(`${name} para TV até ${tv_max_size}".`)
+  // Monta nome + cor
+  const productName = shortColor ? `${baseName} ${shortColor}` : baseName
+  
+  // Define benefício baseado no tipo de produto
+  let benefit = ''
+  
+  if ((category_type === 'rack' || category_type === 'painel') && tv_max_size) {
+    // Racks e Painéis: foco na TV e espaço
+    benefit = `Ideal para TVs até ${tv_max_size}" em apartamentos e casas compactas.`
+  } else if (category_type === 'escrivaninha') {
+    // Escrivaninhas: foco no home office
+    benefit = `Perfeita para home office em apartamentos e casas compactas.`
+  } else if (category_type === 'penteadeira') {
+    // Penteadeiras: foco no design e funcionalidade
+    benefit = `Design funcional com espelho para quartos e closets.`
+  } else if (category_type === 'mesa') {
+    // Mesas: foco na praticidade
+    benefit = `Praticidade e estilo para sua sala ou escritório.`
   } else {
-    parts.push(`${name}.`)
+    // Outros produtos: benefício genérico
+    benefit = `Móvel prático com ótimo custo-benefício para sua casa.`
   }
   
-  // Parte 2: Preço e parcelamento (V2: "sem juros" explícito)
-  parts.push(`R$ ${priceFormatted} à vista ou ${parcelas}x R$ ${valorParcela} sem juros.`)
+  // CTA fixo com palavras-chave locais OBRIGATÓRIAS
+  const cta = `Entrega própria em Curitiba e RMC em até 72h. Confira na Moveirama!`
   
-  // Parte 3: Montagem (se disponível)
-  if (assembly_time_minutes) {
-    parts.push(`Montagem em ~${assembly_time_minutes}min.`)
+  // Monta descrição completa
+  let description = `${productName}. ${benefit} ${cta}`
+  
+  // Se passar de 155 chars, encurta o benefício
+  if (description.length > 155) {
+    if ((category_type === 'rack' || category_type === 'painel') && tv_max_size) {
+      benefit = `Para TVs até ${tv_max_size}" em espaços compactos.`
+    } else if (category_type === 'escrivaninha') {
+      benefit = `Ideal para home office compacto.`
+    } else if (category_type === 'penteadeira') {
+      benefit = `Design funcional para seu quarto.`
+    } else {
+      benefit = `Móvel prático para sua casa.`
+    }
+    description = `${productName}. ${benefit} ${cta}`
   }
   
-  // Parte 4: Entrega local (V2: "Região Metropolitana" para SEO local)
-  parts.push(`Entrega em Curitiba e Região Metropolitana em até 3 dias.`)
-  
-  // Junta e limita a 160 caracteres (limite do Google)
-  let description = parts.join(' ')
-  if (description.length > 160) {
-    description = description.slice(0, 157) + '...'
+  // Se ainda passar, usa só o nome base
+  if (description.length > 155) {
+    description = `${baseName}. ${benefit} ${cta}`
   }
   
   return description

@@ -2,6 +2,8 @@
 /**
  * Página dinâmica para subcategorias e produtos
  * 
+ * v2.7: Title e Meta Description SEMPRE gerados dinamicamente (SEO otimizado)
+ * v2.5: Title Tag otimizado com "Entrega Curitiba" (SEO local)
  * v2.4: Adicionada busca de reviews para PDP
  * v2.3: Simplificado para estrutura de 2 níveis (sem linhas intermediárias)
  * 
@@ -24,7 +26,10 @@ import {
 import {
   generateCategoryH1,
   generateCategoryTitle,
-  generateCategoryMetaDescription
+  generateCategoryMetaDescription,
+  generateProductTitle,
+  generateProductMetaDescription,
+  inferCategoryType
 } from '@/lib/seo'
 // ⭐ v2.4: Import da função de reviews
 import { getProductReviews } from '@/lib/reviews'
@@ -143,6 +148,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   
   // ============================================
   // PRODUTO (ex: /racks-tv/rack-theo)
+  // ⭐ v2.7: Title e Description SEMPRE gerados dinamicamente
   // ============================================
   if (detection.type === 'product' && detection.subcategory && detection.productSlug) {
     const product = await getProductBySubcategoryAndSlug(detection.subcategory, detection.productSlug)
@@ -153,12 +159,32 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const mainImage = product.images?.find((img: { image_type: string }) => img.image_type === 'principal') || product.images?.[0]
     const canonicalUrl = `https://moveirama.com.br/${detection.subcategory}/${detection.productSlug}`
     
+    // ⭐ v2.7: SEMPRE gerar dinamicamente (não usar meta do banco)
+    const categoryType = inferCategoryType(product.slug, detection.subcategory)
+    
+    // Title Tag otimizado com "Entrega Curitiba"
+    const titleTag = generateProductTitle({
+      name: product.name,
+      tv_max_size: product.tv_max_size,
+      category_type: categoryType,
+      variant_name: product.variants?.[0]?.name
+    })
+    
+    // Meta Description otimizada para CTR e SEO local
+    const metaDescription = generateProductMetaDescription({
+      name: product.name,
+      price: product.price,
+      tv_max_size: product.tv_max_size,
+      assembly_time_minutes: product.assembly_time_minutes,
+      category_type: categoryType
+    })
+    
     return {
-      title: product.meta_title || `${product.name} | Moveirama`,
-      description: product.meta_description || product.short_description,
+      title: titleTag,
+      description: metaDescription,
       openGraph: {
-        title: `${product.name} | Moveirama`,
-        description: product.short_description,
+        title: titleTag,
+        description: metaDescription,
         url: canonicalUrl,
         siteName: 'Moveirama',
         images: mainImage ? [
@@ -174,8 +200,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       },
       twitter: {
         card: 'summary_large_image',
-        title: product.name,
-        description: product.short_description,
+        title: titleTag,
+        description: metaDescription,
         images: mainImage ? [mainImage.cloudinary_path] : [],
       },
       alternates: {
