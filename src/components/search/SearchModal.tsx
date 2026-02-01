@@ -57,7 +57,7 @@ function WhatsAppIcon({ className }: { className?: string }) {
 }
 
 // ============================================
-// DADOS ESTÁTICOS (V1)
+// DADOS ESTÁTICOS (V2 - URLs CORRIGIDAS)
 // ============================================
 
 const SUGESTOES_POPULARES = [
@@ -73,23 +73,23 @@ const CATEGORIAS = [
   { 
     emoji: '🏠', 
     texto: 'Casa', 
-    href: '/casa',
+    href: '/moveis-para-casa',
     subcategorias: [
-      { texto: 'Racks para TV', href: '/casa/racks' },
-      { texto: 'Painéis para TV', href: '/casa/paineis' },
-      { texto: 'Mesas de Centro', href: '/casa/mesas-centro' },
-      { texto: 'Penteadeiras', href: '/casa/penteadeiras' },
-      { texto: 'Estantes', href: '/casa/estantes' },
-      { texto: 'Buffets', href: '/casa/buffets' },
+      { texto: 'Racks para TV', href: '/moveis-para-casa/racks-tv' },
+      { texto: 'Painéis para TV', href: '/moveis-para-casa/paineis-tv' },
+      { texto: 'Mesas de Centro', href: '/moveis-para-casa/mesas-centro' },
+      { texto: 'Penteadeiras', href: '/moveis-para-casa/penteadeiras' },
+      { texto: 'Estantes', href: '/moveis-para-casa/estantes' },
+      { texto: 'Buffets', href: '/moveis-para-casa/buffets' },
     ] 
   },
   { 
     emoji: '💼', 
     texto: 'Escritório', 
-    href: '/escritorio',
+    href: '/moveis-para-escritorio',
     subcategorias: [
-      { texto: 'Home Office', href: '/escritorio/home-office' },
-      { texto: 'Linha Profissional', href: '/escritorio/linha-profissional' },
+      { texto: 'Home Office', href: '/moveis-para-escritorio/home-office' },
+      { texto: 'Linha Profissional', href: '/moveis-para-escritorio/linha-profissional' },
     ] 
   },
 ]
@@ -198,13 +198,6 @@ function ResultCard({
           {formatInstallment(produto.price)}
         </p>
       </div>
-
-      {/* Seta */}
-      <div className="flex items-center">
-        <svg className="w-5 h-5 text-[#8B7355]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      </div>
     </button>
   )
 }
@@ -219,229 +212,167 @@ interface SearchModalProps {
 }
 
 export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
-  const [query, setQuery] = useState('')
-  const [results, setResults] = useState<SearchResult[]>([])
-  const [appliedFilters, setAppliedFilters] = useState<string[]>([])
-  const [estado, setEstado] = useState<SearchState>('inicial')
-  const [total, setTotal] = useState(0)
-  
+  const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
-  const router = useRouter()
-
-  // ==========================================
-  // EFEITOS
-  // ==========================================
-
-  // Focar input ao abrir
+  
+  // Estados
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<SearchResult[]>([])
+  const [total, setTotal] = useState(0)
+  const [appliedFilters, setAppliedFilters] = useState<string[]>([])
+  const [estado, setEstado] = useState<SearchState>('inicial')
+  
+  // Debounce da busca
+  const debounceRef = useRef<NodeJS.Timeout | null>(null)
+  
+  // Foco no input quando abre
   useEffect(() => {
     if (isOpen && inputRef.current) {
       setTimeout(() => inputRef.current?.focus(), 100)
     }
   }, [isOpen])
-
-  // Fechar com Escape
+  
+  // Reset ao fechar
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
+    if (!isOpen) {
+      setQuery('')
+      setResults([])
+      setTotal(0)
+      setAppliedFilters([])
+      setEstado('inicial')
+    }
+  }, [isOpen])
+  
+  // Fechar com ESC
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
         onClose()
       }
     }
-    document.addEventListener('keydown', handleEscape)
-    return () => document.removeEventListener('keydown', handleEscape)
+    
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, onClose])
-
-  // Atalho Ctrl+K / Cmd+K (registrado no parent, mas backup aqui)
-  useEffect(() => {
-    const handleShortcut = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault()
-        // Se já está aberto, foca no input
-        if (isOpen && inputRef.current) {
-          inputRef.current.focus()
-        }
-      }
-    }
-    document.addEventListener('keydown', handleShortcut)
-    return () => document.removeEventListener('keydown', handleShortcut)
-  }, [isOpen])
-
-  // Bloquear scroll do body
+  
+  // Prevenir scroll do body quando modal está aberto
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
     } else {
       document.body.style.overflow = ''
     }
+    
     return () => {
       document.body.style.overflow = ''
     }
   }, [isOpen])
-
-  // Limpar ao fechar
-  useEffect(() => {
-    if (!isOpen) {
-      setQuery('')
-      setResults([])
-      setAppliedFilters([])
+  
+  // Buscar produtos
+  const buscar = useCallback(async (termo: string) => {
+    if (termo.length < 2) {
       setEstado('inicial')
-      setTotal(0)
-    }
-  }, [isOpen])
-
-  // Focus trap
-  useEffect(() => {
-    if (!isOpen || !modalRef.current) return
-
-    const modal = modalRef.current
-    const focusableElements = modal.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    )
-    const firstElement = focusableElements[0] as HTMLElement
-    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement
-
-    const handleTabKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return
-
-      if (e.shiftKey) {
-        if (document.activeElement === firstElement) {
-          e.preventDefault()
-          lastElement?.focus()
-        }
-      } else {
-        if (document.activeElement === lastElement) {
-          e.preventDefault()
-          firstElement?.focus()
-        }
-      }
-    }
-
-    modal.addEventListener('keydown', handleTabKey)
-    return () => modal.removeEventListener('keydown', handleTabKey)
-  }, [isOpen])
-
-  // ==========================================
-  // BUSCA
-  // ==========================================
-
-  const search = useCallback(async (searchQuery: string) => {
-    if (!searchQuery.trim()) {
       setResults([])
-      setAppliedFilters([])
-      setEstado('inicial')
       setTotal(0)
+      setAppliedFilters([])
       return
     }
-
+    
     setEstado('loading')
-
+    
     try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`)
-      const data: SearchResponse = await res.json()
+      const response = await fetch(`/api/search?q=${encodeURIComponent(termo)}`)
+      const data: SearchResponse = await response.json()
       
-      setResults(data.products || [])
+      if (data.products.length === 0) {
+        setEstado('vazio')
+        setResults([])
+        setTotal(0)
+      } else {
+        setEstado('resultados')
+        setResults(data.products)
+        setTotal(data.total)
+      }
+      
       setAppliedFilters(data.filters || [])
-      setTotal(data.total || 0)
-      setEstado(data.products?.length > 0 ? 'resultados' : 'vazio')
     } catch (error) {
       console.error('Erro na busca:', error)
-      setResults([])
       setEstado('vazio')
     }
   }, [])
-
-  // Debounce da busca (300ms conforme spec)
+  
+  // Debounce do input
   useEffect(() => {
-    const timer = setTimeout(() => {
-      search(query)
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+    }
+    
+    debounceRef.current = setTimeout(() => {
+      buscar(query)
     }, 300)
-    return () => clearTimeout(timer)
-  }, [query, search])
-
-  // ==========================================
-  // HANDLERS
-  // ==========================================
-
-  const handleProductClick = (product: SearchResult) => {
-    const categoryPath = product.category_slug || 'produtos'
-    router.push(`/${categoryPath}/${product.slug}`)
-    onClose()
+    
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current)
+      }
+    }
+  }, [query, buscar])
+  
+  // Handlers
+  const handleSuggestionClick = (q: string) => {
+    setQuery(q)
   }
-
-  const handleSuggestionClick = (suggestion: string) => {
-    setQuery(suggestion)
-  }
-
+  
   const handleCategoryClick = (href: string) => {
     router.push(href)
     onClose()
   }
-
+  
+  const handleProductClick = (produto: SearchResult) => {
+    const url = produto.category_slug 
+      ? `/${produto.category_slug}/${produto.slug}`
+      : `/produto/${produto.slug}`
+    router.push(url)
+    onClose()
+  }
+  
   const handleViewAll = () => {
     router.push(`/busca?q=${encodeURIComponent(query)}`)
     onClose()
   }
-
+  
   const handleWhatsAppClick = () => {
-    const mensagem = query 
-      ? `Oi! Não encontrei "${query}" no site. Vocês têm?`
-      : 'Oi! Preciso de ajuda para encontrar um móvel.'
-    const url = `https://wa.me/5541984209323?text=${encodeURIComponent(mensagem)}`
-    window.open(url, '_blank')
+    const msg = `Olá! Estou procurando por "${query}" no site de vocês. Podem me ajudar?`
+    window.open(`https://wa.me/5541984209323?text=${encodeURIComponent(msg)}`, '_blank')
   }
-
+  
   const removerFiltro = (index: number) => {
-    // Por enquanto, limpa a busca (V1 simples)
-    // Futuro: remover só o filtro específico e re-buscar
-    setQuery('')
+    // Por enquanto, só remove visualmente
+    setAppliedFilters(prev => prev.filter((_, i) => i !== index))
   }
-
-  // ==========================================
-  // RENDER
-  // ==========================================
-
+  
+  // Fechar ao clicar no backdrop
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose()
+    }
+  }
+  
   if (!isOpen) return null
-
+  
   return (
     <>
-      {/* Animação CSS */}
-      <style jsx global>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(8px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        @keyframes modalSlideIn {
-          from {
-            opacity: 0;
-            transform: scale(0.98) translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
-        }
-        @keyframes overlayFadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-      `}</style>
-
-      {/* Overlay */}
+      {/* Backdrop */}
       <div 
-        className="fixed inset-0 z-[9998] bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-        style={{ animation: 'overlayFadeIn 200ms ease-out' }}
+        className="fixed inset-0 bg-black/50 z-[9998]"
+        onClick={handleBackdropClick}
         aria-hidden="true"
+        style={{ animation: 'fadeIn 200ms ease-out' }}
       />
-
+      
       {/* Modal */}
-      <div
+      <div 
         ref={modalRef}
         role="dialog"
         aria-modal="true"
@@ -638,6 +569,49 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
         </div>
       </div>
+
+      {/* Estilos das animações */}
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        @keyframes modalSlideIn {
+          from { 
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to { 
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @media (min-width: 768px) {
+          @keyframes modalSlideIn {
+            from { 
+              opacity: 0;
+              transform: translateX(-50%) translateY(-20px);
+            }
+            to { 
+              opacity: 1;
+              transform: translateX(-50%) translateY(0);
+            }
+          }
+        }
+        
+        @keyframes fadeInUp {
+          from { 
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to { 
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </>
   )
 }

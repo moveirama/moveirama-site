@@ -6,11 +6,13 @@ import MinhaListaProvider from "@/components/minha-lista/MinhaListaProvider";
 import { CartProvider, CartDrawer, ToastProvider } from "@/components/cart";
 
 // ============================================
-// LAYOUT v2.2
-// Atualizado: 31/01/2026
+// LAYOUT v2.3
+// Atualizado: 01/02/2026
 // Changelog:
-// - v2.2 (31/01/2026): noindex dinâmico para preview Vercel (só moveirama.com.br aparece no Google)
-// - v2.1 (31/01/2026): Novos ícones (favicon, apple-touch, android-chrome), manifest, themeColor #A85628
+// - v2.3 (01/02/2026): OG Image alterado para .jpg (precisa criar o arquivo!)
+//                      Description atualizada com "escritório"
+// - v2.2 (31/01/2026): noindex dinâmico para preview Vercel
+// - v2.1 (31/01/2026): Novos ícones, manifest, themeColor #A85628
 // - v2.0 (Jan/2026): Versão inicial
 // ============================================
 
@@ -22,11 +24,23 @@ const isProduction = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
 export const metadata: Metadata = {
   metadataBase: new URL('https://moveirama.com.br'),
   title: {
-    default: "Moveirama | Móveis em Curitiba e Região",
+    // ⭐ v2.3: Title default otimizado
+    default: "Móveis em Curitiba com Entrega em 72h | Moveirama",
     template: "%s | Moveirama"
   },
-  description: "Loja de móveis em Curitiba com entrega rápida. Racks, painéis, escrivaninhas e mais. Preço justo, montagem fácil e suporte no WhatsApp.",
-  keywords: ["móveis Curitiba", "rack para TV", "painel para TV", "escrivaninha", "móveis baratos", "loja de móveis Curitiba", "móveis RMC"],
+  // ⭐ v2.3: Description com "escritório"
+  description: "Loja de móveis em Curitiba com entrega própria em 72h. Racks, painéis, escrivaninhas para apartamentos e escritório. Preço justo e suporte no WhatsApp.",
+  keywords: [
+    "móveis Curitiba", 
+    "móveis em Curitiba",
+    "rack para TV", 
+    "painel para TV", 
+    "escrivaninha", 
+    "móveis apartamento", 
+    "móveis escritório",
+    "loja de móveis Curitiba", 
+    "móveis RMC"
+  ],
   authors: [{ name: "Moveirama" }],
   creator: "Moveirama",
   publisher: "Moveirama",
@@ -57,28 +71,30 @@ export const metadata: Metadata = {
     locale: "pt_BR",
     url: "https://moveirama.com.br",
     siteName: "Moveirama",
-    title: "Moveirama | Móveis em Curitiba e Região",
-    description: "Loja de móveis em Curitiba com entrega rápida. Racks, painéis, escrivaninhas e mais. Preço justo, montagem fácil e suporte no WhatsApp.",
+    // ⭐ v2.3: Title otimizado
+    title: "Móveis em Curitiba com Entrega em 72h | Moveirama",
+    description: "Loja de móveis em Curitiba com entrega própria em 72h. Racks, painéis, escrivaninhas para apartamentos e escritório.",
     images: [
       {
-        url: "/og-image.png",
+        // ⭐ v2.3: Mudado para .jpg (precisa criar o arquivo!)
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Moveirama - Móveis em Curitiba",
+        alt: "Moveirama - Móveis em Curitiba com Entrega em 72h",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Moveirama | Móveis em Curitiba e Região",
-    description: "Loja de móveis em Curitiba com entrega rápida. Racks, painéis, escrivaninhas e mais.",
-    images: ["/og-image.png"],
+    title: "Móveis em Curitiba com Entrega em 72h | Moveirama",
+    description: "Loja de móveis em Curitiba com entrega própria em 72h. Racks, painéis, escrivaninhas.",
+    images: ["/og-image.jpg"],
   },
   
   // ============================================
   // ROBOTS v2.2 - noindex para preview Vercel
-  // Produção (moveirama.com.br): index, follow
-  // Preview (*.vercel.app): noindex, nofollow
+  // ⚠️ IMPORTANTE: Quando for para produção,
+  // adicionar ALLOW_INDEXING=true no Vercel
   // ============================================
   robots: {
     index: isProduction,

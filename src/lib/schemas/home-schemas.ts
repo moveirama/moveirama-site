@@ -1,9 +1,15 @@
 /**
  * home-schemas.ts - Schema.org JSON-LD para Home Page
  * 
+ * ⭐ v2.1 (01/02/2026) - CORREÇÕES SEO:
+ * - LocalBusiness com endereço COMPLETO (Juvevê)
+ * - Horários padronizados (09h-18h, Seg-Sáb)
+ * - priceRange formatado corretamente
+ * - Removida duplicação (Footer não precisa ter schema)
+ * 
  * 9 Schemas implementados:
  * 1. Organization
- * 2. LocalBusiness (FurnitureStore)
+ * 2. LocalBusiness (FurnitureStore) ← CORRIGIDO
  * 3. WebSite
  * 4. FAQPage
  * 5. BreadcrumbList
@@ -11,26 +17,28 @@
  * 7. DeliveryService (OfferShippingDetails)
  * 8. OfferCatalog
  * 9. AggregateRating
- * 
- * Specs: HANDOFF_HomePage_Squad_Dev_v3.md seção 4
  */
 
+// ============================================
 // 1. ORGANIZATION SCHEMA
+// ============================================
 export const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
   "@id": "https://moveirama.com.br/#organization",
   "name": "Moveirama",
   "url": "https://moveirama.com.br",
-  "logo": "https://moveirama.com.br/logo/moveirama-grafite.svg",
+  "logo": "https://moveirama.com.br/logo/logo-completo.svg",
   "description": "Loja de móveis em Curitiba com entrega própria em 72h.",
   "telephone": "+5541984209323",
   "email": "contato@moveirama.com.br",
   "address": {
     "@type": "PostalAddress",
+    "streetAddress": "Rua Barão de Guaraúna, 517",
     "addressLocality": "Curitiba",
     "addressRegion": "PR",
-    "addressCountry": "BR"
+    "addressCountry": "BR",
+    "postalCode": "80030-310"
   },
   "sameAs": [
     "https://www.instagram.com/moveirama",
@@ -39,7 +47,10 @@ export const organizationSchema = {
   ]
 };
 
+// ============================================
 // 2. LOCAL BUSINESS SCHEMA
+// ⭐ v2.1: CORRIGIDO com endereço completo
+// ============================================
 export const localBusinessSchema = {
   "@context": "https://schema.org",
   "@type": "FurnitureStore",
@@ -47,13 +58,19 @@ export const localBusinessSchema = {
   "name": "Moveirama - Móveis em Curitiba",
   "url": "https://moveirama.com.br",
   "telephone": "+5541984209323",
-  "priceRange": "R$199 - R$1999",
-  "image": "https://moveirama.com.br/og-image.png",
+  "email": "contato@moveirama.com.br",
+  // ⭐ v2.1: priceRange com valores reais
+  "priceRange": "R$ 199 - R$ 1.999",
+  "image": "https://moveirama.com.br/og-image.jpg",
+  "logo": "https://moveirama.com.br/logo/logo-completo.svg",
+  // ⭐ v2.1: Endereço COMPLETO (era só cidade antes)
   "address": {
     "@type": "PostalAddress",
+    "streetAddress": "Rua Barão de Guaraúna, 517",
     "addressLocality": "Curitiba",
     "addressRegion": "PR",
-    "addressCountry": "BR"
+    "addressCountry": "BR",
+    "postalCode": "80030-310"
   },
   "geo": {
     "@type": "GeoCoordinates",
@@ -72,17 +89,21 @@ export const localBusinessSchema = {
     { "@type": "City", "name": "Quatro Barras" },
     { "@type": "City", "name": "Campina Grande do Sul" }
   ],
+  // ⭐ v2.1: Horários padronizados (Seg-Sáb, 09h-18h)
   "openingHoursSpecification": {
     "@type": "OpeningHoursSpecification",
-    "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-    "opens": "08:00",
+    "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+    "opens": "09:00",
     "closes": "18:00"
   },
   "paymentAccepted": "Pix, Cartão de Crédito, Cartão de Débito",
+  "currenciesAccepted": "BRL",
   "parentOrganization": { "@id": "https://moveirama.com.br/#organization" }
 };
 
+// ============================================
 // 3. WEBSITE SCHEMA
+// ============================================
 export const websiteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
@@ -101,7 +122,9 @@ export const websiteSchema = {
   "inLanguage": "pt-BR"
 };
 
+// ============================================
 // 4. FAQ SCHEMA
+// ============================================
 export const faqSchema = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
@@ -158,7 +181,9 @@ export const faqSchema = {
   ]
 };
 
+// ============================================
 // 5. BREADCRUMB SCHEMA
+// ============================================
 export const breadcrumbSchema = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
@@ -172,24 +197,29 @@ export const breadcrumbSchema = {
   ]
 };
 
+// ============================================
 // 6. WEBPAGE SCHEMA
+// ⭐ v2.1: Title atualizado com "Entrega em 72h"
+// ============================================
 export const webPageSchema = {
   "@context": "https://schema.org",
   "@type": "WebPage",
   "@id": "https://moveirama.com.br/#webpage",
   "url": "https://moveirama.com.br",
-  "name": "Moveirama | Móveis em Curitiba com Entrega em 72h",
-  "description": "Loja de móveis em Curitiba com entrega própria em 72h. Racks, escrivaninhas, painéis para apartamentos.",
+  "name": "Móveis em Curitiba com Entrega em 72h | Moveirama",
+  "description": "Loja de móveis em Curitiba com entrega própria em 72h. Racks, escrivaninhas, painéis para apartamentos e escritório.",
   "isPartOf": { "@id": "https://moveirama.com.br/#website" },
   "about": { "@id": "https://moveirama.com.br/#organization" },
   "primaryImageOfPage": {
     "@type": "ImageObject",
-    "url": "https://moveirama.com.br/og-image.png"
+    "url": "https://moveirama.com.br/og-image.jpg"
   },
   "inLanguage": "pt-BR"
 };
 
+// ============================================
 // 7. DELIVERY SERVICE SCHEMA
+// ============================================
 export const deliveryServiceSchema = {
   "@context": "https://schema.org",
   "@type": "DeliveryChargeSpecification",
@@ -219,7 +249,9 @@ export const deliveryServiceSchema = {
   "priceCurrency": "BRL"
 };
 
+// ============================================
 // 8. OFFER CATALOG SCHEMA
+// ============================================
 export const offerCatalogSchema = {
   "@context": "https://schema.org",
   "@type": "OfferCatalog",
@@ -240,7 +272,9 @@ export const offerCatalogSchema = {
   ]
 };
 
+// ============================================
 // 9. AGGREGATE RATING SCHEMA (placeholder)
+// ============================================
 export const reviewAggregateSchema = {
   "@context": "https://schema.org",
   "@type": "AggregateRating",

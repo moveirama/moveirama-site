@@ -1,6 +1,12 @@
 /**
  * Home Page - Moveirama
- * Squad Dev - Janeiro 2026
+ * Squad Dev - Fevereiro 2026
+ * 
+ * ⭐ v2.1 (01/02/2026) - CORREÇÕES SEO:
+ * - Title Tag otimizado: "Móveis em Curitiba com Entrega em 72h"
+ * - Meta Description com "escritório" e "apartamentos compactos"
+ * - Schema LocalBusiness centralizado (removido inline)
+ * - OG Image atualizado para .jpg
  * 
  * ESTRUTURA COMPLETA:
  * - Bloco 1: Hero, TrustBar, Categories
@@ -23,59 +29,74 @@ import {
   WhatsAppFloat,
 } from '@/components/home';
 
+// ⭐ v2.1: Import do schema centralizado
+import { 
+  localBusinessSchema, 
+  websiteSchema 
+} from '@/lib/schemas/home-schemas';
+
+// ============================================
+// ⭐ v2.1: METADATA OTIMIZADA PARA SEO
+// ============================================
 export const metadata: Metadata = {
-  title: 'Moveirama | Móveis para Apartamentos em Curitiba e Região',
-  description:
-    'Racks, painéis, escrivaninhas e móveis para apartamentos compactos. Entrega própria em Curitiba e Região Metropolitana em até 3 dias. Preço justo e suporte real no WhatsApp.',
+  // ⭐ v2.1: Title Tag com "Móveis em Curitiba com Entrega em 72h"
+  title: 'Móveis em Curitiba com Entrega em 72h | Racks e Escrivaninhas | Moveirama',
+  
+  // ⭐ v2.1: Description com "escritório" e "apartamentos compactos"
+  description: 'Móveis para apartamentos compactos e escritório em Curitiba e Região Metropolitana. Racks para TV, painéis, escrivaninhas. Entrega própria em até 3 dias. Preço justo e suporte no WhatsApp.',
+  
   keywords: [
     'móveis curitiba',
+    'móveis em curitiba',
+    'loja de móveis curitiba',
     'rack para tv curitiba',
     'painel para tv',
     'escrivaninha home office',
     'móveis apartamento pequeno',
-    'loja de móveis curitiba',
+    'móveis para escritório',
+    'móveis colombo',
+    'móveis são josé dos pinhais',
   ],
+  
   openGraph: {
-    title: 'Moveirama | Móveis para Apartamentos em Curitiba',
-    description:
-      'Entrega própria em até 3 dias. Racks, painéis e escrivaninhas com preço justo.',
+    title: 'Móveis em Curitiba com Entrega em 72h | Moveirama',
+    description: 'Racks, painéis, escrivaninhas para apartamentos compactos e escritório. Entrega própria em Curitiba e RMC.',
     url: 'https://moveirama.com.br',
     siteName: 'Moveirama',
     locale: 'pt_BR',
     type: 'website',
+    // ⭐ v2.1: OG Image corrigido (precisa criar o arquivo)
+    images: [
+      {
+        url: 'https://moveirama.com.br/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Moveirama - Móveis em Curitiba com Entrega em 72h',
+      },
+    ],
+  },
+  
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Móveis em Curitiba com Entrega em 72h | Moveirama',
+    description: 'Racks, painéis, escrivaninhas. Entrega própria em Curitiba e RMC.',
+    images: ['https://moveirama.com.br/og-image.jpg'],
   },
 };
 
 export default function HomePage() {
   return (
     <main>
-      {/* Schema.org - LocalBusiness */}
+      {/* ============================================
+          ⭐ v2.1: SCHEMAS CENTRALIZADOS
+          LocalBusiness agora vem do home-schemas.ts
+          ============================================ */}
+      
+      {/* Schema.org - LocalBusiness (com endereço completo) */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'FurnitureStore',
-            name: 'Moveirama',
-            description:
-              'Loja de móveis para apartamentos em Curitiba e Região Metropolitana',
-            url: 'https://moveirama.com.br',
-            telephone: '+55-41-98420-9323',
-            address: {
-              '@type': 'PostalAddress',
-              addressLocality: 'Curitiba',
-              addressRegion: 'PR',
-              addressCountry: 'BR',
-            },
-            areaServed: [
-              { '@type': 'City', name: 'Curitiba' },
-              { '@type': 'City', name: 'São José dos Pinhais' },
-              { '@type': 'City', name: 'Colombo' },
-              { '@type': 'City', name: 'Pinhais' },
-              { '@type': 'City', name: 'Araucária' },
-            ],
-            priceRange: '$$',
-          }),
+          __html: JSON.stringify(localBusinessSchema),
         }}
       />
 
@@ -83,20 +104,7 @@ export default function HomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'WebSite',
-            name: 'Moveirama',
-            url: 'https://moveirama.com.br',
-            potentialAction: {
-              '@type': 'SearchAction',
-              target: {
-                '@type': 'EntryPoint',
-                urlTemplate: 'https://moveirama.com.br/busca?q={search_term_string}',
-              },
-              'query-input': 'required name=search_term_string',
-            },
-          }),
+          __html: JSON.stringify(websiteSchema),
         }}
       />
 
