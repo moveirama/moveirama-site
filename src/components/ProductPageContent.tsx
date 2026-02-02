@@ -165,17 +165,18 @@ export default function ProductPageContent({
 
   // ============================================
   // ⭐ v2.17: Preparar reviews para Schema
-  // Converte reviews do banco para formato do schema
+  // Converte reviews do componente para formato do schema
+  // Campos do Review: customerName, customerCity, rating, comment, isVerified, createdAt
   // ============================================
   const reviewsForSchema = reviews.map(r => ({
     id: r.id,
-    author_name: r.author_name,
-    author_city: r.author_city,
+    author_name: r.customerName,
+    author_city: r.customerCity,
     rating: r.rating,
-    title: r.title,
-    content: r.content,
-    is_verified_purchase: r.is_verified_purchase,
-    created_at: r.created_at
+    title: null, // Review não tem título separado
+    content: r.comment,
+    is_verified_purchase: r.isVerified,
+    created_at: typeof r.createdAt === 'string' ? r.createdAt : r.createdAt.toISOString()
   }))
 
   // ============================================
