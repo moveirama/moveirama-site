@@ -4,30 +4,20 @@
  * Moveirama SEO Utilities
  * Funções para gerar H1, meta description, schema.org e FAQ
  * 
- * Versão: 2.15.0 - HowTo Schema para vídeos de montagem
+ * Versão: 3.1.0 - Inteligência de Marca + Categorias Expandidas + AEO
  * 
  * Changelog:
- *   - v2.15 (02/02/2026): HOWTO SCHEMA para vídeos de montagem
- *                         • Nova função generateHowToSchema()
- *                         • Captura buscas "como montar rack", "montagem painel"
- *                         • 259 produtos com vídeo de montagem (179 Artely + 80 Artany)
+ *   - v3.1 (02/02/2026): INTELIGÊNCIA DE MARCA ARTELY vs ARTANY
+ *                        • Nova função inferEnvironmentType() (casa/escritório-home/escritório-pro)
+ *                        • Nova função getSupplierProfile() com proposta de valor por marca
+ *                        • Nova função getBairrosPorContexto() (residencial vs comercial)
+ *                        • inferCategoryType expandido para 30 subcategorias
+ *                        • FAQs específicas: buffets, aparadores, mesas profissionais, estantes
+ *                        • Meta descriptions diferenciadas por fabricante
+ *                        • Espessura do tampo (Artany) nas descrições
+ *   - v2.15 (02/02/2026): HowTo Schema para vídeos de montagem
  *   - v2.9.1 (01/02/2026): FIX: Aceita campos do banco (width_cm, height_cm, depth_cm)
- *                          Normaliza para width/height/depth internamente
- *   - v2.9 (01/02/2026): ESTADO DA ARTE para IAs (Google SGE, Perplexity, ChatGPT)
- *                        • VideoObject no Schema (rich snippet de vídeo)
- *                        • FAQ de comparação ("Qual a diferença do Rack X...")
- *                        • Bairros de Curitiba no FAQ de entrega (autoridade local)
- *                        • Brand = Fabricante (Artely/Artany), Seller = Moveirama (E-E-A-T)
- *                        • "Pronta Entrega" no Title Tag (gatilho de decisão)
- *                        • Campos nativos: material, color no Schema
- *                        • "Sem ferramentas elétricas" na resposta de montagem
- *                        • Meta description com peso suportado (mais específica)
- *   - v2.8 (01/02/2026): Adicionado hasMerchantReturnPolicy no schema Product
- *   - v2.7 (01/02/2026): Title Tag sem duplicação, Meta Description otimizada
- *   - v2.6 (01/02/2026): Nova função generateProductTitle()
- *   - v2.5 (30/01/2026): FAQ montagem detalhada
- *   - v2.4 (30/01/2026): Corrigida FAQ garantia/defeito
- *   - v2.3: Atualizado mapeamentos para nova estrutura de URLs
+ *   - v2.9 (01/02/2026): VideoObject, FAQ comparação, bairros, Brand/Seller separados
  */
 
 // ============================================
@@ -37,7 +27,7 @@
 interface ProductForH1 {
   name: string
   tv_max_size?: number | null
-  category_type?: 'rack' | 'painel' | 'escrivaninha' | 'penteadeira' | 'mesa' | null
+  category_type?: CategoryType | null
   variant_name?: string | null
 }
 
@@ -47,7 +37,11 @@ interface ProductForMeta {
   tv_max_size?: number | null
   assembly_time_minutes?: number | null
   category_type?: string | null
-  weight_capacity?: number | null  // ⭐ v2.9: Adicionado para meta description
+  weight_capacity?: number | null
+  thickness_mm?: number | null
+  supplier_id?: string | null
+  depth?: number | null
+  depth_cm?: number | null
 }
 
 interface ProductForSchema {
@@ -66,60 +60,200 @@ interface ProductForSchema {
   stock_quantity: number
   images?: Array<{ url: string }> | null
   variants?: Array<{ name: string }> | null
-  // ⭐ v2.9: Campos adicionais
   video_product_url?: string | null
   assembly_video_url?: string | null
   weight_capacity?: number | null
+  supplier_id?: string | null
+  thickness_mm?: number | null
 }
 
-// FAQ Types
 export interface FAQItem {
   question: string
   answer: string
 }
 
 // ============================================
-// ⭐ v2.9: BAIRROS DE CURITIBA PARA AUTORIDADE LOCAL
-// Ordenados por relevância para Classe C/D
+// TIPOS DE CATEGORIA EXPANDIDOS (v3.1)
 // ============================================
-const BAIRROS_CURITIBA = [
+
+type CategoryType = 
+  | 'rack' | 'painel' | 'buffet' | 'aparador' | 'estante' | 'cristaleira'
+  | 'mesa-centro' | 'mesa-apoio' | 'bar' | 'carrinho' | 'cantinho'
+  | 'penteadeira' | 'prateleira' | 'espelho'
+  | 'escrivaninha' | 'escrivaninha-l' | 'estante-home' | 'gaveteiro-home' | 'mesa-balcao-home'
+  | 'mesa-reta' | 'mesa-em-l' | 'mesa-reuniao' | 'balcao-atendimento' | 'balcao-profissional'
+  | 'armario-profissional' | 'estante-profissional' | 'prateleira-profissional' | 'estacao'
+
+type EnvironmentType = 'casa' | 'escritorio-home' | 'escritorio-pro'
+
+type SupplierProfile = {
+  name: 'Artely' | 'Artany'
+  id: string
+  focus: string
+  valueProposition: string
+  metaPrefix: string
+  targetAudience: string
+}
+
+// ============================================
+// CONSTANTES DE FORNECEDORES (v3.1)
+// ============================================
+
+const SUPPLIER_IDS = {
+  ARTELY: '5c34ee22-445a-45ac-bec7-e9ac3a1a2b04',
+  ARTANY: 'f2f7a7d0-68d0-4e0a-aac7-293780d1bf4d'
+} as const
+
+const SUPPLIER_PROFILES: Record<string, SupplierProfile> = {
+  [SUPPLIER_IDS.ARTELY]: {
+    name: 'Artely',
+    id: SUPPLIER_IDS.ARTELY,
+    focus: 'residencial',
+    valueProposition: 'otimizado para apartamentos compactos',
+    metaPrefix: 'Design inteligente para espaços pequenos',
+    targetAudience: 'apartamentos e casas'
+  },
+  [SUPPLIER_IDS.ARTANY]: {
+    name: 'Artany',
+    id: SUPPLIER_IDS.ARTANY,
+    focus: 'profissional',
+    valueProposition: 'robustez e durabilidade corporativa',
+    metaPrefix: 'Padrão profissional de escritório',
+    targetAudience: 'escritórios e empresas'
+  }
+}
+
+// ============================================
+// BAIRROS SEGMENTADOS POR CONTEXTO (v3.1)
+// ============================================
+
+const BAIRROS_RESIDENCIAIS = [
   'CIC', 'Pinheirinho', 'Sítio Cercado', 'Cajuru', 'Boqueirão',
-  'Xaxim', 'Fazendinha', 'Portão', 'Água Verde', 'Capão Raso'
+  'Xaxim', 'Fazendinha', 'Portão', 'Capão Raso', 'Tatuquara'
 ]
 
-// Seleciona 4 bairros aleatórios para variar o conteúdo
+const BAIRROS_COMERCIAIS = [
+  'Batel', 'Centro Cívico', 'Bigorrilho', 'Água Verde', 'Centro',
+  'Rebouças', 'Alto da XV', 'Champagnat', 'CIC', 'Prado Velho'
+]
+
+function getBairrosPorContexto(environment: EnvironmentType, quantidade: number = 4): string[] {
+  const bairros = environment === 'casa' ? BAIRROS_RESIDENCIAIS : BAIRROS_COMERCIAIS
+  const shuffled = [...bairros].sort(() => 0.5 - Math.random())
+  return shuffled.slice(0, quantidade)
+}
+
 function getBairrosAleatorios(quantidade: number = 4): string[] {
-  const shuffled = [...BAIRROS_CURITIBA].sort(() => 0.5 - Math.random())
+  const allBairros = [...new Set([...BAIRROS_RESIDENCIAIS, ...BAIRROS_COMERCIAIS])]
+  const shuffled = allBairros.sort(() => 0.5 - Math.random())
   return shuffled.slice(0, quantidade)
 }
 
 // ============================================
-// ⭐ v2.4: RESPOSTA PADRÃO PARA FAQ DE GARANTIA
+// FUNÇÕES DE INFERÊNCIA (v3.1)
 // ============================================
-const FAQ_GARANTIA_RESPOSTA = `O móvel tem 3 meses de garantia de fábrica. Caso alguma peça chegue avariada ou apresente defeito, a gente resolve rápido: providenciamos a troca da peça específica para o seu móvel ficar perfeito. Basta mandar uma foto do problema no nosso WhatsApp com o número do pedido.`
+
+export function inferCategoryType(slug: string, categorySlug?: string): CategoryType | null {
+  const slugLower = slug.toLowerCase()
+  const catLower = (categorySlug || '').toLowerCase()
+  
+  if (slugLower.includes('rack') || catLower.includes('rack')) return 'rack'
+  if (slugLower.includes('painel') || catLower.includes('painel')) return 'painel'
+  if (slugLower.includes('buffet') || catLower.includes('buffet')) return 'buffet'
+  if (slugLower.includes('aparador') || catLower.includes('aparador')) return 'aparador'
+  if (slugLower.includes('cristaleira') || catLower.includes('cristaleira')) return 'cristaleira'
+  if (slugLower.includes('bar') || catLower.includes('bar')) return 'bar'
+  if (slugLower.includes('carrinho') || catLower.includes('carrinho')) return 'carrinho'
+  if (slugLower.includes('cantinho') || catLower.includes('cantinho')) return 'cantinho'
+  if (catLower.includes('mesa-centro') || slugLower.includes('mesa-centro')) return 'mesa-centro'
+  if (catLower.includes('mesa-apoio') || slugLower.includes('mesa-apoio')) return 'mesa-apoio'
+  if (slugLower.includes('penteadeira') || catLower.includes('penteadeira')) return 'penteadeira'
+  if (slugLower.includes('espelho') || catLower.includes('espelho')) return 'espelho'
+  if (catLower.includes('escrivaninha-l') || slugLower.includes('escrivaninha-l')) return 'escrivaninha-l'
+  if (catLower.includes('escrivaninha') || slugLower.includes('escrivaninha')) return 'escrivaninha'
+  if (catLower.includes('gaveteiro-home') || catLower.includes('gaveteiro')) return 'gaveteiro-home'
+  if (catLower.includes('estante-home')) return 'estante-home'
+  if (catLower.includes('mesa-balcao-home')) return 'mesa-balcao-home'
+  if (catLower.includes('mesa-reuniao') || slugLower.includes('reuniao')) return 'mesa-reuniao'
+  if (catLower.includes('mesa-em-l') || slugLower.includes('mesa-l')) return 'mesa-em-l'
+  if (catLower.includes('mesa-reta') || slugLower.includes('mesa-reta')) return 'mesa-reta'
+  if (catLower.includes('balcao-atendimento')) return 'balcao-atendimento'
+  if (catLower.includes('balcao-profissional')) return 'balcao-profissional'
+  if (catLower.includes('armario-profissional')) return 'armario-profissional'
+  if (catLower.includes('estante-profissional')) return 'estante-profissional'
+  if (catLower.includes('prateleira-profissional')) return 'prateleira-profissional'
+  if (catLower.includes('estacoes') || slugLower.includes('estacao')) return 'estacao'
+  if (slugLower.includes('estante') || catLower.includes('estante')) return 'estante'
+  if (slugLower.includes('prateleira') || catLower.includes('prateleira')) return 'prateleira'
+  if (slugLower.includes('mesa') || catLower.includes('mesa')) return 'mesa-reta'
+  
+  return null
+}
+
+export function inferEnvironmentType(categoryType: CategoryType | null, categorySlug?: string): EnvironmentType {
+  const catLower = (categorySlug || '').toLowerCase()
+  
+  const profissionalTypes: CategoryType[] = [
+    'mesa-reta', 'mesa-em-l', 'mesa-reuniao', 'balcao-atendimento', 
+    'balcao-profissional', 'armario-profissional', 'estante-profissional', 
+    'prateleira-profissional', 'estacao'
+  ]
+  
+  const homeOfficeTypes: CategoryType[] = [
+    'escrivaninha', 'escrivaninha-l', 'estante-home', 'gaveteiro-home', 'mesa-balcao-home'
+  ]
+  
+  if (catLower.includes('profissional') || catLower.includes('linha-profissional')) {
+    return 'escritorio-pro'
+  }
+  if (catLower.includes('home-office')) {
+    return 'escritorio-home'
+  }
+  if (categoryType && profissionalTypes.includes(categoryType)) {
+    return 'escritorio-pro'
+  }
+  if (categoryType && homeOfficeTypes.includes(categoryType)) {
+    return 'escritorio-home'
+  }
+  
+  return 'casa'
+}
+
+export function getSupplierProfile(supplierId: string | null | undefined): SupplierProfile | null {
+  if (!supplierId) return null
+  return SUPPLIER_PROFILES[supplierId] || null
+}
 
 // ============================================
-// ⭐ v2.9: RESPOSTA PARA FAQ DE MONTAGEM (ATUALIZADA)
-// Adicionado "sem ferramentas elétricas" para reduzir barreira
+// CONSTANTES E HELPERS
 // ============================================
-function generateMontageAnswer(difficulty: string | null | undefined, timeMinutes: number | null | undefined): string {
+
+const FAQ_GARANTIA_RESPOSTA = `O móvel tem 3 meses de garantia de fábrica. Caso alguma peça chegue avariada ou apresente defeito, a gente resolve rápido: providenciamos a troca da peça específica para o seu móvel ficar perfeito. Basta mandar uma foto do problema no nosso WhatsApp com o número do pedido.`
+
+function generateMontageAnswer(
+  difficulty: string | null | undefined, 
+  timeMinutes: number | null | undefined,
+  supplierProfile: SupplierProfile | null
+): string {
   const difficultyText = difficulty === 'facil' ? 'Fácil' : 
                          difficulty === 'medio' ? 'Médio' : 
                          difficulty === 'dificil' ? 'Difícil' : 'Médio'
   
   const timeText = timeMinutes ? ` (~${timeMinutes}min)` : ''
   
-  // ⭐ v2.9: Adicionado "sem ferramentas elétricas"
+  if (supplierProfile?.name === 'Artany') {
+    return `Nível ${difficultyText}${timeText}. Móvel profissional com montagem estruturada: manual técnico detalhado e ferragens de alta resistência identificadas. Você precisa apenas de chave Phillips — sem ferramentas elétricas. Para facilitar, disponibilizamos vídeo de montagem completo.`
+  }
+  
   return `Nível ${difficultyText}${timeText}. Montagem intuitiva: acompanha manual ilustrado passo a passo e todas as ferragens já vêm separadas e identificadas. Você só precisa de chave de fenda comum — sem ferramentas elétricas. Para facilitar ainda mais, deixamos um vídeo de montagem completo logo acima nesta página.`
 }
 
 // ============================================
-// H1 OTIMIZADO
+// H1, TITLE E META DESCRIPTION
 // ============================================
 
 export function generateProductH1(product: ProductForH1): string {
   const { name, tv_max_size, category_type, variant_name } = product
-  
   const isRackOrPanel = category_type === 'rack' || category_type === 'painel'
   
   if (isRackOrPanel && tv_max_size) {
@@ -127,7 +261,6 @@ export function generateProductH1(product: ProductForH1): string {
     const tvPart = `para TV até ${tv_max_size} polegadas`
     const colorFromName = name.includes(' - ') ? name.split(' - ').slice(1).join(' - ') : null
     const colorPart = variant_name || colorFromName
-    
     return colorPart ? `${baseName} ${tvPart} - ${colorPart}` : `${baseName} ${tvPart}`
   }
   
@@ -138,122 +271,99 @@ export function generateProductH1(product: ProductForH1): string {
   return name
 }
 
-// ============================================
-// ⭐ v2.9: TITLE TAG COM "PRONTA ENTREGA"
-// Gatilho de decisão para Curitiba
-// ============================================
-
-export function generateProductTitle(product: ProductForH1): string {
+export function generateProductTitle(product: ProductForH1 & { supplier_id?: string | null }): string {
   const { name, tv_max_size, category_type, variant_name } = product
-  
   const isRackOrPanel = category_type === 'rack' || category_type === 'painel'
   
   const nameParts = name.split(' - ')
   const baseName = nameParts[0]
   const colorFromName = nameParts.length > 1 ? nameParts[1] : null
-  
   const color = variant_name || colorFromName
   const shortColor = color ? color.split(' / ')[0].split(' C ')[0].trim() : null
   
   let productPart = ''
-  
   if (isRackOrPanel && tv_max_size) {
-    productPart = shortColor 
-      ? `${baseName} TV ${tv_max_size}" ${shortColor}`
-      : `${baseName} TV ${tv_max_size}"`
+    productPart = shortColor ? `${baseName} TV ${tv_max_size}" ${shortColor}` : `${baseName} TV ${tv_max_size}"`
   } else {
-    productPart = shortColor && !baseName.includes(shortColor)
-      ? `${baseName} ${shortColor}`
-      : baseName
+    productPart = shortColor && !baseName.includes(shortColor) ? `${baseName} ${shortColor}` : baseName
   }
   
-  // ⭐ v2.9: Sufixo com "Pronta Entrega" (gatilho de decisão)
   const suffix = "Pronta Entrega Curitiba | Moveirama"
-  
   const fullTitle = `${productPart} | ${suffix}`
   
-  if (fullTitle.length <= 60) {
-    return fullTitle
-  }
-  
-  // Fallback para títulos longos
-  if (isRackOrPanel && tv_max_size) {
-    return `${baseName} ${tv_max_size}" | ${suffix}`
-  }
-  
+  if (fullTitle.length <= 60) return fullTitle
+  if (isRackOrPanel && tv_max_size) return `${baseName} ${tv_max_size}" | ${suffix}`
   return `${baseName} | ${suffix}`
 }
 
-// ============================================
-// ⭐ v2.9: META DESCRIPTION COM PESO SUPORTADO
-// Mais específica para IAs
-// ============================================
-
 export function generateProductMetaDescription(product: ProductForMeta): string {
-  const { name, tv_max_size, category_type, weight_capacity } = product
+  const { name, tv_max_size, category_type, weight_capacity, thickness_mm, supplier_id, depth, depth_cm } = product
   
   const nameParts = name.split(' - ')
   const baseName = nameParts[0]
   const colorPart = nameParts.length > 1 ? nameParts[1] : null
-  
-  const shortColor = colorPart 
-    ? colorPart.split(' / ').join('/').replace(' C ', ' ')
-    : null
-  
+  const shortColor = colorPart ? colorPart.split(' / ').join('/').replace(' C ', ' ') : null
   const productName = shortColor ? `${baseName} ${shortColor}` : baseName
+  const supplierProfile = getSupplierProfile(supplier_id)
+  const productDepth = depth || depth_cm
   
-  // ⭐ v2.9: Benefício mais específico com peso suportado
   let benefit = ''
   
   if ((category_type === 'rack' || category_type === 'painel') && tv_max_size) {
-    // Inclui peso suportado se disponível
     const weightText = weight_capacity ? `Suporta ${weight_capacity}kg, ` : ''
     benefit = `Solução para TVs de ${tv_max_size}" em salas compactas. ${weightText}entrega própria em 72h.`
-  } else if (category_type === 'escrivaninha') {
-    benefit = `Ideal para home office em apartamentos compactos. Entrega própria em 72h.`
-  } else if (category_type === 'penteadeira') {
+  }
+  else if (category_type === 'buffet' || category_type === 'aparador') {
+    const depthText = productDepth && productDepth <= 40 ? `Profundidade de apenas ${productDepth}cm — não obstrui a passagem. ` : ''
+    benefit = `${depthText}Ideal para salas de jantar em Curitiba. Entrega própria em 72h.`
+  }
+  else if (category_type === 'cristaleira' || category_type === 'estante') {
+    const weightText = weight_capacity ? `Suporta até ${weight_capacity}kg por prateleira. ` : ''
+    benefit = `${weightText}Proteção contra umidade de Curitiba. Entrega própria em 72h.`
+  }
+  else if (['mesa-reta', 'mesa-em-l', 'mesa-reuniao', 'estacao'].includes(category_type || '')) {
+    if (supplierProfile?.name === 'Artany' && thickness_mm) {
+      benefit = `Tampo de ${thickness_mm}mm para máxima estabilidade em setups profissionais. Ideal para escritórios em Curitiba. Pronta entrega em 72h!`
+    } else {
+      benefit = `Estrutura robusta para ambiente profissional. Entrega própria em 72h.`
+    }
+  }
+  else if (category_type === 'escrivaninha' || category_type === 'escrivaninha-l') {
+    if (supplierProfile?.name === 'Artely') {
+      benefit = `Otimizada para home office em apartamentos compactos. Entrega própria em 72h.`
+    } else {
+      benefit = `Ideal para home office em apartamentos compactos. Entrega própria em 72h.`
+    }
+  }
+  else if (category_type === 'penteadeira') {
     benefit = `Design funcional para quartos e closets. Entrega própria em 72h.`
-  } else if (category_type === 'mesa') {
-    benefit = `Praticidade para sala ou escritório. Entrega própria em 72h.`
-  } else {
+  }
+  else {
     benefit = `Móvel com ótimo custo-benefício. Entrega própria em 72h.`
   }
   
-  // ⭐ v2.9: CTA direto
   const cta = `Garanta o seu na Moveirama!`
-  
   let description = `${productName}: ${benefit} ${cta}`
   
-  // Limita a 155 caracteres
   if (description.length > 155) {
-    if ((category_type === 'rack' || category_type === 'painel') && tv_max_size) {
-      benefit = `Para TVs de ${tv_max_size}" em espaços compactos. Entrega em 72h.`
-    } else {
-      benefit = `Móvel prático. Entrega em 72h.`
+    description = `${baseName}: ${benefit}`
+    if (description.length > 155) {
+      description = `${baseName}: Entrega própria em 72h em Curitiba. ${cta}`
     }
-    description = `${productName}: ${benefit} ${cta}`
-  }
-  
-  if (description.length > 155) {
-    description = `${baseName}: ${benefit} ${cta}`
   }
   
   return description
 }
 
 // ============================================
-// ⭐ v2.9: SCHEMA.ORG PRODUCT (ESTADO DA ARTE)
-// - VideoObject para rich snippets de vídeo
-// - Brand = Fabricante (Artely/Artany)
-// - Seller = Moveirama (E-E-A-T)
-// - Material e Color como campos nativos
+// SCHEMA.ORG PRODUCT
 // ============================================
 
 export function generateProductSchema(product: ProductForSchema, canonicalUrl: string) {
   const h1Title = generateProductH1({
     name: product.name,
     tv_max_size: product.tv_max_size,
-    category_type: product.category_type as ProductForH1['category_type'],
+    category_type: product.category_type as CategoryType,
     variant_name: product.variants?.[0]?.name
   })
 
@@ -263,19 +373,18 @@ export function generateProductSchema(product: ProductForSchema, canonicalUrl: s
     tv_max_size: product.tv_max_size,
     assembly_time_minutes: product.assembly_time_minutes,
     category_type: product.category_type,
-    weight_capacity: product.weight_capacity
+    weight_capacity: product.weight_capacity,
+    thickness_mm: product.thickness_mm,
+    supplier_id: product.supplier_id,
+    depth: product.depth
   })
 
   const priceValidUntil = new Date()
   priceValidUntil.setFullYear(priceValidUntil.getFullYear() + 1)
 
-  // ⭐ v2.9: Extrai cor do nome do produto ou variante
-  const colorFromName = product.name.includes(' - ') 
-    ? product.name.split(' - ').slice(1).join(' / ') 
-    : null
+  const colorFromName = product.name.includes(' - ') ? product.name.split(' - ').slice(1).join(' / ') : null
   const productColor = product.variants?.[0]?.name || colorFromName
 
-  // Schema base
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -284,42 +393,18 @@ export function generateProductSchema(product: ProductForSchema, canonicalUrl: s
     "image": product.images?.map(img => img.url) || [],
     "sku": product.sku || product.slug,
     "mpn": product.sku || product.slug,
-    
-    // ⭐ v2.9: Brand = Fabricante (Artely ou Artany) para E-E-A-T
-    "brand": {
-      "@type": "Brand",
-      "name": product.brand || "Moveirama"
-    },
-    
-    // ⭐ v2.9: Material como campo nativo (facilita filtragem por IAs)
-    ...(product.main_material && {
-      "material": product.main_material
-    }),
-    
-    // ⭐ v2.9: Cor como campo nativo
-    ...(productColor && {
-      "color": productColor
-    }),
-    
+    "brand": { "@type": "Brand", "name": product.brand || "Moveirama" },
+    ...(product.main_material && { "material": product.main_material }),
+    ...(productColor && { "color": productColor }),
     "offers": {
       "@type": "Offer",
       "url": canonicalUrl,
       "priceCurrency": "BRL",
       "price": product.price,
       "priceValidUntil": priceValidUntil.toISOString().split('T')[0],
-      "availability": product.stock_quantity > 0 
-        ? "https://schema.org/InStock" 
-        : "https://schema.org/OutOfStock",
+      "availability": product.stock_quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       "itemCondition": "https://schema.org/NewCondition",
-      
-      // ⭐ v2.9: Seller = Moveirama (diferente de Brand)
-      "seller": {
-        "@type": "Organization",
-        "name": "Moveirama",
-        "url": "https://moveirama.com.br"
-      },
-      
-      // Política de Devolução
+      "seller": { "@type": "Organization", "name": "Moveirama", "url": "https://moveirama.com.br" },
       "hasMerchantReturnPolicy": {
         "@type": "MerchantReturnPolicy",
         "applicableCountry": "BR",
@@ -328,66 +413,32 @@ export function generateProductSchema(product: ProductForSchema, canonicalUrl: s
         "returnMethod": "https://schema.org/ReturnByMail",
         "returnFees": "https://schema.org/FreeReturn"
       },
-      
-      // Detalhes de Frete
       "shippingDetails": {
         "@type": "OfferShippingDetails",
-        "shippingRate": {
-          "@type": "MonetaryAmount",
-          "value": "29.90",
-          "currency": "BRL"
-        },
-        "shippingDestination": {
-          "@type": "DefinedRegion",
-          "addressCountry": "BR",
-          "addressRegion": "PR"
-        },
+        "shippingRate": { "@type": "MonetaryAmount", "value": "29.90", "currency": "BRL" },
+        "shippingDestination": { "@type": "DefinedRegion", "addressCountry": "BR", "addressRegion": "PR" },
         "deliveryTime": {
           "@type": "ShippingDeliveryTime",
-          "handlingTime": {
-            "@type": "QuantitativeValue",
-            "minValue": 0,
-            "maxValue": 1,
-            "unitCode": "d"
-          },
-          "transitTime": {
-            "@type": "QuantitativeValue",
-            "minValue": 1,
-            "maxValue": 3,
-            "unitCode": "d"
-          }
+          "handlingTime": { "@type": "QuantitativeValue", "minValue": 0, "maxValue": 1, "unitCode": "d" },
+          "transitTime": { "@type": "QuantitativeValue", "minValue": 1, "maxValue": 3, "unitCode": "d" }
         }
       }
     }
   }
 
-  // Propriedades adicionais específicas de móveis
   const additionalProperties = []
-  
   if (product.tv_max_size) {
-    additionalProperties.push({
-      "@type": "PropertyValue",
-      "name": "Compatibilidade TV",
-      "value": `Até ${product.tv_max_size} polegadas`
-    })
+    additionalProperties.push({ "@type": "PropertyValue", "name": "Compatibilidade TV", "value": `Até ${product.tv_max_size} polegadas` })
   }
-  
   if (product.weight_capacity) {
-    additionalProperties.push({
-      "@type": "PropertyValue",
-      "name": "Peso Suportado",
-      "value": `${product.weight_capacity} kg`
-    })
+    additionalProperties.push({ "@type": "PropertyValue", "name": "Peso Suportado", "value": `${product.weight_capacity} kg` })
   }
-  
+  if (product.thickness_mm) {
+    additionalProperties.push({ "@type": "PropertyValue", "name": "Espessura do Tampo", "value": `${product.thickness_mm}mm` })
+  }
   if (product.width && product.height && product.depth) {
-    additionalProperties.push({
-      "@type": "PropertyValue",
-      "name": "Dimensões",
-      "value": `${product.width}cm x ${product.height}cm x ${product.depth}cm`
-    })
+    additionalProperties.push({ "@type": "PropertyValue", "name": "Dimensões", "value": `${product.width}cm x ${product.height}cm x ${product.depth}cm` })
   }
-
   if (additionalProperties.length > 0) {
     schema.additionalProperty = additionalProperties
   }
@@ -396,23 +447,13 @@ export function generateProductSchema(product: ProductForSchema, canonicalUrl: s
 }
 
 // ============================================
-// ⭐ v2.9: SCHEMA VIDEOOBJECT
-// Rich snippet de vídeo no Google
+// VIDEO SCHEMAS
 // ============================================
 
-export function generateVideoSchema(
-  videoUrl: string,
-  productName: string,
-  thumbnailUrl?: string
-) {
-  // Extrai ID do YouTube se for URL do YouTube
+export function generateVideoSchema(videoUrl: string, productName: string, thumbnailUrl?: string) {
   const youtubeMatch = videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/)
   const videoId = youtubeMatch ? youtubeMatch[1] : null
-  
-  // Thumbnail padrão do YouTube ou fornecido
-  const thumbnail = thumbnailUrl || (videoId 
-    ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
-    : undefined)
+  const thumbnail = thumbnailUrl || (videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : undefined)
 
   return {
     "@context": "https://schema.org",
@@ -426,19 +467,10 @@ export function generateVideoSchema(
     "publisher": {
       "@type": "Organization",
       "name": "Moveirama",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://moveirama.com.br/logo/moveirama-grafite.svg"
-      }
+      "logo": { "@type": "ImageObject", "url": "https://moveirama.com.br/logo/moveirama-grafite.svg" }
     }
   }
 }
-
-// ============================================
-// ⭐ v2.15: SCHEMA HOWTO (Vídeo de Montagem)
-// Rich snippet "Como fazer" no Google
-// Captura buscas: "como montar rack", "montagem painel TV"
-// ============================================
 
 export function generateHowToSchema(
   assemblyVideoUrl: string,
@@ -446,28 +478,12 @@ export function generateHowToSchema(
   assemblyTimeMinutes: number | null | undefined,
   assemblyDifficulty: string | null | undefined
 ) {
-  // Extrai ID do YouTube
-  const youtubeMatch = assemblyVideoUrl.match(
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]+)/
-  )
+  const youtubeMatch = assemblyVideoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]+)/)
   const videoId = youtubeMatch ? youtubeMatch[1] : null
-  
-  // Thumbnail do YouTube
-  const thumbnail = videoId 
-    ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
-    : undefined
-
-  // Formata tempo ISO 8601 (PT30M = 30 minutos)
+  const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : undefined
   const totalTime = assemblyTimeMinutes ? `PT${assemblyTimeMinutes}M` : 'PT45M'
-  
-  // Texto de dificuldade para descrição
-  const difficultyText = assemblyDifficulty === 'facil' ? 'fácil' : 
-                         assemblyDifficulty === 'dificil' ? 'difícil' : 'médio'
-
-  // Nome base do produto (sem cor)
-  const baseName = productName.includes(' - ') 
-    ? productName.split(' - ')[0] 
-    : productName
+  const difficultyText = assemblyDifficulty === 'facil' ? 'fácil' : assemblyDifficulty === 'dificil' ? 'difícil' : 'médio'
+  const baseName = productName.includes(' - ') ? productName.split(' - ')[0] : productName
 
   return {
     "@context": "https://schema.org",
@@ -475,11 +491,7 @@ export function generateHowToSchema(
     "name": `Como montar o ${baseName}`,
     "description": `Passo a passo de montagem do ${baseName}. Nível ${difficultyText}, tempo estimado: ${assemblyTimeMinutes || 45} minutos. Não precisa de ferramentas elétricas.`,
     "totalTime": totalTime,
-    "estimatedCost": {
-      "@type": "MonetaryAmount",
-      "currency": "BRL",
-      "value": "0"
-    },
+    "estimatedCost": { "@type": "MonetaryAmount", "currency": "BRL", "value": "0" },
     "tool": [
       { "@type": "HowToTool", "name": "Chave Phillips" },
       { "@type": "HowToTool", "name": "Martelo de borracha (opcional)" }
@@ -489,38 +501,11 @@ export function generateHowToSchema(
       { "@type": "HowToSupply", "name": "Kit de ferragens (incluso)" }
     ],
     "step": [
-      {
-        "@type": "HowToStep",
-        "position": 1,
-        "name": "Confira as peças",
-        "text": "Abra a embalagem e confira todas as peças e ferragens usando a lista do manual. Se faltar algo, entre em contato pelo WhatsApp antes de começar.",
-        "image": thumbnail
-      },
-      {
-        "@type": "HowToStep",
-        "position": 2,
-        "name": "Assista o vídeo completo",
-        "text": "Antes de começar a montar, assista o vídeo de montagem completo para entender o processo. Isso evita erros e retrabalho.",
-        "url": assemblyVideoUrl
-      },
-      {
-        "@type": "HowToStep",
-        "position": 3,
-        "name": "Organize o espaço",
-        "text": "Escolha um local amplo e plano para a montagem. Separe as peças por tamanho e deixe as ferragens organizadas."
-      },
-      {
-        "@type": "HowToStep",
-        "position": 4,
-        "name": "Siga o manual passo a passo",
-        "text": "Monte seguindo a ordem do manual ilustrado. Use o vídeo como referência visual para cada etapa."
-      },
-      {
-        "@type": "HowToStep",
-        "position": 5,
-        "name": "Finalize e posicione",
-        "text": `Após a montagem, posicione o ${baseName} no local definitivo. Se precisar fixar na parede, siga as instruções específicas do manual.`
-      }
+      { "@type": "HowToStep", "position": 1, "name": "Confira as peças", "text": "Abra a embalagem e confira todas as peças e ferragens usando a lista do manual. Se faltar algo, entre em contato pelo WhatsApp antes de começar.", "image": thumbnail },
+      { "@type": "HowToStep", "position": 2, "name": "Assista o vídeo completo", "text": "Antes de começar a montar, assista o vídeo de montagem completo para entender o processo. Isso evita erros e retrabalho.", "url": assemblyVideoUrl },
+      { "@type": "HowToStep", "position": 3, "name": "Organize o espaço", "text": "Escolha um local amplo e plano para a montagem. Separe as peças por tamanho e deixe as ferragens organizadas." },
+      { "@type": "HowToStep", "position": 4, "name": "Siga o manual passo a passo", "text": "Monte seguindo a ordem do manual ilustrado. Use o vídeo como referência visual para cada etapa." },
+      { "@type": "HowToStep", "position": 5, "name": "Finalize e posicione", "text": `Após a montagem, posicione o ${baseName} no local definitivo. Se precisar fixar na parede, siga as instruções específicas do manual.` }
     ],
     "video": {
       "@type": "VideoObject",
@@ -531,21 +516,10 @@ export function generateHowToSchema(
       "embedUrl": videoId ? `https://www.youtube.com/embed/${videoId}` : assemblyVideoUrl,
       "uploadDate": new Date().toISOString().split('T')[0],
       "duration": totalTime,
-      "publisher": {
-        "@type": "Organization",
-        "name": "Moveirama",
-        "logo": {
-          "@type": "ImageObject",
-          "url": "https://moveirama.com.br/logo/moveirama-grafite.svg"
-        }
-      }
+      "publisher": { "@type": "Organization", "name": "Moveirama", "logo": { "@type": "ImageObject", "url": "https://moveirama.com.br/logo/moveirama-grafite.svg" } }
     }
   }
 }
-
-// ============================================
-// FAQ SCHEMA
-// ============================================
 
 export function generateFAQSchema(faqs: FAQItem[]) {
   return {
@@ -554,19 +528,13 @@ export function generateFAQSchema(faqs: FAQItem[]) {
     "mainEntity": faqs.map(faq => ({
       "@type": "Question",
       "name": faq.question,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": faq.answer
-      }
+      "acceptedAnswer": { "@type": "Answer", "text": faq.answer }
     }))
   }
 }
 
 // ============================================
-// ⭐ v2.9: FAQ PARA RACKS/PAINÉIS (ESTADO DA ARTE)
-// - Pergunta de comparação (snippable por IAs)
-// - Bairros de Curitiba na entrega
-// - Resistência à umidade
+// FAQs POR CATEGORIA (v3.1)
 // ============================================
 
 export function generateRackFAQs(product: {
@@ -580,13 +548,14 @@ export function generateRackFAQs(product: {
   main_material?: string | null
   weight_capacity?: number | null
   requires_wall_mount?: boolean | null
-  thickness_mm?: number | null  // ⭐ v2.9: Para FAQ de comparação
+  thickness_mm?: number | null
+  supplier_id?: string | null
 }): FAQItem[] {
   const faqs: FAQItem[] = []
-  
   const baseName = product.name.includes(' - ') ? product.name.split(' - ')[0] : product.name
+  const supplierProfile = getSupplierProfile(product.supplier_id)
+  const bairros = getBairrosPorContexto('casa', 4)
   
-  // 1. Compatibilidade TV (dúvida #1)
   if (product.tv_max_size) {
     faqs.push({
       question: `O ${baseName} serve para TV de quantas polegadas?`,
@@ -594,7 +563,6 @@ export function generateRackFAQs(product: {
     })
   }
   
-  // 2. Medidas (dúvida #2 - "vai caber?")
   if (product.width && product.height && product.depth) {
     faqs.push({
       question: `Quais são as medidas do ${baseName}?`,
@@ -602,7 +570,6 @@ export function generateRackFAQs(product: {
     })
   }
   
-  // ⭐ v2.9: NOVA - Pergunta de COMPARAÇÃO (snippable por IAs)
   if (product.width && product.depth && product.thickness_mm) {
     const larguraMetros = (product.width / 100).toFixed(1).replace('.', ',')
     faqs.push({
@@ -611,13 +578,11 @@ export function generateRackFAQs(product: {
     })
   }
   
-  // 3. Montagem - v2.9: "sem ferramentas elétricas"
   faqs.push({
     question: `É difícil montar o ${baseName}?`,
-    answer: generateMontageAnswer(product.assembly_difficulty, product.assembly_time_minutes)
+    answer: generateMontageAnswer(product.assembly_difficulty, product.assembly_time_minutes, supplierProfile)
   })
   
-  // 4. Material - v2.9: Resistência à umidade de Curitiba
   if (product.main_material) {
     faqs.push({
       question: `Qual o material do ${baseName}?`,
@@ -625,7 +590,6 @@ export function generateRackFAQs(product: {
     })
   }
   
-  // 5. Peso suportado
   if (product.weight_capacity) {
     faqs.push({
       question: `Quanto peso o ${baseName} aguenta?`,
@@ -633,7 +597,6 @@ export function generateRackFAQs(product: {
     })
   }
   
-  // 6. Precisa furar parede?
   faqs.push({
     question: `Precisa furar a parede para instalar o ${baseName}?`,
     answer: product.requires_wall_mount 
@@ -641,14 +604,11 @@ export function generateRackFAQs(product: {
       : `Não precisa furar. O rack fica apoiado no chão, sem necessidade de fixação na parede - ideal para apartamentos alugados.`
   })
   
-  // ⭐ v2.9: Entrega com BAIRROS (Autoridade Local)
-  const bairros = getBairrosAleatorios(4)
   faqs.push({
     question: `Qual o prazo de entrega para Curitiba?`,
     answer: `Entrega própria em até 72h para Curitiba (${bairros.join(', ')} e todos os bairros) e Região Metropolitana. Frota própria - a gente conhece as ruas da cidade e cuida do seu móvel.`
   })
   
-  // 8. Garantia
   faqs.push({
     question: `E se chegar com defeito?`,
     answer: FAQ_GARANTIA_RESPOSTA
@@ -657,9 +617,195 @@ export function generateRackFAQs(product: {
   return faqs
 }
 
-/**
- * Gera FAQs dinâmicas para escrivaninhas
- */
+export function generateBuffetAparadorFAQs(product: {
+  name: string
+  width?: number | null
+  height?: number | null
+  depth?: number | null
+  assembly_time_minutes?: number | null
+  assembly_difficulty?: string | null
+  main_material?: string | null
+  weight_capacity?: number | null
+  supplier_id?: string | null
+}): FAQItem[] {
+  const faqs: FAQItem[] = []
+  const baseName = product.name.includes(' - ') ? product.name.split(' - ')[0] : product.name
+  const supplierProfile = getSupplierProfile(product.supplier_id)
+  const bairros = getBairrosPorContexto('casa', 4)
+  
+  if (product.depth) {
+    const isCompact = product.depth <= 40
+    faqs.push({
+      question: `O ${baseName} obstrui a passagem na sala de jantar?`,
+      answer: isCompact
+        ? `Não! Com apenas ${product.depth}cm de profundidade, o ${baseName} foi projetado para salas de jantar compactas típicas de Curitiba. Você consegue circular tranquilamente mesmo em ambientes pequenos.`
+        : `O ${baseName} tem ${product.depth}cm de profundidade. Recomendamos medir o espaço disponível na sua sala antes de comprar. Dúvida? Chama no WhatsApp.`
+    })
+  }
+  
+  if (product.width && product.height && product.depth) {
+    faqs.push({
+      question: `Quais são as medidas do ${baseName}?`,
+      answer: `${product.width}cm de largura × ${product.height}cm de altura × ${product.depth}cm de profundidade. Ideal para organizar louças e objetos de decoração.`
+    })
+  }
+  
+  faqs.push({
+    question: `O ${baseName} é resistente à umidade de Curitiba?`,
+    answer: `Sim! ${product.main_material ? `Feito em ${product.main_material} com ` : 'Com '}acabamento em pintura UV que protege contra a umidade característica de Curitiba. Suas louças e objetos ficam protegidos. Limpe apenas com pano levemente úmido.`
+  })
+  
+  if (product.weight_capacity) {
+    faqs.push({
+      question: `Quanto peso as prateleiras do ${baseName} suportam?`,
+      answer: `Suporta até ${product.weight_capacity}kg distribuídos. Suficiente para louças, vasos e objetos de decoração. Evite concentrar peso excessivo em um único ponto.`
+    })
+  }
+  
+  faqs.push({
+    question: `É difícil montar o ${baseName}?`,
+    answer: generateMontageAnswer(product.assembly_difficulty, product.assembly_time_minutes, supplierProfile)
+  })
+  
+  faqs.push({
+    question: `Qual o prazo de entrega para Curitiba?`,
+    answer: `Entrega própria em até 72h para Curitiba (${bairros.join(', ')} e todos os bairros) e Região Metropolitana. Embalagem reforçada para proteger o móvel durante o transporte.`
+  })
+  
+  faqs.push({
+    question: `E se chegar com defeito?`,
+    answer: FAQ_GARANTIA_RESPOSTA
+  })
+  
+  return faqs
+}
+
+export function generateMesaProfissionalFAQs(product: {
+  name: string
+  width?: number | null
+  height?: number | null
+  depth?: number | null
+  assembly_time_minutes?: number | null
+  assembly_difficulty?: string | null
+  main_material?: string | null
+  weight_capacity?: number | null
+  thickness_mm?: number | null
+  supplier_id?: string | null
+}): FAQItem[] {
+  const faqs: FAQItem[] = []
+  const baseName = product.name.includes(' - ') ? product.name.split(' - ')[0] : product.name
+  const supplierProfile = getSupplierProfile(product.supplier_id)
+  const bairros = getBairrosPorContexto('escritorio-pro', 4)
+  
+  if (product.thickness_mm) {
+    faqs.push({
+      question: `A ${baseName} suporta múltiplos monitores sem balançar?`,
+      answer: `Sim! Com tampo de ${product.thickness_mm}mm em ${product.main_material || 'material de alta densidade'}, a ${baseName} foi projetada para setups profissionais com 2 ou mais monitores. Estrutura estável mesmo com uso intenso durante o expediente.`
+    })
+  }
+  
+  if (product.width && product.height && product.depth) {
+    faqs.push({
+      question: `Quais são as medidas da ${baseName}?`,
+      answer: `${product.width}cm de largura × ${product.height}cm de altura × ${product.depth}cm de profundidade. Espaço amplo para monitores, documentos e acessórios de escritório.`
+    })
+  }
+  
+  faqs.push({
+    question: `A ${baseName} tem solução para organizar fios?`,
+    answer: `Sim! A mesa conta com furação para passagem de cabos, permitindo organizar fios de monitores, carregadores e periféricos. Seu setup fica limpo e profissional.`
+  })
+  
+  if (product.weight_capacity) {
+    faqs.push({
+      question: `Quanto peso a ${baseName} suporta?`,
+      answer: `Suporta até ${product.weight_capacity}kg no tampo. Projetada para equipamentos de escritório: monitores, impressoras, CPU e acessórios sem problema.`
+    })
+  }
+  
+  if (product.main_material) {
+    faqs.push({
+      question: `Qual o material da ${baseName}?`,
+      answer: `${product.main_material}${product.thickness_mm ? ` com ${product.thickness_mm}mm de espessura` : ''} — padrão corporativo de durabilidade. Acabamento resistente a riscos e fácil de limpar.`
+    })
+  }
+  
+  faqs.push({
+    question: `É difícil montar a ${baseName}?`,
+    answer: generateMontageAnswer(product.assembly_difficulty, product.assembly_time_minutes, supplierProfile)
+  })
+  
+  faqs.push({
+    question: `Vocês entregam em escritórios em Curitiba?`,
+    answer: `Sim! Entrega própria em até 72h para escritórios em Curitiba (${bairros.join(', ')} e toda a cidade) e Região Metropolitana. Embalagem reforçada para garantir que chegue perfeita.`
+  })
+  
+  faqs.push({
+    question: `E se chegar com defeito?`,
+    answer: FAQ_GARANTIA_RESPOSTA
+  })
+  
+  return faqs
+}
+
+export function generateEstanteFAQs(product: {
+  name: string
+  width?: number | null
+  height?: number | null
+  depth?: number | null
+  assembly_time_minutes?: number | null
+  assembly_difficulty?: string | null
+  main_material?: string | null
+  weight_capacity?: number | null
+  supplier_id?: string | null
+}): FAQItem[] {
+  const faqs: FAQItem[] = []
+  const baseName = product.name.includes(' - ') ? product.name.split(' - ')[0] : product.name
+  const supplierProfile = getSupplierProfile(product.supplier_id)
+  const bairros = getBairrosPorContexto('casa', 4)
+  
+  if (product.width && product.height && product.depth) {
+    faqs.push({
+      question: `Quais são as medidas da ${baseName}?`,
+      answer: `${product.width}cm de largura × ${product.height}cm de altura × ${product.depth}cm de profundidade. Confira se o pé-direito do seu ambiente comporta a altura.`
+    })
+  }
+  
+  if (product.weight_capacity) {
+    faqs.push({
+      question: `Quanto peso cada prateleira da ${baseName} aguenta?`,
+      answer: `Suporta até ${product.weight_capacity}kg por prateleira (peso distribuído). Ideal para livros, objetos decorativos e itens de uso diário.`
+    })
+  }
+  
+  faqs.push({
+    question: `A ${baseName} é resistente à umidade?`,
+    answer: `Sim! ${product.main_material ? `Feita em ${product.main_material} com ` : 'Com '}acabamento protetor contra a umidade de Curitiba. Seus livros e objetos ficam protegidos.`
+  })
+  
+  faqs.push({
+    question: `Precisa fixar a ${baseName} na parede?`,
+    answer: `Recomendamos fixar na parede por segurança, especialmente se tiver crianças ou pets em casa. Buchas e parafusos de fixação acompanham o produto.`
+  })
+  
+  faqs.push({
+    question: `É difícil montar a ${baseName}?`,
+    answer: generateMontageAnswer(product.assembly_difficulty, product.assembly_time_minutes, supplierProfile)
+  })
+  
+  faqs.push({
+    question: `Qual o prazo de entrega para Curitiba?`,
+    answer: `Entrega própria em até 72h para Curitiba (${bairros.join(', ')} e região) e RMC. Embalagem reforçada para proteger durante o transporte.`
+  })
+  
+  faqs.push({
+    question: `E se chegar com defeito?`,
+    answer: FAQ_GARANTIA_RESPOSTA
+  })
+  
+  return faqs
+}
+
 export function generateEscrivaninhaFAQs(product: {
   name: string
   width?: number | null
@@ -669,12 +815,13 @@ export function generateEscrivaninhaFAQs(product: {
   assembly_difficulty?: string | null
   main_material?: string | null
   weight_capacity?: number | null
+  supplier_id?: string | null
 }): FAQItem[] {
   const faqs: FAQItem[] = []
-  
   const baseName = product.name.includes(' - ') ? product.name.split(' - ')[0] : product.name
+  const supplierProfile = getSupplierProfile(product.supplier_id)
+  const bairros = getBairrosPorContexto('escritorio-home', 4)
   
-  // 1. Medidas
   if (product.width && product.height && product.depth) {
     faqs.push({
       question: `Quais são as medidas da ${baseName}?`,
@@ -682,7 +829,6 @@ export function generateEscrivaninhaFAQs(product: {
     })
   }
   
-  // 2. Cabe notebook + monitor?
   if (product.width) {
     const cabeMonitor = product.width >= 90
     faqs.push({
@@ -693,13 +839,11 @@ export function generateEscrivaninhaFAQs(product: {
     })
   }
   
-  // 3. Montagem - v2.9
   faqs.push({
     question: `É difícil montar a ${baseName}?`,
-    answer: generateMontageAnswer(product.assembly_difficulty, product.assembly_time_minutes)
+    answer: generateMontageAnswer(product.assembly_difficulty, product.assembly_time_minutes, supplierProfile)
   })
   
-  // 4. Material
   if (product.main_material) {
     faqs.push({
       question: `Qual o material da ${baseName}?`,
@@ -707,14 +851,11 @@ export function generateEscrivaninhaFAQs(product: {
     })
   }
   
-  // ⭐ v2.9: Entrega com bairros
-  const bairros = getBairrosAleatorios(4)
   faqs.push({
     question: `Qual o prazo de entrega para Curitiba?`,
     answer: `Entrega própria em até 72h para Curitiba (${bairros.join(', ')} e região) e RMC.`
   })
   
-  // 6. Garantia
   faqs.push({
     question: `E se chegar com defeito?`,
     answer: FAQ_GARANTIA_RESPOSTA
@@ -724,36 +865,13 @@ export function generateEscrivaninhaFAQs(product: {
 }
 
 // ============================================
-// GOOGLE MERCHANT CENTER
+// GERADOR PRINCIPAL DE FAQs (ROTEADOR)
 // ============================================
-
-export function generateGMCTitle(product: ProductForH1): string {
-  const h1 = generateProductH1(product)
-  return `${h1} - Moveirama`
-}
-
-// ============================================
-// HELPERS
-// ============================================
-
-export function inferCategoryType(slug: string, categorySlug?: string): ProductForH1['category_type'] {
-  const slugLower = slug.toLowerCase()
-  const catLower = (categorySlug || '').toLowerCase()
-  
-  if (slugLower.includes('rack') || catLower.includes('rack')) return 'rack'
-  if (slugLower.includes('painel') || catLower.includes('painel')) return 'painel'
-  if (slugLower.includes('escrivaninha') || catLower.includes('escrivaninha')) return 'escrivaninha'
-  if (slugLower.includes('penteadeira') || catLower.includes('penteadeira')) return 'penteadeira'
-  if (slugLower.includes('mesa') || catLower.includes('mesa')) return 'mesa'
-  
-  return null
-}
 
 export function generateProductFAQs(product: {
   name: string
   slug: string
   tv_max_size?: number | null
-  // Aceita ambos: width ou width_cm (compatibilidade)
   width?: number | null
   width_cm?: number | null
   height?: number | null
@@ -766,12 +884,10 @@ export function generateProductFAQs(product: {
   weight_capacity?: number | null
   requires_wall_mount?: boolean | null
   thickness_mm?: number | null
+  supplier_id?: string | null
 }, categorySlug?: string): FAQItem[] {
   const categoryType = inferCategoryType(product.slug, categorySlug)
   
-  const baseName = product.name.includes(' - ') ? product.name.split(' - ')[0] : product.name
-  
-  // ⭐ v2.9.1: Normaliza campos (aceita width ou width_cm)
   const normalizedProduct = {
     ...product,
     width: product.width ?? product.width_cm,
@@ -782,35 +898,37 @@ export function generateProductFAQs(product: {
   if (categoryType === 'rack' || categoryType === 'painel') {
     return generateRackFAQs(normalizedProduct)
   }
-  
-  if (categoryType === 'escrivaninha') {
+  if (categoryType === 'buffet' || categoryType === 'aparador') {
+    return generateBuffetAparadorFAQs(normalizedProduct)
+  }
+  if (categoryType === 'estante' || categoryType === 'cristaleira' || 
+      categoryType === 'estante-home' || categoryType === 'estante-profissional') {
+    return generateEstanteFAQs(normalizedProduct)
+  }
+  if (categoryType === 'escrivaninha' || categoryType === 'escrivaninha-l') {
     return generateEscrivaninhaFAQs(normalizedProduct)
   }
+  if (categoryType === 'mesa-reta' || categoryType === 'mesa-em-l' || 
+      categoryType === 'mesa-reuniao' || categoryType === 'estacao') {
+    return generateMesaProfissionalFAQs(normalizedProduct)
+  }
   
-  // Fallback: FAQs genéricas
+  const baseName = product.name.includes(' - ') ? product.name.split(' - ')[0] : product.name
+  const supplierProfile = getSupplierProfile(product.supplier_id)
   const bairros = getBairrosAleatorios(3)
+  
   return [
-    {
-      question: `Qual o prazo de entrega do ${baseName}?`,
-      answer: `Entrega própria em até 72h para Curitiba (${bairros.join(', ')} e região) e RMC.`
-    },
-    {
-      question: `É difícil montar o ${baseName}?`,
-      answer: generateMontageAnswer(product.assembly_difficulty, product.assembly_time_minutes)
-    },
-    {
-      question: `E se chegar com defeito?`,
-      answer: FAQ_GARANTIA_RESPOSTA
-    }
+    { question: `Qual o prazo de entrega do ${baseName}?`, answer: `Entrega própria em até 72h para Curitiba (${bairros.join(', ')} e região) e RMC.` },
+    { question: `É difícil montar o ${baseName}?`, answer: generateMontageAnswer(product.assembly_difficulty, product.assembly_time_minutes, supplierProfile) },
+    { question: `E se chegar com defeito?`, answer: FAQ_GARANTIA_RESPOSTA }
   ]
 }
 
 // ============================================
-// SEO PARA CATEGORIAS (LISTAGEM)
+// SEO PARA CATEGORIAS
 // ============================================
 
 const CATEGORY_SEO_NAMES: Record<string, string> = {
-  // MÓVEIS PARA CASA
   'racks-tv': 'Racks para TV',
   'paineis-tv': 'Painéis para TV',
   'mesas-centro': 'Mesas de Centro',
@@ -825,15 +943,11 @@ const CATEGORY_SEO_NAMES: Record<string, string> = {
   'espelhos': 'Espelhos',
   'prateleiras': 'Prateleiras',
   'penteadeiras': 'Penteadeiras',
-  
-  // MÓVEIS PARA ESCRITÓRIO - Home Office
   'escrivaninha-home-office': 'Escrivaninhas para Home Office',
   'escrivaninha-l-home-office': 'Escrivaninhas em L para Home Office',
   'estante-home-office': 'Estantes para Home Office',
   'gaveteiro-home-office': 'Gaveteiros para Home Office',
   'mesa-balcao-home-office': 'Mesas e Balcões para Home Office',
-  
-  // MÓVEIS PARA ESCRITÓRIO - Linha Profissional
   'mesa-reta': 'Mesas Retas para Escritório',
   'mesa-em-l': 'Mesas em L para Escritório',
   'mesa-reuniao': 'Mesas de Reunião',
@@ -842,51 +956,37 @@ const CATEGORY_SEO_NAMES: Record<string, string> = {
   'armario-profissional': 'Armários para Escritório',
   'prateleira-profissional': 'Prateleiras para Escritório',
   'estante-profissional': 'Estantes Profissionais',
-  
-  // CATEGORIAS PAI
+  'estacoes': 'Estações de Trabalho',
   'moveis-para-casa': 'Móveis para Casa',
   'moveis-para-escritorio': 'Móveis para Escritório',
+  'home-office': 'Home Office',
+  'linha-profissional': 'Linha Profissional',
 }
 
-export function generateCategoryH1(
-  categoryName: string,
-  categorySlug: string
-): string {
+export function generateCategoryH1(categoryName: string, categorySlug: string): string {
   const seoName = CATEGORY_SEO_NAMES[categorySlug] || categoryName
   return `${seoName} em Curitiba e Região Metropolitana`
 }
 
-export function generateCategoryTitle(
-  categoryName: string,
-  categorySlug: string
-): string {
+export function generateCategoryTitle(categoryName: string, categorySlug: string): string {
   const seoName = CATEGORY_SEO_NAMES[categorySlug] || categoryName
   return `${seoName} em Curitiba e RMC | Moveirama`
 }
 
-export function generateCategoryMetaDescription(
-  categoryName: string,
-  categorySlug: string,
-  productCount?: number
-): string {
+export function generateCategoryMetaDescription(categoryName: string, categorySlug: string, productCount?: number): string {
   const seoName = CATEGORY_SEO_NAMES[categorySlug] || categoryName
   const seoNameLower = seoName.toLowerCase()
   
-  const isRackOrPainel = ['racks-tv', 'paineis-tv'].includes(categorySlug)
-  const isEscrivaninha = categorySlug.includes('escrivaninha')
-  const isHomeOffice = categorySlug.includes('home-office')
-  const isProfissional = categorySlug.includes('profissional') || 
-                         ['mesa-reta', 'mesa-em-l', 'mesa-reuniao', 'balcao-atendimento'].includes(categorySlug)
-  
-  if (isRackOrPainel) {
+  if (['racks-tv', 'paineis-tv'].includes(categorySlug)) {
     return `Confira ${seoNameLower} em Curitiba e Região Metropolitana. Modelos para TV de 32" a 75", compactos e modernos. Entrega própria em até 72h. Compre móveis na caixa sem dor de cabeça.`
   }
-  
-  if (isEscrivaninha || isHomeOffice) {
+  if (['buffets', 'aparadores'].includes(categorySlug)) {
+    return `${seoName} em Curitiba com profundidade reduzida — ideais para salas de jantar compactas. Proteção contra umidade. Entrega própria em até 72h.`
+  }
+  if (categorySlug.includes('escrivaninha') || categorySlug.includes('home-office')) {
     return `${seoName} em Curitiba e RMC com entrega rápida. Modelos compactos ideais para apartamentos pequenos. Frota própria, entrega em até 72h. Monte seu home office sem stress.`
   }
-  
-  if (isProfissional) {
+  if (categorySlug.includes('profissional') || ['mesa-reta', 'mesa-em-l', 'mesa-reuniao', 'balcao-atendimento', 'estacoes'].includes(categorySlug)) {
     return `${seoName} em Curitiba e Região Metropolitana. Móveis robustos para escritórios e empresas. Entrega própria em até 72h. Qualidade profissional com preço justo.`
   }
   
@@ -894,58 +994,32 @@ export function generateCategoryMetaDescription(
   return `${countText}${seoNameLower} em Curitiba e Região Metropolitana. Preço justo, entrega própria em até 72h. Móveis na caixa com montagem fácil e suporte no WhatsApp.`
 }
 
-export function generateCategoryFAQs(
-  categoryName: string,
-  categorySlug: string
-): FAQItem[] {
+export function generateCategoryFAQs(categoryName: string, categorySlug: string): FAQItem[] {
   const seoName = CATEGORY_SEO_NAMES[categorySlug] || categoryName
   const seoNameLower = seoName.toLowerCase()
   
-  // ⭐ v2.9: Bairros nas FAQs de categoria
-  const bairros = getBairrosAleatorios(5)
+  const isProfissional = categorySlug.includes('profissional') || ['mesa-reta', 'mesa-em-l', 'mesa-reuniao', 'balcao-atendimento', 'estacoes'].includes(categorySlug)
+  const bairros = isProfissional ? getBairrosPorContexto('escritorio-pro', 5) : getBairrosPorContexto('casa', 5)
   
   const faqs: FAQItem[] = [
-    {
-      question: `Quais cidades vocês entregam ${seoNameLower}?`,
-      answer: `Entregamos em Curitiba (${bairros.join(', ')} e todos os bairros) e Região Metropolitana: São José dos Pinhais, Colombo, Araucária, Pinhais e Fazenda Rio Grande. Frota própria para entrega rápida e cuidadosa.`
-    },
-    {
-      question: `Qual o prazo de entrega para ${seoNameLower} em Curitiba?`,
-      answer: `Para Curitiba e região metropolitana, o prazo é de até 72h após confirmação do pagamento. Entregamos com frota própria, sem depender de transportadoras.`
-    },
-    {
-      question: `Vocês montam os ${seoNameLower}?`,
-      answer: `Sim! Oferecemos serviço de montagem em Curitiba e algumas cidades da RMC. O valor é informado no momento da compra. Se preferir montar sozinho, todos os produtos vêm com manual e ferragens completas - sem precisar de ferramentas elétricas.`
-    },
-    {
-      question: `Os ${seoNameLower} vêm montados ou na caixa?`,
-      answer: `Nossos móveis vêm na caixa, desmontados. Isso garante preço mais baixo e protege o produto durante o transporte. Cada peça vem com manual ilustrado e todas as ferragens necessárias.`
-    },
-    {
-      question: `E se o móvel chegar com defeito?`,
-      answer: FAQ_GARANTIA_RESPOSTA
-    }
+    { question: `Quais cidades vocês entregam ${seoNameLower}?`, answer: `Entregamos em Curitiba (${bairros.join(', ')} e todos os bairros) e Região Metropolitana: São José dos Pinhais, Colombo, Araucária, Pinhais e Fazenda Rio Grande. Frota própria para entrega rápida e cuidadosa.` },
+    { question: `Qual o prazo de entrega para ${seoNameLower} em Curitiba?`, answer: `Para Curitiba e região metropolitana, o prazo é de até 72h após confirmação do pagamento. Entregamos com frota própria, sem depender de transportadoras.` },
+    { question: `Vocês montam os ${seoNameLower}?`, answer: `Sim! Oferecemos serviço de montagem em Curitiba e algumas cidades da RMC. O valor é informado no momento da compra. Se preferir montar sozinho, todos os produtos vêm com manual e ferragens completas - sem precisar de ferramentas elétricas.` },
+    { question: `Os ${seoNameLower} vêm montados ou na caixa?`, answer: `Nossos móveis vêm na caixa, desmontados. Isso garante preço mais baixo e protege o produto durante o transporte. Cada peça vem com manual ilustrado e todas as ferragens necessárias.` },
+    { question: `E se o móvel chegar com defeito?`, answer: FAQ_GARANTIA_RESPOSTA }
   ]
   
   if (['racks-tv', 'paineis-tv'].includes(categorySlug)) {
-    faqs.splice(2, 0, {
-      question: `Os ${seoNameLower} acompanham suporte de TV?`,
-      answer: `A maioria dos modelos não inclui o suporte de TV. Cada página de produto informa se o suporte está incluso. Painéis geralmente precisam de suporte articulado (vendido separadamente).`
-    })
+    faqs.splice(2, 0, { question: `Os ${seoNameLower} acompanham suporte de TV?`, answer: `A maioria dos modelos não inclui o suporte de TV. Cada página de produto informa se o suporte está incluso. Painéis geralmente precisam de suporte articulado (vendido separadamente).` })
   }
-  
+  if (['buffets', 'aparadores'].includes(categorySlug)) {
+    faqs.splice(2, 0, { question: `Os ${seoNameLower} cabem em salas de jantar pequenas?`, answer: `Sim! Temos modelos com profundidade reduzida (a partir de 37cm) ideais para salas compactas de Curitiba. Cada página mostra as medidas exatas.` })
+  }
   if (categorySlug.includes('escrivaninha')) {
-    faqs.splice(2, 0, {
-      question: `As ${seoNameLower} cabem em apartamentos pequenos?`,
-      answer: `Sim! Temos modelos compactos ideais para apartamentos. Cada página mostra as medidas exatas. Dica: meça seu espaço antes de comprar e, se tiver dúvida, chama no WhatsApp.`
-    })
+    faqs.splice(2, 0, { question: `As ${seoNameLower} cabem em apartamentos pequenos?`, answer: `Sim! Temos modelos compactos ideais para apartamentos. Cada página mostra as medidas exatas. Dica: meça seu espaço antes de comprar e, se tiver dúvida, chama no WhatsApp.` })
   }
-  
-  if (categorySlug.includes('profissional') || ['mesa-reta', 'mesa-em-l', 'mesa-reuniao', 'balcao-atendimento'].includes(categorySlug)) {
-    faqs.splice(2, 0, {
-      question: `Vocês vendem para empresas e escritórios?`,
-      answer: `Sim! Atendemos tanto pessoas físicas quanto empresas. Para pedidos maiores ou orçamentos personalizados, entre em contato pelo WhatsApp.`
-    })
+  if (isProfissional) {
+    faqs.splice(2, 0, { question: `Vocês vendem para empresas e escritórios?`, answer: `Sim! Atendemos tanto pessoas físicas quanto empresas. Para pedidos maiores ou orçamentos personalizados, entre em contato pelo WhatsApp.` })
   }
   
   return faqs
@@ -953,4 +1027,9 @@ export function generateCategoryFAQs(
 
 export function getCategorySeoName(categorySlug: string): string {
   return CATEGORY_SEO_NAMES[categorySlug] || categorySlug
+}
+
+export function generateGMCTitle(product: ProductForH1): string {
+  const h1 = generateProductH1(product)
+  return `${h1} - Moveirama`
 }
