@@ -21,30 +21,39 @@ import {
   generateProductFAQs, 
   generateProductSchema,
   generateFAQSchema,
-  generateVideoSchema,
-  generateHowToSchema,  // ⭐ v2.15: HowTo Schema para vídeo de montagem
+  generateVideoSchema,  // ⭐ v2.14: VideoObject para rich snippets
   inferCategoryType 
 } from '@/lib/seo'
 
 /**
  * ProductPageContent — Página de Produto (PDP)
  * 
- * v2.16 — 02/02/2026
+ * v2.14 — 01/02/2026
  * Changelog:
- * - v2.16 (02/02/2026): Fix campo "Material" na tabela de especificações
- *                       Antes: mostrava material_description (texto longo) como prioridade
- *                       Agora: mostra main_material + thickness_mm como padrão
- *                       Só usa material_description se main_material não existir
- * - v2.15 (02/02/2026): HowTo Schema para vídeos de montagem (assembly_video_url)
  * - v2.14 (01/02/2026): VideoObject Schema para rich snippets de vídeo no Google
+ *                       Só renderiza se product.video_product_url existir
  * - v2.13 (30/01/2026): Ícones Lucide na seção "Medidas do produto"
+ *                       MoveHorizontal (Largura), MoveVertical (Altura), Box (Profundidade)
+ *                       Cor Toffee #8B7355, stroke 2.5, tamanho 24px
  * - v2.12 (30/01/2026): Ajuste de inclusividade: "apartamento ou casa compacta"
+ *                       Padronização: travessão "—" substituído por hífen "-"
  * - v2.11 (28/01/2026): Formatação de medidas amigável para Classe C
- * - v2.10 (27/01/2026): Fix buyButtonProduct com dimensões
+ *                       ≥100cm converte para metros (160 → "1,6 m")
+ *                       <100cm mantém em cm (77 → "77 cm")
+ *                       Aplicado na seção "Medidas do produto" e especificações
+ * - v2.10 (27/01/2026): Fix buyButtonProduct com dimensões (width_cm, height_cm, depth_cm)
+ *                       Adicionado campos extras (tv_max_size, main_material, thickness_mm)
  * - v2.9 (27/01/2026): Integração com sistema de carrinho (BuyNowButton)
+ *                      Botões "Comprar agora" e "Comprar" agora adicionam ao carrinho
  * - v2.8 (26/01/2026): Adicionado VizinhosAprovaram (prova social regional)
- * - v2.7 (26/01/2026): Adicionado ReviewsSection após FAQ
- * - v2.6 (26/01/2026): Adicionado ProductRating, ProductSaveWrapper
+ * - v2.7 (26/01/2026): Adicionado ReviewsSection (bloco de comentários) após FAQ
+ * - v2.6 (26/01/2026): Adicionado ProductRating (estrelinhas) abaixo do H1
+ *                      Adicionado ProductSaveWrapper (Minha Lista)
+ *                      Badge 5% OFF alterado para terracota (#B85C38)
+ *                      Botão WhatsApp alterado para outline
+ * - v2.1 (20/01/2026): Prazo de entrega alterado de 2 para 3 dias úteis
+ * - v2.0 (20/01/2026): Adicionada seção VideoProduct (vídeo do produto)
+ * - v1.x: SEO V2, FAQs dinâmicas, Schema.org
  */
 
 // Types
@@ -54,9 +63,10 @@ interface BreadcrumbItem {
 }
 
 interface ProductPageContentProps {
-  product: any
+  product: any // TODO: tipar corretamente
   breadcrumbItems: BreadcrumbItem[]
   subcategorySlug: string
+  // ⭐ NOVO v2.7: Props para reviews
   reviews?: Review[]
   reviewsSummary?: ReviewsSummaryType | null
 }
@@ -78,7 +88,7 @@ function getInstallments(price: number, maxParcelas = 10) {
   return { parcelas, valorParcela }
 }
 
-// Formata dificuldade de montagem
+// Formata dificuldade de montagem (banco armazena sem acento)
 function formatDifficulty(difficulty: string): string {
   const map: Record<string, string> = {
     'facil': 'fácil',
@@ -90,6 +100,9 @@ function formatDifficulty(difficulty: string): string {
 
 /**
  * ⭐ v2.11: Formata medida em cm para exibição amigável
+ * - Valores ≥ 100cm são convertidos para metros (ex: 160 → "1,6 m")
+ * - Valores < 100cm permanecem em centímetros (ex: 77 → "77 cm")
+ * - Decimais são arredondados para inteiro quando < 100cm
  */
 function formatarMedidaDetalhada(valorCm: number | null | undefined): { valor: string; unidade: string } {
   if (valorCm == null) {
@@ -97,18 +110,22 @@ function formatarMedidaDetalhada(valorCm: number | null | undefined): { valor: s
   }
   
   if (valorCm >= 100) {
+    // Converte para metros
     const metros = valorCm / 100
+    // Formata com vírgula, remove zeros desnecessários
     let formatado = metros.toFixed(2).replace('.', ',')
     formatado = formatado.replace(/,?0+$/, '')
     return { valor: formatado, unidade: 'm' }
   } else {
+    // Mantém em centímetros, arredonda para inteiro
     const valorArredondado = Math.round(valorCm)
     return { valor: valorArredondado.toString(), unidade: 'cm' }
   }
 }
 
 /**
- * ⭐ v2.11: Formata dimensões L×A×P
+ * ⭐ v2.11: Formata dimensões L×A×P para exibição na tabela de specs
+ * Converte cada dimensão individualmente
  */
 function formatarDimensoesCompletas(largura: number | null, altura: number | null, profundidade: number | null): string {
   const l = formatarMedidaDetalhada(largura)
@@ -116,28 +133,6 @@ function formatarDimensoesCompletas(largura: number | null, altura: number | nul
   const p = formatarMedidaDetalhada(profundidade)
   
   return `${l.valor} ${l.unidade} × ${a.valor} ${a.unidade} × ${p.valor} ${p.unidade}`
-}
-
-/**
- * ⭐ v2.16: Formata o campo Material para exibição na tabela de specs
- * Prioridade: main_material + thickness_mm > material_description
- * Isso corrige o bug onde texto descritivo longo aparecia no campo Material
- */
-function formatarMaterial(mainMaterial: string | null, thicknessMm: number | null, materialDescription: string | null): string {
-  // Se temos main_material, usar ele (com thickness se disponível)
-  if (mainMaterial) {
-    if (thicknessMm) {
-      return `${mainMaterial} ${thicknessMm}mm`
-    }
-    return mainMaterial
-  }
-  
-  // Fallback para material_description (caso main_material não exista)
-  if (materialDescription) {
-    return materialDescription
-  }
-  
-  return '-'
 }
 
 export default function ProductPageContent({ 
@@ -148,7 +143,7 @@ export default function ProductPageContent({
   reviewsSummary = null
 }: ProductPageContentProps) {
   const { parcelas, valorParcela } = getInstallments(product.price)
-  const pixPrice = product.price * 0.95
+  const pixPrice = product.price * 0.95 // 5% desconto no Pix
   const defaultVariant = product.variants?.find((v: { is_default: boolean }) => v.is_default) || product.variants?.[0]
 
   // WhatsApp link
@@ -156,10 +151,12 @@ export default function ProductPageContent({
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no ${product.name}. Podem me ajudar?`)
   const whatsappLink = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`
 
-  // URL canônica
+  // URL canônica (nova estrutura)
   const canonicalUrl = `https://moveirama.com.br/${subcategorySlug}/${product.slug}`
 
+  // ============================================
   // SEO V2: H1 otimizado e FAQs dinâmicas
+  // ============================================
   const categoryType = inferCategoryType(product.slug, subcategorySlug)
 
   const h1Title = generateProductH1({
@@ -169,11 +166,14 @@ export default function ProductPageContent({
     variant_name: defaultVariant?.name
   })
 
+  // FAQs: usa do banco se existir, senão gera automaticamente
   const faqs = product.faqs?.length > 0 
     ? product.faqs 
     : generateProductFAQs(product, subcategorySlug)
 
-  // Schema.org Product
+  // ============================================
+  // SEO V2: Schema.org Product (com shippingDetails + aggregateRating)
+  // ============================================
   const baseProductSchema = generateProductSchema({
     name: product.name,
     price: product.price,
@@ -192,6 +192,7 @@ export default function ProductPageContent({
     variants: product.variants
   }, canonicalUrl)
 
+  // ⭐ v2.6: Adiciona AggregateRating se houver avaliações
   const productSchema = {
     ...baseProductSchema,
     ...(product.rating_count > 0 && product.rating_average > 0 && {
@@ -205,21 +206,20 @@ export default function ProductPageContent({
     })
   }
 
+  // ============================================
+  // SEO V2: Schema.org FAQPage (dinâmico)
+  // ============================================
   const faqSchema = faqs.length > 0 ? generateFAQSchema(faqs) : null
 
+  // ============================================
+  // ⭐ v2.14: Schema.org VideoObject (rich snippet de vídeo)
+  // Só gera se product.video_product_url existir
+  // ============================================
   const videoSchema = product.video_product_url 
     ? generateVideoSchema(product.video_product_url, product.name)
     : null
 
-  const howToSchema = product.assembly_video_url 
-    ? generateHowToSchema(
-        product.assembly_video_url, 
-        product.name,
-        product.assembly_time_minutes,
-        product.assembly_difficulty
-      )
-    : null
-
+  // Schema.org BreadcrumbList
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -231,6 +231,10 @@ export default function ProductPageContent({
     }))
   }
 
+  // ============================================
+  // ⭐ v2.9: Dados para o botão de compra
+  // ⭐ v2.10: Adicionado dimensões e campos extras
+  // ============================================
   const buyButtonProduct = {
     id: product.id,
     name: product.name,
@@ -241,22 +245,21 @@ export default function ProductPageContent({
     sku: product.sku,
     variantId: defaultVariant?.id,
     variantName: defaultVariant?.name,
+    // Dimensões (para exibição no carrinho)
     width_cm: product.width_cm,
     height_cm: product.height_cm,
     depth_cm: product.depth_cm,
+    // Extras
     tv_max_size: product.tv_max_size,
     main_material: product.main_material,
     thickness_mm: product.thickness_mm
   }
 
-  // Pré-formata medidas
+  // ⭐ v2.11: Pré-formata medidas para uso no template
   const larguraFormatada = formatarMedidaDetalhada(product.width_cm)
   const alturaFormatada = formatarMedidaDetalhada(product.height_cm)
   const profundidadeFormatada = formatarMedidaDetalhada(product.depth_cm)
   const dimensoesCompletas = formatarDimensoesCompletas(product.width_cm, product.height_cm, product.depth_cm)
-  
-  // ⭐ v2.16: Pré-formata material para tabela de specs
-  const materialFormatado = formatarMaterial(product.main_material, product.thickness_mm, product.material_description)
 
   return (
     <main className="min-h-screen pb-24 md:pb-8">
@@ -275,16 +278,11 @@ export default function ProductPageContent({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
         />
       )}
+      {/* ⭐ v2.14: VideoObject Schema para rich snippets de vídeo */}
       {videoSchema && (
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(videoSchema) }}
-        />
-      )}
-      {howToSchema && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
         />
       )}
 
@@ -307,19 +305,19 @@ export default function ProductPageContent({
 
           {/* Coluna Direita: Informações */}
           <div className="min-w-0">
-            {/* Título */}
+            {/* Título - SEO V2: H1 otimizado */}
             <h1 className="text-2xl md:text-3xl font-semibold text-[var(--color-graphite)] mb-2">
               {h1Title}
             </h1>
             
-            {/* Rating */}
+            {/* ⭐ v2.6: Rating/Avaliações */}
             <ProductRating 
               rating={product.rating_average ?? 0}
               totalReviews={product.rating_count ?? 0}
               productId={product.id}
             />
             
-            {/* Resumo IA-friendly */}
+            {/* Resumo IA-friendly (SEO/AIO) */}
             <p className="text-sm text-[var(--color-toffee)] mb-3 leading-relaxed break-words">
               <strong>{product.name}</strong>{product.tv_max_size ? ` para TV até ${product.tv_max_size} polegadas` : ''}. {formatPrice(product.price)} à vista ou {parcelas}x {formatPrice(valorParcela)} sem juros. Montagem {formatDifficulty(product.assembly_difficulty)} (~{product.assembly_time_minutes}min). Entrega própria em Curitiba e região metropolitana em até 3 dias úteis.
             </p>
@@ -329,7 +327,7 @@ export default function ProductPageContent({
               SKU: {product.sku}
             </p>
 
-            {/* Minha Lista */}
+            {/* ⭐ v2.6: Minha Lista - Salvar produto */}
             <div className="mb-4">
               <ProductSaveWrapper
                 product={{
@@ -358,7 +356,7 @@ export default function ProductPageContent({
                 em até <strong>{parcelas}x</strong> de <strong>{formatPrice(valorParcela)}</strong> sem juros
               </p>
               
-              {/* Preço Pix */}
+              {/* Preço Pix - v2.6: Badge terracota */}
               <div className="inline-flex items-center gap-2 mt-3 px-3 py-2 bg-[var(--color-sage-500)]/10 rounded-lg">
                 <span className="text-[var(--color-sage-700)] font-semibold">
                   {formatPrice(pixPrice)} no Pix
@@ -368,7 +366,7 @@ export default function ProductPageContent({
                 </span>
               </div>
 
-              {/* Medidas Compactas */}
+              {/* Medidas Compactas v1.2 - responde "vai caber?" antes do CTA */}
               <MedidasCompactas
                 largura={product.width_cm}
                 altura={product.height_cm}
@@ -389,7 +387,7 @@ export default function ProductPageContent({
               </div>
             </div>
 
-            {/* Variantes */}
+            {/* Variantes (cores) */}
             {product.variants && product.variants.length > 1 && (
               <div className="mb-6">
                 <p className="text-sm font-medium text-[var(--color-graphite)] mb-2">
@@ -417,7 +415,7 @@ export default function ProductPageContent({
               <ShippingCalculator />
             </div>
 
-            {/* Botões de Ação */}
+            {/* ⭐ v2.9: Botões de Ação com BuyNowButton */}
             <div className="flex flex-col gap-3 mb-6">
               <BuyNowButton product={buyButtonProduct} />
               <a 
@@ -463,7 +461,11 @@ export default function ProductPageContent({
           </div>
         </div>
 
-        {/* Vídeo do Produto */}
+        {/* ============================================
+            SEÇÃO: VÍDEO DO PRODUTO (v2.0)
+            Posição: primeiro item abaixo da dobra
+            Só renderiza se video_product_url existir
+            ============================================ */}
         <VideoProduct 
           videoUrl={product.video_product_url} 
           productName={product.name} 
@@ -480,9 +482,10 @@ export default function ProductPageContent({
                 <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
-                <span className="text-[var(--color-graphite)]">Quem tem TV de até {product.tv_max_size}" e quer um móvel bonito sem gastar muito</span>
+                <span className="text-[var(--color-graphite)]">Quem tem TV de até {product.tv_max_size}&quot; e quer um móvel bonito sem gastar muito</span>
               </li>
             )}
+            {/* ⭐ v2.12: Corrigido para incluir casas */}
             <li className="flex items-start gap-3">
               <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -515,7 +518,7 @@ export default function ProductPageContent({
                 <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span><strong>Suporta TV até {product.tv_max_size}"</strong> - medida confirmada pelo fabricante</span>
+                <span><strong>Suporta TV até {product.tv_max_size}&quot;</strong> - medida confirmada pelo fabricante</span>
               </li>
             )}
             <li className="flex items-start gap-3">
@@ -545,12 +548,13 @@ export default function ProductPageContent({
           </ul>
         </section>
 
-        {/* Seção: Medidas */}
+        {/* ⭐ v2.13: Seção: Medidas - com ícones Lucide */}
         <section id="medidas-detalhadas" className="mt-8 scroll-mt-4">
           <h2 className="text-2xl font-semibold text-[var(--color-graphite)] mb-4">
             Medidas do produto
           </h2>
           <div className="grid grid-cols-3 gap-4 p-4 bg-white rounded-lg border border-[var(--color-sand-light)]">
+            {/* Largura */}
             <div className="flex flex-col items-center gap-2 text-center">
               <MoveHorizontal 
                 className="w-6 h-6 text-[#8B7355]" 
@@ -562,6 +566,7 @@ export default function ProductPageContent({
               </p>
               <p className="text-sm text-[var(--color-toffee)]">Largura</p>
             </div>
+            {/* Altura */}
             <div className="flex flex-col items-center gap-2 text-center">
               <MoveVertical 
                 className="w-6 h-6 text-[#8B7355]" 
@@ -573,6 +578,7 @@ export default function ProductPageContent({
               </p>
               <p className="text-sm text-[var(--color-toffee)]">Altura</p>
             </div>
+            {/* Profundidade */}
             <div className="flex flex-col items-center gap-2 text-center">
               <Box 
                 className="w-6 h-6 text-[#8B7355]" 
@@ -587,7 +593,7 @@ export default function ProductPageContent({
           </div>
         </section>
 
-        {/* Recursos de Montagem */}
+        {/* Seção: Recursos de Montagem */}
         <RecursosMontagem
           manualUrl={product.manual_pdf_url}
           medidasImagemUrl={product.medidas_image_url}
@@ -596,7 +602,7 @@ export default function ProductPageContent({
           productName={product.name}
         />
 
-        {/* Descrição */}
+        {/* Seção: Descrição */}
         <section className="mt-8">
           <h2 className="text-2xl font-semibold text-[var(--color-graphite)] mb-4">
             Sobre o {product.name}
@@ -620,7 +626,7 @@ export default function ProductPageContent({
           </div>
         </section>
 
-        {/* ⭐ v2.16: Especificações Técnicas - com material formatado corretamente */}
+        {/* ⭐ v2.11: Especificações Técnicas - com dimensões formatadas */}
         <section className="mt-8">
           <h2 className="text-2xl font-semibold text-[var(--color-graphite)] mb-4">
             Especificações técnicas
@@ -633,10 +639,12 @@ export default function ProductPageContent({
                   <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] w-1/3 text-left">Marca</th>
                   <td className="px-4 py-3">{product.brand || '-'}</td>
                 </tr>
-                {/* ⭐ v2.16: Corrigido - prioriza main_material sobre material_description */}
                 <tr className="border-b border-[var(--color-sand-light)]">
                   <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Material</th>
-                  <td className="px-4 py-3">{materialFormatado}</td>
+                  <td className="px-4 py-3">
+                    {/* v3.2.3: Usar apenas main_material (material_description tem dados comerciais antigos) */}
+                    {product.main_material}{product.thickness_mm && ` ${product.thickness_mm}mm`}
+                  </td>
                 </tr>
                 <tr className="border-b border-[var(--color-sand-light)]">
                   <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Dimensões (L×A×P)</th>
@@ -646,10 +654,16 @@ export default function ProductPageContent({
                   <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Peso</th>
                   <td className="px-4 py-3">{product.weight_kg} kg</td>
                 </tr>
+                {/* Peso Suportado - v3.2.3: Para racks/painéis mostra orientação de consultar manual */}
                 {product.weight_capacity && product.weight_capacity > 0 && (
                   <tr className="border-b border-[var(--color-sand-light)]">
                     <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Peso suportado</th>
-                    <td className="px-4 py-3">Até {product.weight_capacity} kg</td>
+                    <td className="px-4 py-3">
+                      {(categoryType === 'rack' || categoryType === 'painel') 
+                        ? 'Consulte manual de montagem acima'
+                        : `Até ${product.weight_capacity} kg`
+                      }
+                    </td>
                   </tr>
                 )}
                 {product.tv_max_size && (
@@ -675,7 +689,7 @@ export default function ProductPageContent({
           </div>
         </section>
 
-        {/* FAQ */}
+        {/* Seção: FAQ - SEO V2: Usa FAQs dinâmicas */}
         {faqs && faqs.length > 0 && (
           <section className="mt-8">
             <h2 className="text-2xl font-semibold text-[var(--color-graphite)] mb-4">
@@ -708,7 +722,10 @@ export default function ProductPageContent({
           </section>
         )}
 
-        {/* Reviews */}
+        {/* ============================================
+            ⭐ NOVO v2.7: SEÇÃO DE AVALIAÇÕES/REVIEWS
+            Posição: após FAQ, antes de Confiança
+            ============================================ */}
         <ReviewsSection
           productId={product.id}
           productSlug={product.slug}
@@ -717,7 +734,7 @@ export default function ProductPageContent({
           reviews={reviews}
         />
 
-        {/* Confiança */}
+        {/* Seção: Confiança */}
         <section className="mt-10 p-6 bg-[var(--color-cream)] rounded-lg">
           <h2 className="text-2xl font-semibold text-[var(--color-graphite)] mb-4">
             Compre com segurança
@@ -738,7 +755,10 @@ export default function ProductPageContent({
           </div>
         </section>
 
-        {/* Vizinhos que Aprovaram */}
+        {/* ============================================
+            ⭐ NOVO v2.8: VIZINHOS QUE APROVARAM
+            Prova social regional com fotos de clientes
+            ============================================ */}
         <VizinhosAprovaram 
           productId={product.id}
           productName={product.name}
@@ -746,7 +766,7 @@ export default function ProductPageContent({
 
       </div>
 
-      {/* Sticky Bar Mobile */}
+      {/* ⭐ v2.9: Sticky Bar Mobile com BuyNowButton */}
       <div className="fixed bottom-0 left-0 right-0 z-20 flex items-center gap-3 p-3 bg-white border-t border-[var(--color-sand-light)] shadow-lg md:hidden" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0))' }}>
         <div className="flex-1 min-w-0">
           <p className="text-lg font-bold text-[var(--color-graphite)]">{formatPrice(product.price)}</p>

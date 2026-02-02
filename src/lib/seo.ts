@@ -2,22 +2,19 @@
 
 /**
  * Moveirama SEO Utilities
- * Funções para gerar H1, meta description, schema.org e FAQ
- * 
- * Versão: 3.2.0 - Lógica por Atributos do Produto (não por fornecedor)
+ * Versão: 3.2.3 - Remove peso suportado de racks/painéis (confunde cliente)
  * 
  * Changelog:
- *   - v3.2 (02/02/2026): CORREÇÃO CRÍTICA - LÓGICA POR ATRIBUTOS
- *                        • Tamburato 50mm vale para AMBOS (Artely e Artany)
- *                        • Diferenciação baseada em thickness_mm, não supplier_id
- *                        • "Compacto" removido — Artely tem racks de 1,80m
- *                        • Artely destacada por: acabamento Pintura UV, visual sofisticado
- *                        • Artany destacada por: estrutura corporativa, uso intenso
- *                        • Proposta de valor dinâmica baseada nos dados reais do produto
- *   - v3.1 (02/02/2026): Inteligência de Marca + 30 categorias + bairros segmentados
- *   - v2.15 (02/02/2026): HowTo Schema para vídeos de montagem
- *   - v2.9.1 (01/02/2026): FIX: Aceita campos do banco (width_cm, height_cm, depth_cm)
- *   - v2.9 (01/02/2026): VideoObject, FAQ comparação, bairros, Brand/Seller separados
+ *   - v3.2.3 (02/02/2026): PESO SUPORTADO (racks/painéis)
+ *                        • Removido FAQ "Quanto peso aguenta?" para racks/painéis
+ *                        • Removido menção de peso nas FAQs de comparação
+ *                        • Motivo: peso se refere à prateleira, não ao tampo da TV
+ *   - v3.2.2 (02/02/2026): SEMÂNTICA DE ESCALA (somente Artely)
+ *                        • Móveis ≥160cm: "fluidez", "visual imponente", "ambientes integrados"
+ *                        • Móveis <160cm: "otimização de espaço", "salas compactas"
+ *                        • Bairros premium para móveis grandes Artely
+ *   - v3.2.1 (02/02/2026): FIX: FAQ usa "painéis" ou "racks" baseado no nome
+ *   - v3.2 (02/02/2026): Lógica por atributos (Tamburato 50mm)
  */
 
 // ============================================
@@ -42,6 +39,8 @@ interface ProductForMeta {
   supplier_id?: string | null
   depth?: number | null
   depth_cm?: number | null
+  width?: number | null
+  width_cm?: number | null
 }
 
 interface ProductForSchema {
@@ -72,10 +71,6 @@ export interface FAQItem {
   answer: string
 }
 
-// ============================================
-// TIPOS DE CATEGORIA EXPANDIDOS (v3.1)
-// ============================================
-
 type CategoryType = 
   | 'rack' | 'painel' | 'buffet' | 'aparador' | 'estante' | 'cristaleira'
   | 'mesa-centro' | 'mesa-apoio' | 'bar' | 'carrinho' | 'cantinho'
@@ -96,7 +91,7 @@ type SupplierProfile = {
 }
 
 // ============================================
-// CONSTANTES DE FORNECEDORES (v3.1)
+// CONSTANTES
 // ============================================
 
 const SUPPLIER_IDS = {
@@ -123,10 +118,6 @@ const SUPPLIER_PROFILES: Record<string, SupplierProfile> = {
   }
 }
 
-// ============================================
-// BAIRROS SEGMENTADOS POR CONTEXTO (v3.1)
-// ============================================
-
 const BAIRROS_RESIDENCIAIS = [
   'CIC', 'Pinheirinho', 'Sítio Cercado', 'Cajuru', 'Boqueirão',
   'Xaxim', 'Fazendinha', 'Portão', 'Capão Raso', 'Tatuquara'
@@ -136,6 +127,18 @@ const BAIRROS_COMERCIAIS = [
   'Batel', 'Centro Cívico', 'Bigorrilho', 'Água Verde', 'Centro',
   'Rebouças', 'Alto da XV', 'Champagnat', 'CIC', 'Prado Velho'
 ]
+
+// v3.2.2: Bairros premium para móveis grandes Artely
+const BAIRROS_PREMIUM = [
+  'Batel', 'Cabral', 'Ecoville', 'Juvevê', 'Água Verde',
+  'Bigorrilho', 'Alto da Glória', 'Champagnat', 'Alto da XV', 'Mercês'
+]
+
+const FAQ_GARANTIA_RESPOSTA = `O móvel tem 3 meses de garantia de fábrica. Caso alguma peça chegue avariada ou apresente defeito, a gente resolve rápido: providenciamos a troca da peça específica para o seu móvel ficar perfeito. Basta mandar uma foto do problema no nosso WhatsApp com o número do pedido.`
+
+// ============================================
+// HELPERS
+// ============================================
 
 function getBairrosPorContexto(environment: EnvironmentType, quantidade: number = 4): string[] {
   const bairros = environment === 'casa' ? BAIRROS_RESIDENCIAIS : BAIRROS_COMERCIAIS
@@ -149,8 +152,44 @@ function getBairrosAleatorios(quantidade: number = 4): string[] {
   return shuffled.slice(0, quantidade)
 }
 
+function getBairrosPremium(quantidade: number = 4): string[] {
+  const shuffled = [...BAIRROS_PREMIUM].sort(() => 0.5 - Math.random())
+  return shuffled.slice(0, quantidade)
+}
+
+export function getSupplierProfile(supplierId: string | null | undefined): SupplierProfile | null {
+  if (!supplierId) return null
+  return SUPPLIER_PROFILES[supplierId] || null
+}
+
+// v3.2.2: Helpers de escala
+function isArtely(supplierId: string | null | undefined): boolean {
+  return supplierId === SUPPLIER_IDS.ARTELY
+}
+
+function isLargePiece(width: number | null | undefined): boolean {
+  return width !== null && width !== undefined && width >= 160
+}
+
+function generateMontageAnswer(
+  difficulty: string | null | undefined, 
+  timeMinutes: number | null | undefined,
+  supplierProfile: SupplierProfile | null
+): string {
+  const difficultyText = difficulty === 'facil' ? 'Fácil' : 
+                         difficulty === 'medio' ? 'Médio' : 
+                         difficulty === 'dificil' ? 'Difícil' : 'Médio'
+  const timeText = timeMinutes ? ` (~${timeMinutes}min)` : ''
+  
+  if (supplierProfile?.name === 'Artany') {
+    return `Nível ${difficultyText}${timeText}. Móvel profissional com montagem estruturada: manual técnico detalhado e ferragens de alta resistência identificadas. Você precisa apenas de chave Phillips — sem ferramentas elétricas. Para facilitar, disponibilizamos vídeo de montagem completo.`
+  }
+  
+  return `Nível ${difficultyText}${timeText}. Montagem intuitiva: acompanha manual ilustrado passo a passo e todas as ferragens já vêm separadas e identificadas. Você só precisa de chave de fenda comum — sem ferramentas elétricas. Para facilitar ainda mais, deixamos um vídeo de montagem completo logo acima nesta página.`
+}
+
 // ============================================
-// FUNÇÕES DE INFERÊNCIA (v3.1)
+// INFERÊNCIA
 // ============================================
 
 export function inferCategoryType(slug: string, categorySlug?: string): CategoryType | null {
@@ -198,54 +237,16 @@ export function inferEnvironmentType(categoryType: CategoryType | null, category
     'balcao-profissional', 'armario-profissional', 'estante-profissional', 
     'prateleira-profissional', 'estacao'
   ]
-  
   const homeOfficeTypes: CategoryType[] = [
     'escrivaninha', 'escrivaninha-l', 'estante-home', 'gaveteiro-home', 'mesa-balcao-home'
   ]
   
-  if (catLower.includes('profissional') || catLower.includes('linha-profissional')) {
-    return 'escritorio-pro'
-  }
-  if (catLower.includes('home-office')) {
-    return 'escritorio-home'
-  }
-  if (categoryType && profissionalTypes.includes(categoryType)) {
-    return 'escritorio-pro'
-  }
-  if (categoryType && homeOfficeTypes.includes(categoryType)) {
-    return 'escritorio-home'
-  }
+  if (catLower.includes('profissional') || catLower.includes('linha-profissional')) return 'escritorio-pro'
+  if (catLower.includes('home-office')) return 'escritorio-home'
+  if (categoryType && profissionalTypes.includes(categoryType)) return 'escritorio-pro'
+  if (categoryType && homeOfficeTypes.includes(categoryType)) return 'escritorio-home'
   
   return 'casa'
-}
-
-export function getSupplierProfile(supplierId: string | null | undefined): SupplierProfile | null {
-  if (!supplierId) return null
-  return SUPPLIER_PROFILES[supplierId] || null
-}
-
-// ============================================
-// CONSTANTES E HELPERS
-// ============================================
-
-const FAQ_GARANTIA_RESPOSTA = `O móvel tem 3 meses de garantia de fábrica. Caso alguma peça chegue avariada ou apresente defeito, a gente resolve rápido: providenciamos a troca da peça específica para o seu móvel ficar perfeito. Basta mandar uma foto do problema no nosso WhatsApp com o número do pedido.`
-
-function generateMontageAnswer(
-  difficulty: string | null | undefined, 
-  timeMinutes: number | null | undefined,
-  supplierProfile: SupplierProfile | null
-): string {
-  const difficultyText = difficulty === 'facil' ? 'Fácil' : 
-                         difficulty === 'medio' ? 'Médio' : 
-                         difficulty === 'dificil' ? 'Difícil' : 'Médio'
-  
-  const timeText = timeMinutes ? ` (~${timeMinutes}min)` : ''
-  
-  if (supplierProfile?.name === 'Artany') {
-    return `Nível ${difficultyText}${timeText}. Móvel profissional com montagem estruturada: manual técnico detalhado e ferragens de alta resistência identificadas. Você precisa apenas de chave Phillips — sem ferramentas elétricas. Para facilitar, disponibilizamos vídeo de montagem completo.`
-  }
-  
-  return `Nível ${difficultyText}${timeText}. Montagem intuitiva: acompanha manual ilustrado passo a passo e todas as ferragens já vêm separadas e identificadas. Você só precisa de chave de fenda comum — sem ferramentas elétricas. Para facilitar ainda mais, deixamos um vídeo de montagem completo logo acima nesta página.`
 }
 
 // ============================================
@@ -297,7 +298,7 @@ export function generateProductTitle(product: ProductForH1 & { supplier_id?: str
 }
 
 export function generateProductMetaDescription(product: ProductForMeta): string {
-  const { name, tv_max_size, category_type, weight_capacity, thickness_mm, supplier_id, depth, depth_cm } = product
+  const { name, tv_max_size, category_type, weight_capacity, thickness_mm, supplier_id, depth, depth_cm, width, width_cm } = product
   
   const nameParts = name.split(' - ')
   const baseName = nameParts[0]
@@ -306,31 +307,44 @@ export function generateProductMetaDescription(product: ProductForMeta): string 
   const productName = shortColor ? `${baseName} ${shortColor}` : baseName
   const supplierProfile = getSupplierProfile(supplier_id)
   const productDepth = depth || depth_cm
+  const productWidth = width || width_cm
   
-  // v3.2: Diferencial por ATRIBUTO, não por fornecedor
   const hasTamburato = thickness_mm && thickness_mm >= 50
-  const tamburataText = hasTamburato ? `Tampo robusto de ${thickness_mm}mm em Tamburato. ` : ''
+  const isArtelyProduct = isArtely(supplier_id)
+  const isLarge = isLargePiece(productWidth)
   
   let benefit = ''
   
-  // Racks e Painéis (Artely ou Artany)
+  // Racks e Painéis
   if ((category_type === 'rack' || category_type === 'painel') && tv_max_size) {
     const weightText = weight_capacity ? `Suporta ${weight_capacity}kg. ` : ''
-    // v3.2: Se tem Tamburato, destaca isso (independente do fornecedor)
-    if (hasTamburato) {
-      benefit = `${tamburataText}Para TVs de ${tv_max_size}". ${weightText}Entrega própria em 72h.`
+    
+    // v3.2.2: Semântica de escala para Artely
+    if (isArtelyProduct && isLarge) {
+      const larguraMetros = productWidth ? (productWidth / 100).toFixed(1).replace('.', ',') : ''
+      if (hasTamburato) {
+        benefit = `Visual imponente de ${larguraMetros}m com Tamburato de ${thickness_mm}mm. Profundidade slim para garantir circulação confortável. ${weightText}Design sofisticado com entrega própria em Curitiba.`
+      } else {
+        benefit = `Visual imponente de ${larguraMetros}m com profundidade slim para garantir circulação confortável na sua sala. ${weightText}Design sofisticado com entrega própria em Curitiba.`
+      }
+    } else if (hasTamburato) {
+      benefit = `Robustez visual com Tamburato de ${thickness_mm}mm. Para TVs de ${tv_max_size}". ${weightText}Entrega própria em 72h.`
     } else {
       benefit = `Solução para TVs de ${tv_max_size}". ${weightText}Entrega própria em 72h.`
     }
   }
   // Buffets e Aparadores
   else if (category_type === 'buffet' || category_type === 'aparador') {
-    const depthText = productDepth && productDepth <= 40 ? `Profundidade de apenas ${productDepth}cm — não obstrui a passagem. ` : ''
-    // v3.2: Se tem Tamburato, destaca
-    if (hasTamburato) {
-      benefit = `${tamburataText}${depthText}Design elegante para salas de jantar. Entrega própria em 72h.`
+    if (isArtelyProduct && isLarge) {
+      const depthText = productDepth ? `Profundidade de ${productDepth}cm garante fluidez de circulação. ` : ''
+      benefit = `Visual elegante para salas de estar e ambientes integrados. ${depthText}Design sofisticado com entrega própria em Curitiba.`
     } else {
-      benefit = `${depthText}Design elegante para salas de jantar. Entrega própria em 72h.`
+      const depthText = productDepth && productDepth <= 40 ? `Profundidade de apenas ${productDepth}cm — não obstrui a passagem. ` : ''
+      if (hasTamburato) {
+        benefit = `Tampo robusto de ${thickness_mm}mm em Tamburato. ${depthText}Design elegante para salas de jantar. Entrega própria em 72h.`
+      } else {
+        benefit = `${depthText}Design elegante para salas de jantar. Entrega própria em 72h.`
+      }
     }
   }
   // Estantes e Cristaleiras
@@ -338,22 +352,20 @@ export function generateProductMetaDescription(product: ProductForMeta): string 
     const weightText = weight_capacity ? `Suporta até ${weight_capacity}kg por prateleira. ` : ''
     benefit = `${weightText}Proteção contra umidade de Curitiba. Entrega própria em 72h.`
   }
-  // Mesas Profissionais (Artany principalmente, mas baseado em atributos)
+  // Mesas Profissionais
   else if (['mesa-reta', 'mesa-em-l', 'mesa-reuniao', 'estacao'].includes(category_type || '')) {
-    // v3.2: Lógica por thickness_mm, não por supplier_id
     if (hasTamburato) {
-      benefit = `${tamburataText}Estrutura para uso intenso em escritórios. Pronta entrega em 72h!`
+      benefit = `Tampo robusto de ${thickness_mm}mm em Tamburato. Estrutura para uso intenso em escritórios. Pronta entrega em 72h!`
     } else if (supplierProfile?.focus === 'profissional') {
       benefit = `Estrutura reforçada para ambiente profissional. Entrega própria em 72h.`
     } else {
       benefit = `Mesa funcional para home office ou escritório. Entrega própria em 72h.`
     }
   }
-  // Escrivaninhas (pode ser Artely ou Artany)
+  // Escrivaninhas
   else if (category_type === 'escrivaninha' || category_type === 'escrivaninha-l') {
-    // v3.2: Baseado em atributos, não fornecedor
     if (hasTamburato) {
-      benefit = `${tamburataText}Ideal para home office. Entrega própria em 72h.`
+      benefit = `Tampo robusto de ${thickness_mm}mm em Tamburato. Ideal para home office. Entrega própria em 72h.`
     } else {
       benefit = `Solução prática para home office em casas e apartamentos. Entrega própria em 72h.`
     }
@@ -365,12 +377,12 @@ export function generateProductMetaDescription(product: ProductForMeta): string 
   // Mesas de centro e apoio
   else if (category_type === 'mesa-centro' || category_type === 'mesa-apoio') {
     if (hasTamburato) {
-      benefit = `${tamburataText}Visual sofisticado para sua sala. Entrega própria em 72h.`
+      benefit = `Tampo robusto de ${thickness_mm}mm em Tamburato. Visual sofisticado para sua sala. Entrega própria em 72h.`
     } else {
       benefit = `Complemento elegante para sua sala. Entrega própria em 72h.`
     }
   }
-  // Fallback genérico
+  // Fallback
   else {
     benefit = `Móvel com ótimo custo-benefício para sua casa. Entrega própria em 72h.`
   }
@@ -389,7 +401,7 @@ export function generateProductMetaDescription(product: ProductForMeta): string 
 }
 
 // ============================================
-// SCHEMA.ORG PRODUCT
+// SCHEMA.ORG
 // ============================================
 
 export function generateProductSchema(product: ProductForSchema, canonicalUrl: string) {
@@ -409,7 +421,8 @@ export function generateProductSchema(product: ProductForSchema, canonicalUrl: s
     weight_capacity: product.weight_capacity,
     thickness_mm: product.thickness_mm,
     supplier_id: product.supplier_id,
-    depth: product.depth
+    depth: product.depth,
+    width: product.width
   })
 
   const priceValidUntil = new Date()
@@ -478,10 +491,6 @@ export function generateProductSchema(product: ProductForSchema, canonicalUrl: s
 
   return schema
 }
-
-// ============================================
-// VIDEO SCHEMAS
-// ============================================
 
 export function generateVideoSchema(videoUrl: string, productName: string, thumbnailUrl?: string) {
   const youtubeMatch = videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/)
@@ -567,7 +576,7 @@ export function generateFAQSchema(faqs: FAQItem[]) {
 }
 
 // ============================================
-// FAQs POR CATEGORIA (v3.1)
+// FAQs POR CATEGORIA (v3.2.2)
 // ============================================
 
 export function generateRackFAQs(product: {
@@ -587,7 +596,14 @@ export function generateRackFAQs(product: {
   const faqs: FAQItem[] = []
   const baseName = product.name.includes(' - ') ? product.name.split(' - ')[0] : product.name
   const supplierProfile = getSupplierProfile(product.supplier_id)
-  const bairros = getBairrosPorContexto('casa', 4)
+  
+  const isArtelyProduct = isArtely(product.supplier_id)
+  const isLarge = isLargePiece(product.width)
+  
+  // v3.2.2: Bairros premium para móveis grandes Artely
+  const bairros = (isArtelyProduct && isLarge) 
+    ? getBairrosPremium(4) 
+    : getBairrosPorContexto('casa', 4)
   
   if (product.tv_max_size) {
     faqs.push({
@@ -603,11 +619,25 @@ export function generateRackFAQs(product: {
     })
   }
   
+  // v3.2.2: FAQ de comparação com semântica de escala (somente Artely)
   if (product.width && product.depth && product.thickness_mm) {
     const larguraMetros = (product.width / 100).toFixed(1).replace('.', ',')
+    const tipoMovel = product.name.toLowerCase().includes('painel') ? 'painéis' : 'racks'
+    
+    let answerText: string
+    if (isArtelyProduct && isLarge) {
+      // v3.2.2: Móvel grande Artely — fluidez, visual imponente
+      // v3.2.3: Removido menção de peso (confunde cliente - é da prateleira, não do tampo)
+      answerText = `O diferencial do ${baseName} é a sua profundidade otimizada de ${product.depth}cm, que permite um visual imponente sem comprometer o fluxo de circulação em salas de estar ou ambientes integrados de Curitiba. Acabamento sofisticado com proteção contra umidade.`
+    } else {
+      // Móvel compacto ou Artany — otimização de espaço
+      // v3.2.3: Removido menção de peso (confunde cliente - é da prateleira, não do tampo)
+      answerText = `O diferencial do ${baseName} é o tampo de ${product.thickness_mm}mm e a profundidade de ${product.depth}cm, ideal para otimizar o espaço em salas compactas de Curitiba. Material resistente à umidade local.`
+    }
+    
     faqs.push({
-      question: `Qual a diferença do ${baseName} para outros racks de ${larguraMetros}m?`,
-      answer: `O diferencial do ${baseName} é o tampo de ${product.thickness_mm}mm e a profundidade de ${product.depth}cm, ideal para não obstruir a passagem em salas pequenas de Curitiba. ${product.weight_capacity ? `Suporta até ${product.weight_capacity}kg, ` : ''}material resistente à umidade local.`
+      question: `Qual a diferença do ${baseName} para outros ${tipoMovel} de ${larguraMetros}m?`,
+      answer: answerText
     })
   }
   
@@ -623,12 +653,9 @@ export function generateRackFAQs(product: {
     })
   }
   
-  if (product.weight_capacity) {
-    faqs.push({
-      question: `Quanto peso o ${baseName} aguenta?`,
-      answer: `Suporta até ${product.weight_capacity}kg no tampo. Suficiente para a maioria das TVs LED/OLED do mercado, incluindo soundbar e aparelhos de streaming.`
-    })
-  }
+  // v3.2.3: Removido FAQ de peso suportado para racks/painéis
+  // O peso informado se refere à prateleira, não ao tampo - pode confundir o cliente
+  // Orientação: consultar manual de montagem
   
   faqs.push({
     question: `Precisa furar a parede para instalar o ${baseName}?`,
@@ -664,16 +691,29 @@ export function generateBuffetAparadorFAQs(product: {
   const faqs: FAQItem[] = []
   const baseName = product.name.includes(' - ') ? product.name.split(' - ')[0] : product.name
   const supplierProfile = getSupplierProfile(product.supplier_id)
-  const bairros = getBairrosPorContexto('casa', 4)
+  
+  const isArtelyProduct = isArtely(product.supplier_id)
+  const isLarge = isLargePiece(product.width)
+  const bairros = (isArtelyProduct && isLarge) 
+    ? getBairrosPremium(4) 
+    : getBairrosPorContexto('casa', 4)
   
   if (product.depth) {
-    const isCompact = product.depth <= 40
-    faqs.push({
-      question: `O ${baseName} obstrui a passagem na sala de jantar?`,
-      answer: isCompact
-        ? `Não! Com apenas ${product.depth}cm de profundidade, o ${baseName} foi projetado para salas de jantar compactas típicas de Curitiba. Você consegue circular tranquilamente mesmo em ambientes pequenos.`
-        : `O ${baseName} tem ${product.depth}cm de profundidade. Recomendamos medir o espaço disponível na sua sala antes de comprar. Dúvida? Chama no WhatsApp.`
-    })
+    // v3.2.2: Semântica de escala
+    if (isArtelyProduct && isLarge) {
+      faqs.push({
+        question: `O ${baseName} compromete a circulação na sala?`,
+        answer: `Não! O ${baseName} tem ${product.depth}cm de profundidade, projetado para oferecer visual imponente sem comprometer o fluxo de circulação em salas de estar e ambientes integrados de Curitiba.`
+      })
+    } else {
+      const isCompact = product.depth <= 40
+      faqs.push({
+        question: `O ${baseName} obstrui a passagem na sala de jantar?`,
+        answer: isCompact
+          ? `Não! Com apenas ${product.depth}cm de profundidade, o ${baseName} foi projetado para salas de jantar compactas típicas de Curitiba. Você consegue circular tranquilamente mesmo em ambientes pequenos.`
+          : `O ${baseName} tem ${product.depth}cm de profundidade. Recomendamos medir o espaço disponível na sua sala antes de comprar. Dúvida? Chama no WhatsApp.`
+      })
+    }
   }
   
   if (product.width && product.height && product.depth) {
@@ -898,7 +938,7 @@ export function generateEscrivaninhaFAQs(product: {
 }
 
 // ============================================
-// GERADOR PRINCIPAL DE FAQs (ROTEADOR)
+// GERADOR PRINCIPAL DE FAQs
 // ============================================
 
 export function generateProductFAQs(product: {
