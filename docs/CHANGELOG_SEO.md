@@ -2,7 +2,7 @@
 
 > **Histórico de implementações SEO/AIO e UX do projeto**  
 > **Última atualização:** 02 de Fevereiro de 2026  
-> **Versão atual:** 2.16.0
+> **Versão atual:** 2.17.0
 
 ---
 
@@ -14,13 +14,14 @@ Este documento registra todas as implementações de SEO técnico, otimização 
 
 | Schema | Status | Arquivo |
 |--------|--------|---------|
+| **ProductGroup** | ✅ Ativo | `seo.ts` → `generateProductGroupSchema()` |
 | Product | ✅ Ativo | `seo.ts` → `generateProductSchema()` |
 | BreadcrumbList | ✅ Ativo | `ProductPageContent.tsx` |
 | FAQPage | ✅ Ativo | `seo.ts` → `generateProductFAQs()` |
 | VideoObject | ✅ Ativo | `seo.ts` → `generateVideoSchema()` |
 | HowTo | ✅ Ativo | `seo.ts` → `generateHowToSchema()` |
 | AggregateRating | ✅ Condicional | Só aparece se `rating_count > 0` |
-| LocalBusiness | ✅ Ativo | Home e páginas institucionais |
+| FurnitureStore | ✅ Ativo | Home e páginas institucionais |
 
 ### Features de UX/Conversão
 
@@ -31,6 +32,96 @@ Este documento registra todas as implementações de SEO técnico, otimização 
 | Minha Lista (Favoritos) | ✅ Ativo | v2.6 |
 | Reviews e Avaliações | ✅ Ativo | v2.8 |
 | Carrinho + Checkout | ✅ Ativo | v2.9/v2.10 |
+
+---
+
+## v2.17 — 02/02/2026
+
+### 🏷️ ProductGroup Schema (NOVO)
+
+**Objetivo:** Informar ao Google que variantes de cor pertencem ao mesmo modelo de produto. Permite rich snippets como "Disponível em 4 cores" e carrossel de variantes nos resultados de busca.
+
+**Validação:** ✅ **7 schemas detectados, 0 erros, 0 avisos**
+
+| Schema Detectado | Status |
+|------------------|--------|
+| ProductGroup | ✅ 0 erros |
+| VideoObject | ✅ 0 erros |
+| FurnitureStore | ✅ 0 erros |
+| BreadcrumbList | ✅ 0 erros |
+| Product | ✅ 0 erros |
+| FAQPage | ✅ 0 erros |
+
+**Implementação:**
+
+#### Nova função em `seo.ts` (v3.4)
+```typescript
+export function generateProductGroupSchema(
+  product: ProductSEOInput,
+  colorVariants: Array<{
+    name: string
+    slug: string
+    color_name: string | null
+    price: number
+    image?: string
+  }>,
+  canonicalUrl: string
+): object | null
+```
+
+**Estrutura do Schema:**
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "ProductGroup",
+  "name": "Rack Charlotte",
+  "description": "Disponível em 4 cores...",
+  "url": "https://moveirama.com.br/racks-tv/rack-charlotte-cinamomo",
+  "brand": { "@type": "Brand", "name": "Artely" },
+  "productGroupID": "Rack Charlotte",
+  "variesBy": ["https://schema.org/color"],
+  "hasVariant": [
+    {
+      "@type": "Product",
+      "name": "Rack Charlotte - Cinamomo",
+      "color": "Cinamomo",
+      "url": "https://moveirama.com.br/racks-tv/rack-charlotte-cinamomo",
+      "image": "https://...",
+      "offers": {
+        "@type": "Offer",
+        "price": 299.00,
+        "priceCurrency": "BRL",
+        "availability": "https://schema.org/InStock"
+      }
+    },
+    // ... outras variantes
+  ]
+}
+```
+
+**Lógica de renderização:**
+- Só aparece se produto tem 2+ variantes de cor
+- `productGroupID` = campo `model_group` do banco
+- `variesBy` = sempre `color` (por enquanto)
+- Cada variante vira um `Product` dentro de `hasVariant`
+
+**Arquivos alterados:**
+
+| Arquivo | Versão | Alteração |
+|---------|--------|-----------|
+| `src/lib/seo.ts` | v3.4 | +`generateProductGroupSchema()` |
+| `src/lib/supabase.ts` | v2.7 | +`price` em `ProductColorVariant` |
+| `src/components/ProductPageContent.tsx` | v2.17 | Integração do ProductGroup Schema |
+
+**Benefícios SEO:**
+
+| Benefício | Impacto |
+|-----------|---------|
+| Rich snippet "X cores disponíveis" | Maior CTR nos resultados |
+| Carrossel de variantes | Destaque visual no Google |
+| Preços por cor | Usuário vê opções antes de clicar |
+| Estrutura semântica | Google entende relação entre produtos |
+| Competitivo | Mesmo padrão de grandes e-commerces |
 
 ---
 
@@ -77,6 +168,7 @@ export async function getSiblingVariants(
 **Retorna:** Array de variantes do mesmo modelo com:
 - `id`, `slug`, `name`
 - `model_group`, `color_name`
+- `price` (v2.7 - para ProductGroup Schema)
 - `images[0].cloudinary_path` (primeira imagem para miniatura)
 
 #### Passo 3: Frontend
@@ -352,7 +444,7 @@ Cajuru, Boqueirão, Xaxim, Pinheirinho, CIC, Sítio Cercado, Portão, Água Verd
 - Canonical URL
 - Open Graph tags
 
-### LocalBusiness Schema
+### FurnitureStore Schema
 - Informações da empresa
 - Área de atuação: Curitiba + RMC
 - Horário de funcionamento
@@ -364,10 +456,10 @@ Cajuru, Boqueirão, Xaxim, Pinheirinho, CIC, Sítio Cercado, Portão, Água Verd
 
 | Arquivo | Responsabilidade |
 |---------|------------------|
-| `src/lib/seo.ts` | Funções de geração de Schema (v3.3) |
-| `src/lib/supabase.ts` | Queries + `getSiblingVariants()` (v2.6) |
+| `src/lib/seo.ts` | Funções de geração de Schema (v3.4) |
+| `src/lib/supabase.ts` | Queries + `getSiblingVariants()` (v2.7) |
 | `src/components/ProductPageContent.tsx` | Renderização dos JSON-LD + VariantSelector |
-| `src/components/VariantSelector.tsx` | **NOVO** Seletor de variantes de cor |
+| `src/components/VariantSelector.tsx` | Seletor de variantes de cor |
 | `src/components/ProductFAQ.tsx` | Componente visual do FAQ |
 | `src/app/[category]/[...slug]/page.tsx` | generateMetadata() + query de produto |
 | `src/app/globals.css` | CSS do Design System + variant-selector |
@@ -379,7 +471,7 @@ Cajuru, Boqueirão, Xaxim, Pinheirinho, CIC, Sítio Cercado, Portão, Água Verd
 ### Rich Results Test (Google)
 1. Acesse: https://search.google.com/test/rich-results
 2. Cole a URL do produto
-3. Verifique se detecta: Product, FAQ, Video, HowTo
+3. Verifique se detecta: ProductGroup, Product, FAQ, Video, HowTo
 
 ### Schema Validator
 1. Acesse: https://validator.schema.org/
@@ -390,13 +482,19 @@ Cajuru, Boqueirão, Xaxim, Pinheirinho, CIC, Sítio Cercado, Portão, Água Verd
 1. Abra a página do produto
 2. Ctrl+U (View Source)
 3. Ctrl+F → procure por `"@type":`
-4. Confirme que Product, FAQPage, VideoObject, HowTo aparecem
+4. Confirme que ProductGroup, Product, FAQPage, VideoObject, HowTo aparecem
 
 ### Seletor de Variantes
 1. Acesse produto com múltiplas cores (ex: Rack Charlotte)
 2. Verifique se miniaturas aparecem com fotos reais
 3. Clique em outra cor → deve navegar para URL da variante
 4. Borda verde deve estar na cor atual
+
+### ProductGroup Schema
+1. Acesse produto com 2+ variantes de cor
+2. View Source → buscar "ProductGroup"
+3. Verificar que `hasVariant` contém todas as cores
+4. Cada variante deve ter `price` e `color`
 
 ---
 
@@ -409,18 +507,19 @@ Cajuru, Boqueirão, Xaxim, Pinheirinho, CIC, Sítio Cercado, Portão, Água Verd
 | Posição média | Search Console | Buscas por marca (Artely, Artany) |
 | Indexação | Search Console | Páginas com erros de Schema |
 | HowTo impressions | Search Console | Buscas "como montar" |
-| **Conversão PDP** | Analytics | Taxa de "Add to Cart" após v2.16 |
+| **ProductGroup** | Search Console | Rich snippet "X cores" |
+| **Conversão PDP** | Analytics | Taxa de "Add to Cart" |
 | **Navegação variantes** | Analytics | Cliques no VariantSelector |
 
 ---
 
-## 📮 Próximas Implementações (Backlog)
+## 🔮 Próximas Implementações (Backlog)
 
 | Prioridade | Item | Descrição |
 |------------|------|-----------|
+| ~~Alta~~ | ~~ProductGroup Schema~~ | ✅ **Implementado v2.17** |
 | ~~Alta~~ | ~~Seletor de Variantes~~ | ✅ **Implementado v2.16** |
 | ~~Alta~~ | ~~HowTo Schema~~ | ✅ **Implementado v2.15** |
-| Média | ProductGroup Schema | SEO para grupo de variantes (opcional) |
 | Média | Review Schema | Quando tiver sistema de reviews ativo |
 | Média | Organization Schema | Página "Sobre" |
 | Baixa | ItemList Schema | Páginas de categoria |
@@ -431,7 +530,8 @@ Cajuru, Boqueirão, Xaxim, Pinheirinho, CIC, Sítio Cercado, Portão, Água Verd
 
 | Data | Versão | Feature Principal |
 |------|--------|-------------------|
-| **02/02/2026** | **v2.16** | **Seletor de Variantes de Cor** |
+| **02/02/2026** | **v2.17** | **ProductGroup Schema** |
+| 02/02/2026 | v2.16 | Seletor de Variantes de Cor |
 | 02/02/2026 | v2.15 | HowTo Schema (vídeo montagem) |
 | 02/02/2026 | v2.14 | VideoObject Schema |
 | 01/02/2026 | v2.9 | SEO Avançado (5 melhorias) |

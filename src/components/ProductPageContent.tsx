@@ -20,22 +20,28 @@ import type { ProductColorVariant } from '@/lib/supabase'
 import { MoveHorizontal, MoveVertical, Box } from 'lucide-react'
 
 // SEO V2: Imports das funções de SEO
-// ⭐ v2.16: Adicionado generateProductGroupSchema para rich snippets de variantes
+// ⭐ v2.17: Adicionado generateReviewSchema e generateAggregateRatingFromReviews
 import { 
   generateProductH1, 
   generateProductFAQs, 
   generateProductSchema,
   generateFAQSchema,
   generateVideoSchema,
-  generateProductGroupSchema,  // ⭐ v2.16: ProductGroup para "Disponível em X cores"
+  generateProductGroupSchema,
+  generateReviewSchema,               // ⭐ v2.17: Review Schema
+  generateAggregateRatingFromReviews, // ⭐ v2.17: AggregateRating dinâmico
   inferCategoryType 
 } from '@/lib/seo'
 
 /**
  * ProductPageContent — Página de Produto (PDP)
  * 
- * v2.16 — 02/02/2026
+ * v2.17 — 02/02/2026
  * Changelog:
+ * - v2.17 (02/02/2026): REVIEW SCHEMA para rich snippets com estrelas no Google
+ *                       Integração com generateReviewSchema() do seo.ts v3.5
+ *                       AggregateRating agora calculado dinamicamente dos reviews
+ *                       Mostra até 5 reviews no schema (recomendação Google)
  * - v2.16 (02/02/2026): ProductGroup Schema para rich snippets "Disponível em X cores"
  *                       Integração com generateProductGroupSchema() do seo.ts v3.4
  *                       Só renderiza se produto tem 2+ variantes de cor
@@ -158,7 +164,23 @@ export default function ProductPageContent({
     : generateProductFAQs(product, subcategorySlug)
 
   // ============================================
+  // ⭐ v2.17: Preparar reviews para Schema
+  // Converte reviews do banco para formato do schema
+  // ============================================
+  const reviewsForSchema = reviews.map(r => ({
+    id: r.id,
+    author_name: r.author_name,
+    author_city: r.author_city,
+    rating: r.rating,
+    title: r.title,
+    content: r.content,
+    is_verified_purchase: r.is_verified_purchase,
+    created_at: r.created_at
+  }))
+
+  // ============================================
   // SEO V2: Schema.org Product
+  // ⭐ v2.17: Agora com reviews e aggregateRating dinâmicos
   // ============================================
   const baseProductSchema = generateProductSchema({
     name: product.name,
@@ -180,17 +202,17 @@ export default function ProductPageContent({
     model_group: product.model_group
   }, canonicalUrl)
 
+  // ⭐ v2.17: Gera review schemas e aggregateRating dinamicamente
+  const reviewSchemas = generateReviewSchema(reviewsForSchema)
+  const aggregateRatingSchema = generateAggregateRatingFromReviews(reviewsForSchema)
+
+  // Monta o Product Schema final com reviews
   const productSchema = {
     ...baseProductSchema,
-    ...(product.rating_count > 0 && product.rating_average > 0 && {
-      aggregateRating: {
-        "@type": "AggregateRating",
-        "ratingValue": product.rating_average.toFixed(1),
-        "reviewCount": product.rating_count.toString(),
-        "bestRating": "5",
-        "worstRating": "1"
-      }
-    })
+    // ⭐ v2.17: AggregateRating calculado dos reviews reais
+    ...(aggregateRatingSchema && { aggregateRating: aggregateRatingSchema }),
+    // ⭐ v2.17: Reviews individuais (até 5)
+    ...(reviewSchemas.length > 0 && { review: reviewSchemas })
   }
 
   // ============================================

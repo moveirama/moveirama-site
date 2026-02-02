@@ -2,9 +2,14 @@
 
 /**
  * Moveirama SEO Utilities
- * Versão: 3.4.0 - Adiciona ProductGroup Schema para variantes de cor
+ * Versão: 3.5.0 - Adiciona Review Schema para avaliações de clientes
  * 
  * Changelog:
+ *   - v3.5.0 (02/02/2026): REVIEW SCHEMA
+ *                        • Nova interface ReviewForSchema
+ *                        • Nova função generateReviewSchema()
+ *                        • Nova função generateAggregateRatingSchema()
+ *                        • Rich snippets com estrelas e avaliações no Google
  *   - v3.4.0 (02/02/2026): PRODUCTGROUP SCHEMA
  *                        • Nova função generateProductGroupSchema()
  *                        • Rich snippet "Disponível em X cores" no Google
@@ -112,6 +117,18 @@ interface ProductVariantForGroupSchema {
   color_name: string | null
   price: number
   images?: Array<{ cloudinary_path: string }> | null
+}
+
+// ⭐ v3.5: Interface para reviews no Review Schema
+export interface ReviewForSchema {
+  id: string
+  author_name: string
+  author_city?: string | null
+  rating: number
+  title?: string | null
+  content?: string | null
+  is_verified_purchase?: boolean
+  created_at: string
 }
 
 // ============================================
@@ -694,6 +711,98 @@ export function generateProductGroupSchema(
     "productGroupID": currentProduct.model_group,
     "variesBy": ["https://schema.org/color"],
     "hasVariant": variantSchemas
+  }
+}
+
+// ============================================
+// ⭐ v3.5: REVIEW SCHEMA (Avaliações de Clientes)
+// ============================================
+
+/**
+ * Gera array de Review schemas para incluir no Product Schema
+ * Google recomenda máximo de 5 reviews
+ * 
+ * @param reviews - Array de reviews aprovados do banco
+ * @returns Array de objetos Review no formato schema.org
+ * 
+ * @example
+ * const reviewSchemas = generateReviewSchema(productReviews)
+ * // Adicionar no Product Schema: "review": reviewSchemas
+ */
+export function generateReviewSchema(reviews: ReviewForSchema[]): object[] {
+  if (!reviews || reviews.length === 0) {
+    return []
+  }
+  
+  // Limita a 5 reviews (recomendação Google)
+  const limitedReviews = reviews.slice(0, 5)
+  
+  return limitedReviews.map((review) => {
+    const reviewDate = new Date(review.created_at).toISOString().split('T')[0]
+    
+    // Monta o author com localização quando disponível
+    const authorSchema: Record<string, unknown> = {
+      "@type": "Person",
+      "name": review.author_name
+    }
+    
+    // Se tem cidade, adiciona no author (prova social local)
+    if (review.author_city) {
+      authorSchema["address"] = {
+        "@type": "PostalAddress",
+        "addressLocality": review.author_city,
+        "addressRegion": "PR",
+        "addressCountry": "BR"
+      }
+    }
+    
+    const reviewSchema: Record<string, unknown> = {
+      "@type": "Review",
+      "author": authorSchema,
+      "datePublished": reviewDate,
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": review.rating,
+        "bestRating": 5,
+        "worstRating": 1
+      }
+    }
+    
+    // Adiciona título se existir
+    if (review.title) {
+      reviewSchema["name"] = review.title
+    }
+    
+    // Adiciona conteúdo se existir
+    if (review.content) {
+      reviewSchema["reviewBody"] = review.content
+    }
+    
+    return reviewSchema
+  })
+}
+
+/**
+ * Gera AggregateRating schema baseado nos reviews
+ * Calcula média e contagem automaticamente
+ * 
+ * @param reviews - Array de reviews aprovados
+ * @returns Objeto AggregateRating ou null se não há reviews
+ */
+export function generateAggregateRatingFromReviews(reviews: ReviewForSchema[]): object | null {
+  if (!reviews || reviews.length === 0) {
+    return null
+  }
+  
+  const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0)
+  const averageRating = (totalRating / reviews.length).toFixed(1)
+  
+  return {
+    "@type": "AggregateRating",
+    "ratingValue": parseFloat(averageRating),
+    "reviewCount": reviews.length,
+    "bestRating": 5,
+    "worstRating": 1
   }
 }
 
