@@ -21,14 +21,22 @@ import {
   generateProductFAQs, 
   generateProductSchema,
   generateFAQSchema,
+  generateVideoSchema,
+  generateHowToSchema,  // ⭐ v2.15: HowTo Schema para vídeo de montagem
   inferCategoryType 
 } from '@/lib/seo'
 
 /**
  * ProductPageContent — Página de Produto (PDP)
  * 
- * v2.13 — 30/01/2026
+ * v2.15 — 02/02/2026
  * Changelog:
+ * - v2.15 (02/02/2026): HowTo Schema para vídeos de montagem (assembly_video_url)
+ *                       Rich snippet "Como fazer" no Google
+ *                       Captura buscas: "como montar rack", "montagem painel"
+ *                       259 produtos com vídeo de montagem (179 Artely + 80 Artany)
+ * - v2.14 (01/02/2026): VideoObject Schema para rich snippets de vídeo no Google
+ *                       Só renderiza se product.video_product_url existir
  * - v2.13 (30/01/2026): Ícones Lucide na seção "Medidas do produto"
  *                       MoveHorizontal (Largura), MoveVertical (Altura), Box (Profundidade)
  *                       Cor Toffee #8B7355, stroke 2.5, tamanho 24px
@@ -208,6 +216,28 @@ export default function ProductPageContent({
   // ============================================
   const faqSchema = faqs.length > 0 ? generateFAQSchema(faqs) : null
 
+  // ============================================
+  // ⭐ v2.14: Schema.org VideoObject (rich snippet de vídeo)
+  // Só gera se product.video_product_url existir
+  // ============================================
+  const videoSchema = product.video_product_url 
+    ? generateVideoSchema(product.video_product_url, product.name)
+    : null
+
+  // ============================================
+  // ⭐ v2.15: Schema.org HowTo (vídeo de montagem)
+  // Rich snippet "Como fazer" para buscas de montagem
+  // Só gera se product.assembly_video_url existir
+  // ============================================
+  const howToSchema = product.assembly_video_url 
+    ? generateHowToSchema(
+        product.assembly_video_url, 
+        product.name,
+        product.assembly_time_minutes,
+        product.assembly_difficulty
+      )
+    : null
+
   // Schema.org BreadcrumbList
   const breadcrumbSchema = {
     "@context": "https://schema.org",
@@ -265,6 +295,20 @@ export default function ProductPageContent({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
+      {/* ⭐ v2.14: VideoObject Schema para rich snippets de vídeo */}
+      {videoSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(videoSchema) }}
+        />
+      )}
+      {/* ⭐ v2.15: HowTo Schema para vídeo de montagem */}
+      {howToSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
         />
       )}
 
