@@ -2,9 +2,15 @@
 
 /**
  * Moveirama SEO Utilities
- * Versão: 3.2.3 - Remove peso suportado de racks/painéis (confunde cliente)
+ * Versão: 3.3.0 - Adiciona color_name para seletor de variantes + fix exports
  * 
  * Changelog:
+ *   - v3.3.0 (02/02/2026): SELETOR DE VARIANTES DE COR
+ *                        • Adicionado color_name nas interfaces
+ *                        • generateProductH1 usa color_name como prioridade
+ *                        • generateProductTitle usa color_name como prioridade
+ *                        • generateProductSchema usa color_name para campo "color"
+ *                        • Nova função extractModelName()
  *   - v3.2.3 (02/02/2026): PESO SUPORTADO (racks/painéis)
  *                        • Removido FAQ "Quanto peso aguenta?" para racks/painéis
  *                        • Removido menção de peso nas FAQs de comparação
@@ -26,6 +32,7 @@ interface ProductForH1 {
   tv_max_size?: number | null
   category_type?: CategoryType | null
   variant_name?: string | null
+  color_name?: string | null  // v3.3: cor vinda do banco
 }
 
 interface ProductForMeta {
@@ -64,6 +71,8 @@ interface ProductForSchema {
   weight_capacity?: number | null
   supplier_id?: string | null
   thickness_mm?: number | null
+  color_name?: string | null   // v3.3: cor vinda do banco
+  model_group?: string | null  // v3.3: grupo do modelo
 }
 
 export interface FAQItem {
@@ -254,32 +263,39 @@ export function inferEnvironmentType(categoryType: CategoryType | null, category
 // ============================================
 
 export function generateProductH1(product: ProductForH1): string {
-  const { name, tv_max_size, category_type, variant_name } = product
+  const { name, tv_max_size, category_type, variant_name, color_name } = product
   const isRackOrPanel = category_type === 'rack' || category_type === 'painel'
   
+  // v3.3: PRIORIDADE: color_name do banco > variant_name > parsing do nome
+  const colorFromName = name.includes(' - ') ? name.split(' - ').slice(1).join(' - ') : null
+  const colorPart = color_name || variant_name || colorFromName
+  
+  // Extrai nome base (sem a cor)
+  const baseName = name.includes(' - ') ? name.split(' - ')[0] : name
+  
   if (isRackOrPanel && tv_max_size) {
-    const baseName = name.includes(' - ') ? name.split(' - ')[0] : name
     const tvPart = `para TV até ${tv_max_size} polegadas`
-    const colorFromName = name.includes(' - ') ? name.split(' - ').slice(1).join(' - ') : null
-    const colorPart = variant_name || colorFromName
     return colorPart ? `${baseName} ${tvPart} - ${colorPart}` : `${baseName} ${tvPart}`
   }
   
-  if (variant_name && !name.includes(variant_name)) {
-    return `${name} - ${variant_name}`
+  // Se tem cor e ela não está no nome, adiciona
+  if (colorPart && !name.includes(colorPart)) {
+    return `${baseName} - ${colorPart}`
   }
   
   return name
 }
 
 export function generateProductTitle(product: ProductForH1 & { supplier_id?: string | null }): string {
-  const { name, tv_max_size, category_type, variant_name } = product
+  const { name, tv_max_size, category_type, variant_name, color_name } = product
   const isRackOrPanel = category_type === 'rack' || category_type === 'painel'
   
   const nameParts = name.split(' - ')
   const baseName = nameParts[0]
+  
+  // v3.3: PRIORIDADE: color_name do banco > variant_name > parsing
   const colorFromName = nameParts.length > 1 ? nameParts[1] : null
-  const color = variant_name || colorFromName
+  const color = color_name || variant_name || colorFromName
   const shortColor = color ? color.split(' / ')[0].split(' C ')[0].trim() : null
   
   let productPart = ''
@@ -409,7 +425,8 @@ export function generateProductSchema(product: ProductForSchema, canonicalUrl: s
     name: product.name,
     tv_max_size: product.tv_max_size,
     category_type: product.category_type as CategoryType,
-    variant_name: product.variants?.[0]?.name
+    variant_name: product.variants?.[0]?.name,
+    color_name: product.color_name  // v3.3
   })
 
   const metaDescription = generateProductMetaDescription({
@@ -428,8 +445,9 @@ export function generateProductSchema(product: ProductForSchema, canonicalUrl: s
   const priceValidUntil = new Date()
   priceValidUntil.setFullYear(priceValidUntil.getFullYear() + 1)
 
+  // v3.3: PRIORIDADE: color_name do banco > variants > parsing
   const colorFromName = product.name.includes(' - ') ? product.name.split(' - ').slice(1).join(' / ') : null
-  const productColor = product.variants?.[0]?.name || colorFromName
+  const productColor = product.color_name || product.variants?.[0]?.name || colorFromName
 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -573,6 +591,36 @@ export function generateFAQSchema(faqs: FAQItem[]) {
       "acceptedAnswer": { "@type": "Answer", "text": faq.answer }
     }))
   }
+}
+
+// ============================================
+// HELPER: EXTRAIR NOME DO MODELO (v3.3)
+// ============================================
+
+/**
+ * Extrai nome do modelo removendo a cor
+ * Usa color_name do banco quando disponível (mais confiável que parsing)
+ * 
+ * @example
+ * extractModelName("Rack Charlotte - Carvalho/Menta", "Carvalho/Menta") 
+ * // Retorna: "Rack Charlotte"
+ */
+export function extractModelName(fullName: string, colorName?: string | null): string {
+  // Se temos color_name do banco, remove ele do nome
+  if (colorName) {
+    return fullName
+      .replace(` - ${colorName}`, '')
+      .replace(` ${colorName}`, '')
+      .trim()
+  }
+  
+  // Fallback: usa o padrão " - " para separar
+  const dashIndex = fullName.indexOf(' - ')
+  if (dashIndex > 0) {
+    return fullName.slice(0, dashIndex).trim()
+  }
+  
+  return fullName
 }
 
 // ============================================

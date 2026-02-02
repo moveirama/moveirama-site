@@ -12,6 +12,10 @@ import VizinhosAprovaram from '@/components/VizinhosAprovaram'
 import { BuyNowButton } from '@/components/cart'
 import type { Review, ReviewsSummaryType } from '@/components/reviews'
 
+// ⭐ v2.15: Seletor de Variantes de Cor
+import VariantSelector from '@/components/VariantSelector'
+import type { ProductColorVariant } from '@/lib/supabase'
+
 // ⭐ v2.13: Import dos ícones Lucide para seção de medidas
 import { MoveHorizontal, MoveVertical, Box } from 'lucide-react'
 
@@ -28,8 +32,11 @@ import {
 /**
  * ProductPageContent — Página de Produto (PDP)
  * 
- * v2.14 — 01/02/2026
+ * v2.15 — 02/02/2026
  * Changelog:
+ * - v2.15 (02/02/2026): Seletor de Variantes de Cor com thumbnails e URLs únicas
+ *                       Integração com colorVariants do banco (model_group)
+ *                       Removido seletor antigo de variantes (botões texto)
  * - v2.14 (01/02/2026): VideoObject Schema para rich snippets de vídeo no Google
  *                       Só renderiza se product.video_product_url existir
  * - v2.13 (30/01/2026): Ícones Lucide na seção "Medidas do produto"
@@ -66,9 +73,11 @@ interface ProductPageContentProps {
   product: any // TODO: tipar corretamente
   breadcrumbItems: BreadcrumbItem[]
   subcategorySlug: string
-  // ⭐ NOVO v2.7: Props para reviews
+  // ⭐ v2.7: Props para reviews
   reviews?: Review[]
   reviewsSummary?: ReviewsSummaryType | null
+  // ⭐ v2.15: Props para variantes de cor
+  colorVariants?: ProductColorVariant[]
 }
 
 // Formata preço em BRL
@@ -140,7 +149,8 @@ export default function ProductPageContent({
   breadcrumbItems,
   subcategorySlug,
   reviews = [],
-  reviewsSummary = null
+  reviewsSummary = null,
+  colorVariants = []  // ⭐ v2.15: Variantes de cor
 }: ProductPageContentProps) {
   const { parcelas, valorParcela } = getInstallments(product.price)
   const pixPrice = product.price * 0.95 // 5% desconto no Pix
@@ -163,7 +173,8 @@ export default function ProductPageContent({
     name: product.name,
     tv_max_size: product.tv_max_size,
     category_type: categoryType,
-    variant_name: defaultVariant?.name
+    variant_name: defaultVariant?.name,
+    color_name: product.color_name  // ⭐ v2.15: Usa color_name do banco
   })
 
   // FAQs: usa do banco se existir, senão gera automaticamente
@@ -189,7 +200,9 @@ export default function ProductPageContent({
     depth: product.depth_cm,
     stock_quantity: product.stock_quantity || 10,
     images: product.images?.map((img: { image_url: string }) => ({ url: img.image_url })),
-    variants: product.variants
+    variants: product.variants,
+    color_name: product.color_name,      // ⭐ v2.15
+    model_group: product.model_group     // ⭐ v2.15
   }, canonicalUrl)
 
   // ⭐ v2.6: Adiciona AggregateRating se houver avaliações
@@ -366,6 +379,13 @@ export default function ProductPageContent({
                 </span>
               </div>
 
+              {/* ⭐ v2.15: Seletor de Variantes de Cor */}
+              <VariantSelector
+                variants={colorVariants}
+                currentSlug={product.slug}
+                categorySlug={subcategorySlug}
+              />
+
               {/* Medidas Compactas v1.2 - responde "vai caber?" antes do CTA */}
               <MedidasCompactas
                 largura={product.width_cm}
@@ -386,29 +406,6 @@ export default function ProductPageContent({
                 </div>
               </div>
             </div>
-
-            {/* Variantes (cores) */}
-            {product.variants && product.variants.length > 1 && (
-              <div className="mb-6">
-                <p className="text-sm font-medium text-[var(--color-graphite)] mb-2">
-                  Cor: <span className="font-normal">{defaultVariant?.name}</span>
-                </p>
-                <div className="flex gap-2 flex-wrap">
-                  {product.variants.map((variant: { id: string; name: string; is_default: boolean }) => (
-                    <button
-                      key={variant.id}
-                      className={`px-3 py-2 text-sm rounded-md border-2 transition-colors ${
-                        variant.is_default
-                          ? 'border-[var(--color-sage-500)] bg-[var(--color-sage-500)]/10'
-                          : 'border-[var(--color-sand-light)] hover:border-[var(--color-sage-500)]'
-                      }`}
-                    >
-                      {variant.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* Calculadora de Frete */}
             <div className="mb-6">

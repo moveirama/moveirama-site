@@ -3,11 +3,12 @@
 /**
  * Moveirama — Cliente Supabase e funções de acesso ao banco
  * 
- * v2.5: Suporte a categorias secundárias (produtos em múltiplas categorias)
+ * v2.6: Suporte a variantes de cor (seletor de cores com thumbnails)
  * Changelog:
  *   - v2.3: Simplificado para estrutura de 2 níveis
  *   - v2.4: Corrigido getSubcategories para buscar imagem representativa corretamente
  *   - v2.5: getProductsByCategory agora inclui produtos de categorias secundárias
+ *   - v2.6: Adicionado getSiblingVariants para seletor de variantes de cor
  */
 
 import { createClient } from '@supabase/supabase-js'
@@ -65,6 +66,9 @@ export type Product = {
   stock_quantity: number
   meta_title: string | null
   meta_description: string | null
+  // v2.6: Campos para variantes de cor
+  model_group: string | null
+  color_name: string | null
 }
 
 export type ProductVariant = {
@@ -110,6 +114,19 @@ export type ProductForListing = {
 }
 
 export type SortOption = 'relevance' | 'price-asc' | 'price-desc' | 'newest' | 'bestseller'
+
+/**
+ * v2.6: Variante de cor de um produto (para seletor de variantes)
+ * Representa produtos "irmãos" do mesmo modelo em cores diferentes
+ */
+export type ProductColorVariant = {
+  id: string
+  slug: string
+  name: string
+  model_group: string
+  color_name: string
+  images: { cloudinary_path: string }[]
+}
 
 // ========================================
 // FUNÇÕES DE CATEGORIA
@@ -545,6 +562,80 @@ export async function getProductBySubcategoryAndSlug(
   }
   
   return secProduct
+}
+
+// ========================================
+// FUNÇÕES DE VARIANTES DE COR (v2.6)
+// ========================================
+
+/**
+ * Busca todas as variantes de cor de um mesmo modelo
+ * 
+ * Usado pelo VariantSelector para exibir opções de cores disponíveis.
+ * Retorna produtos que compartilham o mesmo model_group.
+ * 
+ * @param modelGroup - Identificador do grupo (ex: "rack-charlotte")
+ * @returns Array de variantes ordenadas por nome de cor
+ * 
+ * @example
+ * const variants = await getSiblingVariants('rack-charlotte')
+ * // Retorna: Carvalho/Menta, Carvalho/Off White, Cinamomo/Off White, Pinho/Off White
+ */
+export async function getSiblingVariants(
+  modelGroup: string | null | undefined
+): Promise<ProductColorVariant[]> {
+  // Se não tem model_group, retorna array vazio
+  if (!modelGroup) return []
+  
+  const { data, error } = await supabase
+    .from('products')
+    .select(`
+      id,
+      slug,
+      name,
+      model_group,
+      color_name,
+      images:product_images(
+        cloudinary_path,
+        image_type,
+        position
+      )
+    `)
+    .eq('model_group', modelGroup)
+    .eq('is_active', true)
+    .order('color_name', { ascending: true })
+    
+  if (error) {
+    console.error('Erro ao buscar variantes de cor:', error)
+    return []
+  }
+  
+  if (!data) return []
+  
+  // Mapeia para o formato esperado, pegando apenas a imagem principal de cada produto
+  return data.map(product => {
+    const images = product.images || []
+    
+    // Prioridade: imagem tipo 'principal' > menor position > primeira disponível
+    const sortedImages = [...images].sort((a, b) => {
+      // Primeiro: tipo principal tem prioridade
+      if (a.image_type === 'principal' && b.image_type !== 'principal') return -1
+      if (b.image_type === 'principal' && a.image_type !== 'principal') return 1
+      // Depois: menor position
+      return (a.position || 0) - (b.position || 0)
+    })
+    
+    const primaryImage = sortedImages[0]
+    
+    return {
+      id: product.id,
+      slug: product.slug,
+      name: product.name,
+      model_group: product.model_group,
+      color_name: product.color_name || '',
+      images: primaryImage ? [{ cloudinary_path: primaryImage.cloudinary_path }] : []
+    }
+  })
 }
 
 // ========================================

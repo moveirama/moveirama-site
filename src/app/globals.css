@@ -1616,3 +1616,119 @@ summary,
   font-size: 12px;
   color: var(--color-toffee);
 }
+/* ============================================
+   SELETOR DE VARIANTES DE COR
+   Adicionar ao final de src/app/globals.css
+   Versão: 1.0
+   Data: 02/02/2026
+   ============================================ */
+
+/* Container principal */
+.variant-selector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-3) 0;
+}
+
+/* Label "Cores disponíveis:" */
+.variant-selector__label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-toffee);
+}
+
+/* Container das opções */
+.variant-selector__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Opção individual (link ou div) */
+.variant-selector__option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  
+  padding: var(--space-1);
+  
+  text-decoration: none;
+  color: var(--color-graphite);
+  
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  
+  cursor: pointer;
+  transition: border-color var(--transition-fast) ease-out,
+              transform var(--transition-fast) ease-out;
+}
+
+/* Hover nas opções não-ativas */
+.variant-selector__option:hover:not(.variant-selector__option--active) {
+  border-color: var(--color-sand-light);
+}
+
+/* Focus visible para acessibilidade */
+.variant-selector__option:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* Opção ativa (variante atual) */
+.variant-selector__option--active {
+  border-color: var(--color-sage-500);
+  cursor: default;
+}
+
+/* Wrapper da imagem */
+.variant-selector__image-wrapper {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background-color: var(--color-cream);
+}
+
+/* Desktop: imagens maiores */
+@media (min-width: 768px) {
+  .variant-selector__image-wrapper {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+/* Imagem da variante */
+.variant-selector__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Nome da cor */
+.variant-selector__name {
+  font-size: 11px;
+  color: var(--color-toffee);
+  text-align: center;
+  max-width: 60px;
+  
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Desktop: nome um pouco maior */
+@media (min-width: 768px) {
+  .variant-selector__name {
+    font-size: 12px;
+    max-width: 70px;
+  }
+}
+
+/* Nome da variante ativa em destaque */
+.variant-selector__option--active .variant-selector__name {
+  color: var(--color-graphite);
+  font-weight: var(--font-medium);
+}

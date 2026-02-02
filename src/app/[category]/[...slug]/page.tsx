@@ -2,6 +2,7 @@
 /**
  * Página dinâmica para subcategorias e produtos
  * 
+ * v2.15: Adicionada busca de variantes de cor (colorVariants) para PDP
  * v2.7: Title e Meta Description SEMPRE gerados dinamicamente (SEO otimizado)
  * v2.5: Title Tag otimizado com "Entrega Curitiba" (SEO local)
  * v2.4: Adicionada busca de reviews para PDP
@@ -20,6 +21,7 @@ import {
   getSubcategoryBySlug,
   getProductBySubcategoryAndSlug,
   getParentOfSubcategory,
+  getSiblingVariants,  // ⭐ v2.15: Import da função de variantes
   SortOption 
 } from '@/lib/supabase'
 // Funções SEO
@@ -386,6 +388,7 @@ async function ListingPage({
 
 // ============================================
 // PÁGINA DE PRODUTO (ex: /racks-tv/rack-theo)
+// v2.15: Adicionada busca de variantes de cor
 // v2.4: Adicionada busca de reviews
 // ============================================
 
@@ -404,6 +407,11 @@ async function ProductPage({
 
   // ⭐ v2.4: Buscar reviews do produto
   const { reviews, summary: reviewsSummary } = await getProductReviews(product.id)
+
+  // ⭐ v2.15: Buscar variantes de cor (produtos irmãos pelo model_group)
+  const colorVariants = product.model_group 
+    ? await getSiblingVariants(product.model_group)
+    : []
 
   const subcategory = await getSubcategoryBySlug(subcategorySlug)
   const parentCategory = await getParentOfSubcategory(subcategorySlug)
@@ -426,6 +434,7 @@ async function ProductPage({
       subcategorySlug={subcategorySlug}
       reviews={reviews}
       reviewsSummary={reviewsSummary}
+      colorVariants={colorVariants}  // ⭐ v2.15: Passar variantes de cor
     />
   )
 }
