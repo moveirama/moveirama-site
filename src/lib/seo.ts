@@ -2,9 +2,14 @@
 
 /**
  * Moveirama SEO Utilities
- * Versão: 3.3.0 - Adiciona color_name para seletor de variantes + fix exports
+ * Versão: 3.4.0 - Adiciona ProductGroup Schema para variantes de cor
  * 
  * Changelog:
+ *   - v3.4.0 (02/02/2026): PRODUCTGROUP SCHEMA
+ *                        • Nova função generateProductGroupSchema()
+ *                        • Rich snippet "Disponível em X cores" no Google
+ *                        • Helper extractColorFromName() para fallback
+ *                        • Só gera schema se produto tem 2+ variantes
  *   - v3.3.0 (02/02/2026): SELETOR DE VARIANTES DE COR
  *                        • Adicionado color_name nas interfaces
  *                        • generateProductH1 usa color_name como prioridade
@@ -97,6 +102,16 @@ type SupplierProfile = {
   valueProposition: string
   metaPrefix: string
   targetAudience: string
+}
+
+// ⭐ v3.4: Interface para variantes no ProductGroup Schema
+interface ProductVariantForGroupSchema {
+  id: string
+  slug: string
+  name: string
+  color_name: string | null
+  price: number
+  images?: Array<{ cloudinary_path: string }> | null
 }
 
 // ============================================
@@ -195,6 +210,14 @@ function generateMontageAnswer(
   }
   
   return `Nível ${difficultyText}${timeText}. Montagem intuitiva: acompanha manual ilustrado passo a passo e todas as ferragens já vêm separadas e identificadas. Você só precisa de chave de fenda comum — sem ferramentas elétricas. Para facilitar ainda mais, deixamos um vídeo de montagem completo logo acima nesta página.`
+}
+
+/**
+ * ⭐ v3.4: Helper para extrair cor do nome quando color_name não está disponível
+ */
+function extractColorFromName(fullName: string): string | null {
+  if (!fullName.includes(' - ')) return null
+  return fullName.split(' - ').slice(1).join(' / ').trim()
 }
 
 // ============================================
@@ -590,6 +613,87 @@ export function generateFAQSchema(faqs: FAQItem[]) {
       "name": faq.question,
       "acceptedAnswer": { "@type": "Answer", "text": faq.answer }
     }))
+  }
+}
+
+// ============================================
+// ⭐ v3.4: PRODUCTGROUP SCHEMA (Variantes de Cor)
+// ============================================
+
+/**
+ * Gera Schema ProductGroup para o Google entender variantes de cor
+ * Rich snippet: "Disponível em X cores"
+ * 
+ * @param currentProduct - Produto atual sendo visualizado
+ * @param siblingVariants - Todas as variantes do mesmo modelo (incluindo a atual)
+ * @param baseUrl - URL base do site (ex: "https://moveirama.com.br")
+ * @param subcategorySlug - Slug da subcategoria para montar URLs
+ * 
+ * @returns null se produto não tem variantes (cor única)
+ * @returns Schema ProductGroup completo se tem 2+ variantes
+ * 
+ * @example
+ * // Rack Charlotte tem 4 cores
+ * generateProductGroupSchema(rackCharlotte, siblings, 'https://moveirama.com.br', 'racks-tv')
+ * // Retorna schema com hasVariant: [4 produtos]
+ */
+export function generateProductGroupSchema(
+  currentProduct: ProductForSchema,
+  siblingVariants: ProductVariantForGroupSchema[],
+  baseUrl: string,
+  subcategorySlug: string
+): object | null {
+  // Só gera schema se tem 2+ variantes
+  if (!siblingVariants || siblingVariants.length < 2) {
+    return null
+  }
+  
+  // Se não tem model_group, não podemos agrupar
+  if (!currentProduct.model_group) {
+    return null
+  }
+  
+  // Nome do modelo (sem a cor)
+  const modelName = extractModelName(currentProduct.name, currentProduct.color_name)
+  
+  // Gera schema para cada variante
+  const variantSchemas = siblingVariants.map((variant) => {
+    const variantUrl = `${baseUrl}/${subcategorySlug}/${variant.slug}`
+    const variantImage = variant.images?.[0]?.cloudinary_path
+    const variantColor = variant.color_name || extractColorFromName(variant.name)
+    
+    return {
+      "@type": "Product",
+      "name": variant.name,
+      "url": variantUrl,
+      "sku": variant.slug,
+      ...(variantImage && { "image": variantImage }),
+      ...(variantColor && { "color": variantColor }),
+      "offers": {
+        "@type": "Offer",
+        "url": variantUrl,
+        "priceCurrency": "BRL",
+        "price": variant.price,
+        "availability": "https://schema.org/InStock",
+        "itemCondition": "https://schema.org/NewCondition"
+      }
+    }
+  })
+  
+  // Schema ProductGroup
+  return {
+    "@context": "https://schema.org",
+    "@type": "ProductGroup",
+    "name": modelName,
+    "description": `${modelName} disponível em ${siblingVariants.length} cores. Móvel para Curitiba e Região Metropolitana com entrega própria em até 72h.`,
+    "url": `${baseUrl}/${subcategorySlug}/${currentProduct.slug}`,
+    "brand": {
+      "@type": "Brand",
+      "name": currentProduct.brand || "Moveirama"
+    },
+    "productGroupID": currentProduct.model_group,
+    "variesBy": ["https://schema.org/color"],
+    "hasVariant": variantSchemas
   }
 }
 

@@ -20,47 +20,38 @@ import type { ProductColorVariant } from '@/lib/supabase'
 import { MoveHorizontal, MoveVertical, Box } from 'lucide-react'
 
 // SEO V2: Imports das funções de SEO
+// ⭐ v2.16: Adicionado generateProductGroupSchema para rich snippets de variantes
 import { 
   generateProductH1, 
   generateProductFAQs, 
   generateProductSchema,
   generateFAQSchema,
-  generateVideoSchema,  // ⭐ v2.14: VideoObject para rich snippets
+  generateVideoSchema,
+  generateProductGroupSchema,  // ⭐ v2.16: ProductGroup para "Disponível em X cores"
   inferCategoryType 
 } from '@/lib/seo'
 
 /**
  * ProductPageContent — Página de Produto (PDP)
  * 
- * v2.15 — 02/02/2026
+ * v2.16 — 02/02/2026
  * Changelog:
+ * - v2.16 (02/02/2026): ProductGroup Schema para rich snippets "Disponível em X cores"
+ *                       Integração com generateProductGroupSchema() do seo.ts v3.4
+ *                       Só renderiza se produto tem 2+ variantes de cor
  * - v2.15 (02/02/2026): Seletor de Variantes de Cor com thumbnails e URLs únicas
  *                       Integração com colorVariants do banco (model_group)
  *                       Removido seletor antigo de variantes (botões texto)
  * - v2.14 (01/02/2026): VideoObject Schema para rich snippets de vídeo no Google
  *                       Só renderiza se product.video_product_url existir
  * - v2.13 (30/01/2026): Ícones Lucide na seção "Medidas do produto"
- *                       MoveHorizontal (Largura), MoveVertical (Altura), Box (Profundidade)
- *                       Cor Toffee #8B7355, stroke 2.5, tamanho 24px
  * - v2.12 (30/01/2026): Ajuste de inclusividade: "apartamento ou casa compacta"
- *                       Padronização: travessão "—" substituído por hífen "-"
  * - v2.11 (28/01/2026): Formatação de medidas amigável para Classe C
- *                       ≥100cm converte para metros (160 → "1,6 m")
- *                       <100cm mantém em cm (77 → "77 cm")
- *                       Aplicado na seção "Medidas do produto" e especificações
- * - v2.10 (27/01/2026): Fix buyButtonProduct com dimensões (width_cm, height_cm, depth_cm)
- *                       Adicionado campos extras (tv_max_size, main_material, thickness_mm)
+ * - v2.10 (27/01/2026): Fix buyButtonProduct com dimensões
  * - v2.9 (27/01/2026): Integração com sistema de carrinho (BuyNowButton)
- *                      Botões "Comprar agora" e "Comprar" agora adicionam ao carrinho
  * - v2.8 (26/01/2026): Adicionado VizinhosAprovaram (prova social regional)
  * - v2.7 (26/01/2026): Adicionado ReviewsSection (bloco de comentários) após FAQ
- * - v2.6 (26/01/2026): Adicionado ProductRating (estrelinhas) abaixo do H1
- *                      Adicionado ProductSaveWrapper (Minha Lista)
- *                      Badge 5% OFF alterado para terracota (#B85C38)
- *                      Botão WhatsApp alterado para outline
- * - v2.1 (20/01/2026): Prazo de entrega alterado de 2 para 3 dias úteis
- * - v2.0 (20/01/2026): Adicionada seção VideoProduct (vídeo do produto)
- * - v1.x: SEO V2, FAQs dinâmicas, Schema.org
+ * - v2.6 (26/01/2026): Adicionado ProductRating e ProductSaveWrapper
  */
 
 // Types
@@ -73,10 +64,8 @@ interface ProductPageContentProps {
   product: any // TODO: tipar corretamente
   breadcrumbItems: BreadcrumbItem[]
   subcategorySlug: string
-  // ⭐ v2.7: Props para reviews
   reviews?: Review[]
   reviewsSummary?: ReviewsSummaryType | null
-  // ⭐ v2.15: Props para variantes de cor
   colorVariants?: ProductColorVariant[]
 }
 
@@ -97,7 +86,7 @@ function getInstallments(price: number, maxParcelas = 10) {
   return { parcelas, valorParcela }
 }
 
-// Formata dificuldade de montagem (banco armazena sem acento)
+// Formata dificuldade de montagem
 function formatDifficulty(difficulty: string): string {
   const map: Record<string, string> = {
     'facil': 'fácil',
@@ -107,35 +96,22 @@ function formatDifficulty(difficulty: string): string {
   return map[difficulty] || difficulty
 }
 
-/**
- * ⭐ v2.11: Formata medida em cm para exibição amigável
- * - Valores ≥ 100cm são convertidos para metros (ex: 160 → "1,6 m")
- * - Valores < 100cm permanecem em centímetros (ex: 77 → "77 cm")
- * - Decimais são arredondados para inteiro quando < 100cm
- */
 function formatarMedidaDetalhada(valorCm: number | null | undefined): { valor: string; unidade: string } {
   if (valorCm == null) {
     return { valor: '-', unidade: '' }
   }
   
   if (valorCm >= 100) {
-    // Converte para metros
     const metros = valorCm / 100
-    // Formata com vírgula, remove zeros desnecessários
     let formatado = metros.toFixed(2).replace('.', ',')
     formatado = formatado.replace(/,?0+$/, '')
     return { valor: formatado, unidade: 'm' }
   } else {
-    // Mantém em centímetros, arredonda para inteiro
     const valorArredondado = Math.round(valorCm)
     return { valor: valorArredondado.toString(), unidade: 'cm' }
   }
 }
 
-/**
- * ⭐ v2.11: Formata dimensões L×A×P para exibição na tabela de specs
- * Converte cada dimensão individualmente
- */
 function formatarDimensoesCompletas(largura: number | null, altura: number | null, profundidade: number | null): string {
   const l = formatarMedidaDetalhada(largura)
   const a = formatarMedidaDetalhada(altura)
@@ -150,10 +126,10 @@ export default function ProductPageContent({
   subcategorySlug,
   reviews = [],
   reviewsSummary = null,
-  colorVariants = []  // ⭐ v2.15: Variantes de cor
+  colorVariants = []
 }: ProductPageContentProps) {
   const { parcelas, valorParcela } = getInstallments(product.price)
-  const pixPrice = product.price * 0.95 // 5% desconto no Pix
+  const pixPrice = product.price * 0.95
   const defaultVariant = product.variants?.find((v: { is_default: boolean }) => v.is_default) || product.variants?.[0]
 
   // WhatsApp link
@@ -161,7 +137,7 @@ export default function ProductPageContent({
   const whatsappMessage = encodeURIComponent(`Olá! Tenho interesse no ${product.name}. Podem me ajudar?`)
   const whatsappLink = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`
 
-  // URL canônica (nova estrutura)
+  // URL canônica
   const canonicalUrl = `https://moveirama.com.br/${subcategorySlug}/${product.slug}`
 
   // ============================================
@@ -174,16 +150,15 @@ export default function ProductPageContent({
     tv_max_size: product.tv_max_size,
     category_type: categoryType,
     variant_name: defaultVariant?.name,
-    color_name: product.color_name  // ⭐ v2.15: Usa color_name do banco
+    color_name: product.color_name
   })
 
-  // FAQs: usa do banco se existir, senão gera automaticamente
   const faqs = product.faqs?.length > 0 
     ? product.faqs 
     : generateProductFAQs(product, subcategorySlug)
 
   // ============================================
-  // SEO V2: Schema.org Product (com shippingDetails + aggregateRating)
+  // SEO V2: Schema.org Product
   // ============================================
   const baseProductSchema = generateProductSchema({
     name: product.name,
@@ -201,11 +176,10 @@ export default function ProductPageContent({
     stock_quantity: product.stock_quantity || 10,
     images: product.images?.map((img: { image_url: string }) => ({ url: img.image_url })),
     variants: product.variants,
-    color_name: product.color_name,      // ⭐ v2.15
-    model_group: product.model_group     // ⭐ v2.15
+    color_name: product.color_name,
+    model_group: product.model_group
   }, canonicalUrl)
 
-  // ⭐ v2.6: Adiciona AggregateRating se houver avaliações
   const productSchema = {
     ...baseProductSchema,
     ...(product.rating_count > 0 && product.rating_average > 0 && {
@@ -220,17 +194,52 @@ export default function ProductPageContent({
   }
 
   // ============================================
-  // SEO V2: Schema.org FAQPage (dinâmico)
+  // SEO V2: Schema.org FAQPage
   // ============================================
   const faqSchema = faqs.length > 0 ? generateFAQSchema(faqs) : null
 
   // ============================================
-  // ⭐ v2.14: Schema.org VideoObject (rich snippet de vídeo)
-  // Só gera se product.video_product_url existir
+  // ⭐ v2.14: Schema.org VideoObject
   // ============================================
   const videoSchema = product.video_product_url 
     ? generateVideoSchema(product.video_product_url, product.name)
     : null
+
+  // ============================================
+  // ⭐ v2.16: Schema.org ProductGroup (variantes de cor)
+  // Rich snippet "Disponível em X cores" no Google
+  // ============================================
+  const productGroupSchema = generateProductGroupSchema(
+    {
+      name: product.name,
+      price: product.price,
+      slug: product.slug,
+      brand: product.brand,
+      color_name: product.color_name,
+      model_group: product.model_group,
+      stock_quantity: product.stock_quantity || 10,
+      tv_max_size: product.tv_max_size,
+      assembly_time_minutes: product.assembly_time_minutes,
+      category_type: categoryType,
+      sku: product.sku,
+      main_material: product.main_material,
+      width: product.width_cm,
+      height: product.height_cm,
+      depth: product.depth_cm,
+      images: product.images?.map((img: { image_url: string }) => ({ url: img.image_url })),
+      variants: product.variants
+    },
+    colorVariants.map(v => ({
+      id: v.id,
+      slug: v.slug,
+      name: v.name,
+      color_name: v.color_name,
+      price: v.price,
+      images: v.images
+    })),
+    'https://moveirama.com.br',
+    subcategorySlug
+  )
 
   // Schema.org BreadcrumbList
   const breadcrumbSchema = {
@@ -245,8 +254,7 @@ export default function ProductPageContent({
   }
 
   // ============================================
-  // ⭐ v2.9: Dados para o botão de compra
-  // ⭐ v2.10: Adicionado dimensões e campos extras
+  // Dados para o botão de compra
   // ============================================
   const buyButtonProduct = {
     id: product.id,
@@ -258,17 +266,15 @@ export default function ProductPageContent({
     sku: product.sku,
     variantId: defaultVariant?.id,
     variantName: defaultVariant?.name,
-    // Dimensões (para exibição no carrinho)
     width_cm: product.width_cm,
     height_cm: product.height_cm,
     depth_cm: product.depth_cm,
-    // Extras
     tv_max_size: product.tv_max_size,
     main_material: product.main_material,
     thickness_mm: product.thickness_mm
   }
 
-  // ⭐ v2.11: Pré-formata medidas para uso no template
+  // Pré-formata medidas
   const larguraFormatada = formatarMedidaDetalhada(product.width_cm)
   const alturaFormatada = formatarMedidaDetalhada(product.height_cm)
   const profundidadeFormatada = formatarMedidaDetalhada(product.depth_cm)
@@ -291,11 +297,17 @@ export default function ProductPageContent({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
         />
       )}
-      {/* ⭐ v2.14: VideoObject Schema para rich snippets de vídeo */}
       {videoSchema && (
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(videoSchema) }}
+        />
+      )}
+      {/* ⭐ v2.16: ProductGroup Schema para rich snippets "Disponível em X cores" */}
+      {productGroupSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productGroupSchema) }}
         />
       )}
 
@@ -323,7 +335,7 @@ export default function ProductPageContent({
               {h1Title}
             </h1>
             
-            {/* ⭐ v2.6: Rating/Avaliações */}
+            {/* Rating/Avaliações */}
             <ProductRating 
               rating={product.rating_average ?? 0}
               totalReviews={product.rating_count ?? 0}
@@ -340,7 +352,7 @@ export default function ProductPageContent({
               SKU: {product.sku}
             </p>
 
-            {/* ⭐ v2.6: Minha Lista - Salvar produto */}
+            {/* Minha Lista - Salvar produto */}
             <div className="mb-4">
               <ProductSaveWrapper
                 product={{
@@ -369,7 +381,7 @@ export default function ProductPageContent({
                 em até <strong>{parcelas}x</strong> de <strong>{formatPrice(valorParcela)}</strong> sem juros
               </p>
               
-              {/* Preço Pix - v2.6: Badge terracota */}
+              {/* Preço Pix */}
               <div className="inline-flex items-center gap-2 mt-3 px-3 py-2 bg-[var(--color-sage-500)]/10 rounded-lg">
                 <span className="text-[var(--color-sage-700)] font-semibold">
                   {formatPrice(pixPrice)} no Pix
@@ -386,7 +398,7 @@ export default function ProductPageContent({
                 categorySlug={subcategorySlug}
               />
 
-              {/* Medidas Compactas v1.2 - responde "vai caber?" antes do CTA */}
+              {/* Medidas Compactas */}
               <MedidasCompactas
                 largura={product.width_cm}
                 altura={product.height_cm}
@@ -412,7 +424,7 @@ export default function ProductPageContent({
               <ShippingCalculator />
             </div>
 
-            {/* ⭐ v2.9: Botões de Ação com BuyNowButton */}
+            {/* Botões de Ação */}
             <div className="flex flex-col gap-3 mb-6">
               <BuyNowButton product={buyButtonProduct} />
               <a 
@@ -458,11 +470,7 @@ export default function ProductPageContent({
           </div>
         </div>
 
-        {/* ============================================
-            SEÇÃO: VÍDEO DO PRODUTO (v2.0)
-            Posição: primeiro item abaixo da dobra
-            Só renderiza se video_product_url existir
-            ============================================ */}
+        {/* SEÇÃO: VÍDEO DO PRODUTO */}
         <VideoProduct 
           videoUrl={product.video_product_url} 
           productName={product.name} 
@@ -482,7 +490,6 @@ export default function ProductPageContent({
                 <span className="text-[var(--color-graphite)]">Quem tem TV de até {product.tv_max_size}&quot; e quer um móvel bonito sem gastar muito</span>
               </li>
             )}
-            {/* ⭐ v2.12: Corrigido para incluir casas */}
             <li className="flex items-start gap-3">
               <svg className="w-5 h-5 text-[var(--color-sage-500)] mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -545,13 +552,12 @@ export default function ProductPageContent({
           </ul>
         </section>
 
-        {/* ⭐ v2.13: Seção: Medidas - com ícones Lucide */}
+        {/* Seção: Medidas - com ícones Lucide */}
         <section id="medidas-detalhadas" className="mt-8 scroll-mt-4">
           <h2 className="text-2xl font-semibold text-[var(--color-graphite)] mb-4">
             Medidas do produto
           </h2>
           <div className="grid grid-cols-3 gap-4 p-4 bg-white rounded-lg border border-[var(--color-sand-light)]">
-            {/* Largura */}
             <div className="flex flex-col items-center gap-2 text-center">
               <MoveHorizontal 
                 className="w-6 h-6 text-[#8B7355]" 
@@ -563,7 +569,6 @@ export default function ProductPageContent({
               </p>
               <p className="text-sm text-[var(--color-toffee)]">Largura</p>
             </div>
-            {/* Altura */}
             <div className="flex flex-col items-center gap-2 text-center">
               <MoveVertical 
                 className="w-6 h-6 text-[#8B7355]" 
@@ -575,7 +580,6 @@ export default function ProductPageContent({
               </p>
               <p className="text-sm text-[var(--color-toffee)]">Altura</p>
             </div>
-            {/* Profundidade */}
             <div className="flex flex-col items-center gap-2 text-center">
               <Box 
                 className="w-6 h-6 text-[#8B7355]" 
@@ -623,7 +627,7 @@ export default function ProductPageContent({
           </div>
         </section>
 
-        {/* ⭐ v2.11: Especificações Técnicas - com dimensões formatadas */}
+        {/* Especificações Técnicas */}
         <section className="mt-8">
           <h2 className="text-2xl font-semibold text-[var(--color-graphite)] mb-4">
             Especificações técnicas
@@ -639,7 +643,6 @@ export default function ProductPageContent({
                 <tr className="border-b border-[var(--color-sand-light)]">
                   <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Material</th>
                   <td className="px-4 py-3">
-                    {/* v3.2.3: Usar apenas main_material (material_description tem dados comerciais antigos) */}
                     {product.main_material}{product.thickness_mm && ` ${product.thickness_mm}mm`}
                   </td>
                 </tr>
@@ -651,7 +654,6 @@ export default function ProductPageContent({
                   <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Peso</th>
                   <td className="px-4 py-3">{product.weight_kg} kg</td>
                 </tr>
-                {/* Peso Suportado - v3.2.3: Para racks/painéis mostra orientação de consultar manual */}
                 {product.weight_capacity && product.weight_capacity > 0 && (
                   <tr className="border-b border-[var(--color-sand-light)]">
                     <th scope="row" className="px-4 py-3 font-medium bg-[var(--color-cream)] text-left">Peso suportado</th>
@@ -686,7 +688,7 @@ export default function ProductPageContent({
           </div>
         </section>
 
-        {/* Seção: FAQ - SEO V2: Usa FAQs dinâmicas */}
+        {/* Seção: FAQ */}
         {faqs && faqs.length > 0 && (
           <section className="mt-8">
             <h2 className="text-2xl font-semibold text-[var(--color-graphite)] mb-4">
@@ -719,10 +721,7 @@ export default function ProductPageContent({
           </section>
         )}
 
-        {/* ============================================
-            ⭐ NOVO v2.7: SEÇÃO DE AVALIAÇÕES/REVIEWS
-            Posição: após FAQ, antes de Confiança
-            ============================================ */}
+        {/* SEÇÃO DE AVALIAÇÕES/REVIEWS */}
         <ReviewsSection
           productId={product.id}
           productSlug={product.slug}
@@ -752,10 +751,7 @@ export default function ProductPageContent({
           </div>
         </section>
 
-        {/* ============================================
-            ⭐ NOVO v2.8: VIZINHOS QUE APROVARAM
-            Prova social regional com fotos de clientes
-            ============================================ */}
+        {/* VIZINHOS QUE APROVARAM */}
         <VizinhosAprovaram 
           productId={product.id}
           productName={product.name}
@@ -763,7 +759,7 @@ export default function ProductPageContent({
 
       </div>
 
-      {/* ⭐ v2.9: Sticky Bar Mobile com BuyNowButton */}
+      {/* Sticky Bar Mobile */}
       <div className="fixed bottom-0 left-0 right-0 z-20 flex items-center gap-3 p-3 bg-white border-t border-[var(--color-sand-light)] shadow-lg md:hidden" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0))' }}>
         <div className="flex-1 min-w-0">
           <p className="text-lg font-bold text-[var(--color-graphite)]">{formatPrice(product.price)}</p>

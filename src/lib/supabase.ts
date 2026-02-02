@@ -3,12 +3,13 @@
 /**
  * Moveirama — Cliente Supabase e funções de acesso ao banco
  * 
- * v2.6: Suporte a variantes de cor (seletor de cores com thumbnails)
+ * v2.7: Corrigido ProductColorVariant para incluir price (necessário para ProductGroup Schema)
  * Changelog:
  *   - v2.3: Simplificado para estrutura de 2 níveis
  *   - v2.4: Corrigido getSubcategories para buscar imagem representativa corretamente
  *   - v2.5: getProductsByCategory agora inclui produtos de categorias secundárias
  *   - v2.6: Adicionado getSiblingVariants para seletor de variantes de cor
+ *   - v2.7: ProductColorVariant agora inclui price para ProductGroup Schema SEO
  */
 
 import { createClient } from '@supabase/supabase-js'
@@ -116,8 +117,10 @@ export type ProductForListing = {
 export type SortOption = 'relevance' | 'price-asc' | 'price-desc' | 'newest' | 'bestseller'
 
 /**
- * v2.6: Variante de cor de um produto (para seletor de variantes)
+ * v2.7: Variante de cor de um produto (para seletor de variantes e ProductGroup Schema)
  * Representa produtos "irmãos" do mesmo modelo em cores diferentes
+ * 
+ * ⭐ v2.7: Adicionado campo `price` para uso no ProductGroup Schema SEO
  */
 export type ProductColorVariant = {
   id: string
@@ -125,6 +128,7 @@ export type ProductColorVariant = {
   name: string
   model_group: string
   color_name: string
+  price: number  // ⭐ v2.7: Necessário para ProductGroup Schema
   images: { cloudinary_path: string }[]
 }
 
@@ -565,7 +569,7 @@ export async function getProductBySubcategoryAndSlug(
 }
 
 // ========================================
-// FUNÇÕES DE VARIANTES DE COR (v2.6)
+// FUNÇÕES DE VARIANTES DE COR (v2.6 / v2.7)
 // ========================================
 
 /**
@@ -573,6 +577,8 @@ export async function getProductBySubcategoryAndSlug(
  * 
  * Usado pelo VariantSelector para exibir opções de cores disponíveis.
  * Retorna produtos que compartilham o mesmo model_group.
+ * 
+ * ⭐ v2.7: Agora inclui `price` no retorno para uso no ProductGroup Schema
  * 
  * @param modelGroup - Identificador do grupo (ex: "rack-charlotte")
  * @returns Array de variantes ordenadas por nome de cor
@@ -595,6 +601,7 @@ export async function getSiblingVariants(
       name,
       model_group,
       color_name,
+      price,
       images:product_images(
         cloudinary_path,
         image_type,
@@ -633,6 +640,7 @@ export async function getSiblingVariants(
       name: product.name,
       model_group: product.model_group,
       color_name: product.color_name || '',
+      price: product.price,  // ⭐ v2.7: Incluído para ProductGroup Schema
       images: primaryImage ? [{ cloudinary_path: primaryImage.cloudinary_path }] : []
     }
   })
