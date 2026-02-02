@@ -4,17 +4,17 @@
  * Moveirama SEO Utilities
  * Funções para gerar H1, meta description, schema.org e FAQ
  * 
- * Versão: 3.1.0 - Inteligência de Marca + Categorias Expandidas + AEO
+ * Versão: 3.2.0 - Lógica por Atributos do Produto (não por fornecedor)
  * 
  * Changelog:
- *   - v3.1 (02/02/2026): INTELIGÊNCIA DE MARCA ARTELY vs ARTANY
- *                        • Nova função inferEnvironmentType() (casa/escritório-home/escritório-pro)
- *                        • Nova função getSupplierProfile() com proposta de valor por marca
- *                        • Nova função getBairrosPorContexto() (residencial vs comercial)
- *                        • inferCategoryType expandido para 30 subcategorias
- *                        • FAQs específicas: buffets, aparadores, mesas profissionais, estantes
- *                        • Meta descriptions diferenciadas por fabricante
- *                        • Espessura do tampo (Artany) nas descrições
+ *   - v3.2 (02/02/2026): CORREÇÃO CRÍTICA - LÓGICA POR ATRIBUTOS
+ *                        • Tamburato 50mm vale para AMBOS (Artely e Artany)
+ *                        • Diferenciação baseada em thickness_mm, não supplier_id
+ *                        • "Compacto" removido — Artely tem racks de 1,80m
+ *                        • Artely destacada por: acabamento Pintura UV, visual sofisticado
+ *                        • Artany destacada por: estrutura corporativa, uso intenso
+ *                        • Proposta de valor dinâmica baseada nos dados reais do produto
+ *   - v3.1 (02/02/2026): Inteligência de Marca + 30 categorias + bairros segmentados
  *   - v2.15 (02/02/2026): HowTo Schema para vídeos de montagem
  *   - v2.9.1 (01/02/2026): FIX: Aceita campos do banco (width_cm, height_cm, depth_cm)
  *   - v2.9 (01/02/2026): VideoObject, FAQ comparação, bairros, Brand/Seller separados
@@ -109,16 +109,16 @@ const SUPPLIER_PROFILES: Record<string, SupplierProfile> = {
     name: 'Artely',
     id: SUPPLIER_IDS.ARTELY,
     focus: 'residencial',
-    valueProposition: 'otimizado para apartamentos compactos',
-    metaPrefix: 'Design inteligente para espaços pequenos',
-    targetAudience: 'apartamentos e casas'
+    valueProposition: 'acabamento sofisticado com Pintura UV e bordas em PVC',
+    metaPrefix: 'Design elegante para sua casa',
+    targetAudience: 'casas e apartamentos'
   },
   [SUPPLIER_IDS.ARTANY]: {
     name: 'Artany',
     id: SUPPLIER_IDS.ARTANY,
     focus: 'profissional',
-    valueProposition: 'robustez e durabilidade corporativa',
-    metaPrefix: 'Padrão profissional de escritório',
+    valueProposition: 'estrutura reforçada para uso intenso em escritórios',
+    metaPrefix: 'Padrão profissional corporativo',
     targetAudience: 'escritórios e empresas'
   }
 }
@@ -307,39 +307,72 @@ export function generateProductMetaDescription(product: ProductForMeta): string 
   const supplierProfile = getSupplierProfile(supplier_id)
   const productDepth = depth || depth_cm
   
+  // v3.2: Diferencial por ATRIBUTO, não por fornecedor
+  const hasTamburato = thickness_mm && thickness_mm >= 50
+  const tamburataText = hasTamburato ? `Tampo robusto de ${thickness_mm}mm em Tamburato. ` : ''
+  
   let benefit = ''
   
+  // Racks e Painéis (Artely ou Artany)
   if ((category_type === 'rack' || category_type === 'painel') && tv_max_size) {
-    const weightText = weight_capacity ? `Suporta ${weight_capacity}kg, ` : ''
-    benefit = `Solução para TVs de ${tv_max_size}" em salas compactas. ${weightText}entrega própria em 72h.`
+    const weightText = weight_capacity ? `Suporta ${weight_capacity}kg. ` : ''
+    // v3.2: Se tem Tamburato, destaca isso (independente do fornecedor)
+    if (hasTamburato) {
+      benefit = `${tamburataText}Para TVs de ${tv_max_size}". ${weightText}Entrega própria em 72h.`
+    } else {
+      benefit = `Solução para TVs de ${tv_max_size}". ${weightText}Entrega própria em 72h.`
+    }
   }
+  // Buffets e Aparadores
   else if (category_type === 'buffet' || category_type === 'aparador') {
     const depthText = productDepth && productDepth <= 40 ? `Profundidade de apenas ${productDepth}cm — não obstrui a passagem. ` : ''
-    benefit = `${depthText}Ideal para salas de jantar em Curitiba. Entrega própria em 72h.`
+    // v3.2: Se tem Tamburato, destaca
+    if (hasTamburato) {
+      benefit = `${tamburataText}${depthText}Design elegante para salas de jantar. Entrega própria em 72h.`
+    } else {
+      benefit = `${depthText}Design elegante para salas de jantar. Entrega própria em 72h.`
+    }
   }
+  // Estantes e Cristaleiras
   else if (category_type === 'cristaleira' || category_type === 'estante') {
     const weightText = weight_capacity ? `Suporta até ${weight_capacity}kg por prateleira. ` : ''
     benefit = `${weightText}Proteção contra umidade de Curitiba. Entrega própria em 72h.`
   }
+  // Mesas Profissionais (Artany principalmente, mas baseado em atributos)
   else if (['mesa-reta', 'mesa-em-l', 'mesa-reuniao', 'estacao'].includes(category_type || '')) {
-    if (supplierProfile?.name === 'Artany' && thickness_mm) {
-      benefit = `Tampo de ${thickness_mm}mm para máxima estabilidade em setups profissionais. Ideal para escritórios em Curitiba. Pronta entrega em 72h!`
+    // v3.2: Lógica por thickness_mm, não por supplier_id
+    if (hasTamburato) {
+      benefit = `${tamburataText}Estrutura para uso intenso em escritórios. Pronta entrega em 72h!`
+    } else if (supplierProfile?.focus === 'profissional') {
+      benefit = `Estrutura reforçada para ambiente profissional. Entrega própria em 72h.`
     } else {
-      benefit = `Estrutura robusta para ambiente profissional. Entrega própria em 72h.`
+      benefit = `Mesa funcional para home office ou escritório. Entrega própria em 72h.`
     }
   }
+  // Escrivaninhas (pode ser Artely ou Artany)
   else if (category_type === 'escrivaninha' || category_type === 'escrivaninha-l') {
-    if (supplierProfile?.name === 'Artely') {
-      benefit = `Otimizada para home office em apartamentos compactos. Entrega própria em 72h.`
+    // v3.2: Baseado em atributos, não fornecedor
+    if (hasTamburato) {
+      benefit = `${tamburataText}Ideal para home office. Entrega própria em 72h.`
     } else {
-      benefit = `Ideal para home office em apartamentos compactos. Entrega própria em 72h.`
+      benefit = `Solução prática para home office em casas e apartamentos. Entrega própria em 72h.`
     }
   }
+  // Penteadeiras
   else if (category_type === 'penteadeira') {
     benefit = `Design funcional para quartos e closets. Entrega própria em 72h.`
   }
+  // Mesas de centro e apoio
+  else if (category_type === 'mesa-centro' || category_type === 'mesa-apoio') {
+    if (hasTamburato) {
+      benefit = `${tamburataText}Visual sofisticado para sua sala. Entrega própria em 72h.`
+    } else {
+      benefit = `Complemento elegante para sua sala. Entrega própria em 72h.`
+    }
+  }
+  // Fallback genérico
   else {
-    benefit = `Móvel com ótimo custo-benefício. Entrega própria em 72h.`
+    benefit = `Móvel com ótimo custo-benefício para sua casa. Entrega própria em 72h.`
   }
   
   const cta = `Garanta o seu na Moveirama!`
@@ -825,7 +858,7 @@ export function generateEscrivaninhaFAQs(product: {
   if (product.width && product.height && product.depth) {
     faqs.push({
       question: `Quais são as medidas da ${baseName}?`,
-      answer: `${product.width}cm de largura × ${product.height}cm de altura × ${product.depth}cm de profundidade. Ideal para cantinhos de home office em apartamento.`
+      answer: `${product.width}cm de largura × ${product.height}cm de altura × ${product.depth}cm de profundidade. Confira se cabe no espaço disponível antes de comprar.`
     })
   }
   
@@ -978,13 +1011,13 @@ export function generateCategoryMetaDescription(categoryName: string, categorySl
   const seoNameLower = seoName.toLowerCase()
   
   if (['racks-tv', 'paineis-tv'].includes(categorySlug)) {
-    return `Confira ${seoNameLower} em Curitiba e Região Metropolitana. Modelos para TV de 32" a 75", compactos e modernos. Entrega própria em até 72h. Compre móveis na caixa sem dor de cabeça.`
+    return `Confira ${seoNameLower} em Curitiba e Região Metropolitana. Modelos para TV de 32" a 75", com design elegante e acabamento resistente à umidade. Entrega própria em até 72h. Compre móveis na caixa sem dor de cabeça.`
   }
   if (['buffets', 'aparadores'].includes(categorySlug)) {
-    return `${seoName} em Curitiba com profundidade reduzida — ideais para salas de jantar compactas. Proteção contra umidade. Entrega própria em até 72h.`
+    return `${seoName} em Curitiba com profundidade reduzida — ideais para salas de jantar. Proteção contra umidade. Entrega própria em até 72h.`
   }
   if (categorySlug.includes('escrivaninha') || categorySlug.includes('home-office')) {
-    return `${seoName} em Curitiba e RMC com entrega rápida. Modelos compactos ideais para apartamentos pequenos. Frota própria, entrega em até 72h. Monte seu home office sem stress.`
+    return `${seoName} em Curitiba e RMC com entrega rápida. Modelos práticos para home office em casas e apartamentos. Frota própria, entrega em até 72h. Monte seu home office sem stress.`
   }
   if (categorySlug.includes('profissional') || ['mesa-reta', 'mesa-em-l', 'mesa-reuniao', 'balcao-atendimento', 'estacoes'].includes(categorySlug)) {
     return `${seoName} em Curitiba e Região Metropolitana. Móveis robustos para escritórios e empresas. Entrega própria em até 72h. Qualidade profissional com preço justo.`
@@ -1016,7 +1049,7 @@ export function generateCategoryFAQs(categoryName: string, categorySlug: string)
     faqs.splice(2, 0, { question: `Os ${seoNameLower} cabem em salas de jantar pequenas?`, answer: `Sim! Temos modelos com profundidade reduzida (a partir de 37cm) ideais para salas compactas de Curitiba. Cada página mostra as medidas exatas.` })
   }
   if (categorySlug.includes('escrivaninha')) {
-    faqs.splice(2, 0, { question: `As ${seoNameLower} cabem em apartamentos pequenos?`, answer: `Sim! Temos modelos compactos ideais para apartamentos. Cada página mostra as medidas exatas. Dica: meça seu espaço antes de comprar e, se tiver dúvida, chama no WhatsApp.` })
+    faqs.splice(2, 0, { question: `As ${seoNameLower} cabem em espaços menores?`, answer: `Sim! Temos modelos de diversos tamanhos, incluindo opções para espaços reduzidos. Cada página mostra as medidas exatas. Dica: meça seu espaço antes de comprar e, se tiver dúvida, chama no WhatsApp.` })
   }
   if (isProfissional) {
     faqs.splice(2, 0, { question: `Vocês vendem para empresas e escritórios?`, answer: `Sim! Atendemos tanto pessoas físicas quanto empresas. Para pedidos maiores ou orçamentos personalizados, entre em contato pelo WhatsApp.` })
