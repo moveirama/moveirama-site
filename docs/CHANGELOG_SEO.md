@@ -2,7 +2,7 @@
 
 > **Histórico de implementações SEO/AIO e UX do projeto**  
 > **Última atualização:** 02 de Fevereiro de 2026  
-> **Versão atual:** 2.17.0
+> **Versão atual:** 2.18.0
 
 ---
 
@@ -16,11 +16,12 @@ Este documento registra todas as implementações de SEO técnico, otimização 
 |--------|--------|---------|
 | **ProductGroup** | ✅ Ativo | `seo.ts` → `generateProductGroupSchema()` |
 | Product | ✅ Ativo | `seo.ts` → `generateProductSchema()` |
+| **Review** | ✅ Ativo | `seo.ts` → `generateReviewSchema()` |
 | BreadcrumbList | ✅ Ativo | `ProductPageContent.tsx` |
 | FAQPage | ✅ Ativo | `seo.ts` → `generateProductFAQs()` |
 | VideoObject | ✅ Ativo | `seo.ts` → `generateVideoSchema()` |
 | HowTo | ✅ Ativo | `seo.ts` → `generateHowToSchema()` |
-| AggregateRating | ✅ Condicional | Só aparece se `rating_count > 0` |
+| AggregateRating | ✅ Condicional | Dentro do Product, se `rating_count > 0` |
 | FurnitureStore | ✅ Ativo | Home e páginas institucionais |
 
 ### Features de UX/Conversão
@@ -32,6 +33,133 @@ Este documento registra todas as implementações de SEO técnico, otimização 
 | Minha Lista (Favoritos) | ✅ Ativo | v2.6 |
 | Reviews e Avaliações | ✅ Ativo | v2.8 |
 | Carrinho + Checkout | ✅ Ativo | v2.9/v2.10 |
+
+---
+
+## v2.18 — 02/02/2026
+
+### ⭐ Review Schema (NOVO)
+
+**Objetivo:** Exibir avaliações reais de clientes nos resultados do Google com rich snippets de estrelas e reviews individuais.
+
+**Validação:** ✅ **7 schemas detectados, 0 erros, 0 avisos**
+
+| Schema Detectado | Status |
+|------------------|--------|
+| ProductGroup | ✅ 0 erros |
+| VideoObject | ✅ 0 erros |
+| FurnitureStore | ✅ 0 erros |
+| BreadcrumbList | ✅ 0 erros |
+| **Product** (com AggregateRating + Review) | ✅ 0 erros |
+| FAQPage | ✅ 0 erros |
+
+**Implementação:**
+
+#### Nova função em `seo.ts` (v3.5)
+```typescript
+export interface ReviewForSchema {
+  author_name: string
+  author_city?: string | null
+  rating: number
+  title?: string | null
+  content?: string | null
+  is_verified_purchase?: boolean
+  created_at?: string
+}
+
+export function generateReviewSchema(reviews: ReviewForSchema[]): object[]
+```
+
+**Estrutura do Schema (dentro do Product):**
+```json
+{
+  "@type": "Product",
+  "name": "Rack Charlotte...",
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": 4.8,
+    "reviewCount": 4,
+    "bestRating": 5,
+    "worstRating": 1
+  },
+  "review": [
+    {
+      "@type": "Review",
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": 5,
+        "bestRating": 5,
+        "worstRating": 1
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Patrícia"
+      },
+      "reviewBody": "Móvel lindo e fácil de montar!",
+      "datePublished": "2026-01-15"
+    }
+  ]
+}
+```
+
+**Lógica de renderização:**
+- Só aparece se produto tem reviews aprovados (`is_approved = true`)
+- AggregateRating calculado a partir dos reviews reais
+- Até 5 reviews individuais incluídos no schema
+- Cidade do autor incluída quando disponível (SEO local)
+- Badge "Compra Verificada" quando `is_verified_purchase = true`
+
+**Mapeamento de Tipos (Frontend → Schema):**
+```typescript
+// Interface Review (frontend - camelCase)
+customerName → author_name
+customerCity → author_city  
+comment → content
+isVerified → is_verified_purchase
+createdAt → created_at
+```
+
+**Arquivos alterados:**
+
+| Arquivo | Versão | Alteração |
+|---------|--------|-----------|
+| `src/lib/seo.ts` | v3.5 | +`generateReviewSchema()`, +`ReviewForSchema` interface |
+| `src/components/ProductPageContent.tsx` | v2.18 | Integração do Review Schema com mapeamento correto |
+| `src/lib/reviews.ts` | v1.2 | Busca reviews da tabela `reviews` (não `product_reviews`) |
+
+**Tabela do Banco:**
+```sql
+-- Tabela correta: reviews (283 registros)
+-- NÃO usar: product_reviews (vazia)
+
+SELECT * FROM reviews 
+WHERE product_id = ? AND is_approved = true
+ORDER BY created_at DESC
+LIMIT 5;
+```
+
+**Benefícios SEO:**
+
+| Benefício | Impacto |
+|-----------|---------|
+| Rich snippet com estrelas | ⭐⭐⭐⭐⭐ 4.8 (4 avaliações) nos resultados |
+| Reviews individuais | Google pode exibir trechos das avaliações |
+| Prova social | Aumenta confiança e CTR |
+| SEO local | Cidade do cliente reforça autoridade regional |
+| Compra verificada | Badge de autenticidade |
+
+**Cobertura atual:**
+| Métrica | Valor |
+|---------|-------|
+| Total de reviews no banco | 283 |
+| Produtos com reviews | ~70 |
+| Média de reviews por produto | ~4 |
+
+**Exemplo testado:**
+- Produto: Rack Charlotte Carvalho C / Menta
+- Reviews: 4 avaliações aprovadas
+- Média: 4.8 estrelas
+- Autores: Patrícia (Curitiba-Portão), Lucas M. (Colombo), Fernanda (Curitiba-Sítio Cercado), Diego (Pinhais)
 
 ---
 
@@ -93,8 +221,7 @@ export function generateProductGroupSchema(
         "priceCurrency": "BRL",
         "availability": "https://schema.org/InStock"
       }
-    },
-    // ... outras variantes
+    }
   ]
 }
 ```
@@ -456,9 +583,10 @@ Cajuru, Boqueirão, Xaxim, Pinheirinho, CIC, Sítio Cercado, Portão, Água Verd
 
 | Arquivo | Responsabilidade |
 |---------|------------------|
-| `src/lib/seo.ts` | Funções de geração de Schema (v3.4) |
+| `src/lib/seo.ts` | Funções de geração de Schema (v3.5) |
 | `src/lib/supabase.ts` | Queries + `getSiblingVariants()` (v2.7) |
-| `src/components/ProductPageContent.tsx` | Renderização dos JSON-LD + VariantSelector |
+| `src/lib/reviews.ts` | Busca reviews da tabela `reviews` (v1.2) |
+| `src/components/ProductPageContent.tsx` | Renderização dos JSON-LD + VariantSelector (v2.18) |
 | `src/components/VariantSelector.tsx` | Seletor de variantes de cor |
 | `src/components/ProductFAQ.tsx` | Componente visual do FAQ |
 | `src/app/[category]/[...slug]/page.tsx` | generateMetadata() + query de produto |
@@ -496,6 +624,12 @@ Cajuru, Boqueirão, Xaxim, Pinheirinho, CIC, Sítio Cercado, Portão, Água Verd
 3. Verificar que `hasVariant` contém todas as cores
 4. Cada variante deve ter `price` e `color`
 
+### Review Schema
+1. Acesse produto com reviews (ex: Rack Charlotte)
+2. View Source → buscar "aggregateRating"
+3. Verificar que `ratingValue` e `reviewCount` aparecem
+4. Verificar que array `review` contém avaliações individuais
+
 ---
 
 ## 📊 Métricas para Acompanhar
@@ -507,6 +641,7 @@ Cajuru, Boqueirão, Xaxim, Pinheirinho, CIC, Sítio Cercado, Portão, Água Verd
 | Posição média | Search Console | Buscas por marca (Artely, Artany) |
 | Indexação | Search Console | Páginas com erros de Schema |
 | HowTo impressions | Search Console | Buscas "como montar" |
+| **Review snippets** | Search Console | Rich snippet ⭐⭐⭐⭐⭐ |
 | **ProductGroup** | Search Console | Rich snippet "X cores" |
 | **Conversão PDP** | Analytics | Taxa de "Add to Cart" |
 | **Navegação variantes** | Analytics | Cliques no VariantSelector |
@@ -517,10 +652,10 @@ Cajuru, Boqueirão, Xaxim, Pinheirinho, CIC, Sítio Cercado, Portão, Água Verd
 
 | Prioridade | Item | Descrição |
 |------------|------|-----------|
+| ~~Alta~~ | ~~Review Schema~~ | ✅ **Implementado v2.18** |
 | ~~Alta~~ | ~~ProductGroup Schema~~ | ✅ **Implementado v2.17** |
 | ~~Alta~~ | ~~Seletor de Variantes~~ | ✅ **Implementado v2.16** |
 | ~~Alta~~ | ~~HowTo Schema~~ | ✅ **Implementado v2.15** |
-| Média | Review Schema | Quando tiver sistema de reviews ativo |
 | Média | Organization Schema | Página "Sobre" |
 | Baixa | ItemList Schema | Páginas de categoria |
 
@@ -530,7 +665,8 @@ Cajuru, Boqueirão, Xaxim, Pinheirinho, CIC, Sítio Cercado, Portão, Água Verd
 
 | Data | Versão | Feature Principal |
 |------|--------|-------------------|
-| **02/02/2026** | **v2.17** | **ProductGroup Schema** |
+| **02/02/2026** | **v2.18** | **Review Schema** ⭐ |
+| 02/02/2026 | v2.17 | ProductGroup Schema |
 | 02/02/2026 | v2.16 | Seletor de Variantes de Cor |
 | 02/02/2026 | v2.15 | HowTo Schema (vídeo montagem) |
 | 02/02/2026 | v2.14 | VideoObject Schema |
