@@ -3,7 +3,7 @@
 /**
  * Moveirama — Cliente Supabase e funções de acesso ao banco
  * 
- * v2.8.1: Corrigido getBestSellers - categorySlug agora extrai corretamente (objeto, não array)
+ * v2.8.2: Corrigido TypeScript cast em getBestSellers (categoryData)
  * 
  * Changelog:
  *   - v2.3: Simplificado para estrutura de 2 níveis
@@ -13,6 +13,7 @@
  *   - v2.7: ProductColorVariant agora inclui price para ProductGroup Schema SEO
  *   - v2.8: Adicionado getBestSellers para carrossel "Queridinhos de Curitiba"
  *   - v2.8.1: Corrigido extração de categorySlug em getBestSellers (Supabase retorna objeto, não array)
+ *   - v2.8.2: Corrigido TypeScript cast - usa unknown intermediário para evitar erro de tipo
  */
 
 import { createClient } from '@supabase/supabase-js'
@@ -669,7 +670,7 @@ export async function isValidCategoryRoute(
 }
 
 // ========================================
-// QUERIDINHOS DE CURITIBA (v2.8 / v2.8.1)
+// QUERIDINHOS DE CURITIBA (v2.8 / v2.8.1 / v2.8.2)
 // ========================================
 
 /**
@@ -708,6 +709,7 @@ export type BestSellerProduct = {
  * 
  * @since v2.8
  * @updated v2.8.1 - Corrigido extração de categorySlug (Supabase retorna objeto, não array)
+ * @updated v2.8.2 - Corrigido TypeScript cast usando unknown intermediário
  */
 export async function getBestSellers(limit: number = 6): Promise<BestSellerProduct[]> {
   // Lista fixa de slugs na ordem desejada
@@ -750,13 +752,21 @@ export async function getBestSellers(limit: number = 6): Promise<BestSellerProdu
   // Mapeia para o formato esperado e atribui badges
   return sortedData.map((item, index) => {
     // ========================================
-    // v2.8.1: CORREÇÃO da extração de categorySlug
+    // v2.8.2: CORREÇÃO do TypeScript cast
     // ========================================
-    // Supabase com select de relação 1:1 retorna OBJETO, não array
-    // category:categories(slug) → { slug: 'racks-tv' }
+    // Supabase pode retornar objeto OU array dependendo do contexto
+    // Usamos unknown como intermediário para fazer cast seguro
     // ========================================
-    const categoryData = item.category as { slug: string } | null
-    const categorySlug = categoryData?.slug || null
+    const rawCategory = item.category as unknown
+    let categorySlug: string | null = null
+    
+    if (Array.isArray(rawCategory)) {
+      // Se vier como array (possível em alguns contextos)
+      categorySlug = (rawCategory[0] as { slug: string } | undefined)?.slug || null
+    } else if (rawCategory && typeof rawCategory === 'object') {
+      // Se vier como objeto (esperado para relação 1:1)
+      categorySlug = (rawCategory as { slug: string }).slug || null
+    }
 
     // Extrai imagem principal
     const images = item.product_images || []
