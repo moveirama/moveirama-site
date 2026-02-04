@@ -3,13 +3,16 @@
 /**
  * Moveirama — Cliente Supabase e funções de acesso ao banco
  * 
- * v2.7: Corrigido ProductColorVariant para incluir price (necessário para ProductGroup Schema)
+ * v2.8.1: Corrigido getBestSellers - categorySlug agora extrai corretamente (objeto, não array)
+ * 
  * Changelog:
  *   - v2.3: Simplificado para estrutura de 2 níveis
  *   - v2.4: Corrigido getSubcategories para buscar imagem representativa corretamente
  *   - v2.5: getProductsByCategory agora inclui produtos de categorias secundárias
  *   - v2.6: Adicionado getSiblingVariants para seletor de variantes de cor
  *   - v2.7: ProductColorVariant agora inclui price para ProductGroup Schema SEO
+ *   - v2.8: Adicionado getBestSellers para carrossel "Queridinhos de Curitiba"
+ *   - v2.8.1: Corrigido extração de categorySlug em getBestSellers (Supabase retorna objeto, não array)
  */
 
 import { createClient } from '@supabase/supabase-js'
@@ -666,7 +669,7 @@ export async function isValidCategoryRoute(
 }
 
 // ========================================
-// QUERIDINHOS DE CURITIBA (v2.8)
+// QUERIDINHOS DE CURITIBA (v2.8 / v2.8.1)
 // ========================================
 
 /**
@@ -704,6 +707,7 @@ export type BestSellerProduct = {
  * @returns Array de BestSellerProduct com badges atribuídos
  * 
  * @since v2.8
+ * @updated v2.8.1 - Corrigido extração de categorySlug (Supabase retorna objeto, não array)
  */
 export async function getBestSellers(limit: number = 6): Promise<BestSellerProduct[]> {
   // Lista fixa de slugs na ordem desejada
@@ -741,17 +745,21 @@ export async function getBestSellers(limit: number = 6): Promise<BestSellerProdu
   // Ordena os resultados na mesma ordem do array QUERIDINHOS_SLUGS
   const sortedData = slugsToFetch
     .map(slug => data.find(item => item.slug === slug))
-    .filter(Boolean)
+    .filter((item): item is NonNullable<typeof item> => item !== undefined)
 
   // Mapeia para o formato esperado e atribui badges
   return sortedData.map((item, index) => {
-    // Extrai categoria (Supabase retorna array)
-    const categorySlug = Array.isArray(item!.category) 
-      ? item!.category[0]?.slug || null
-      : null
+    // ========================================
+    // v2.8.1: CORREÇÃO da extração de categorySlug
+    // ========================================
+    // Supabase com select de relação 1:1 retorna OBJETO, não array
+    // category:categories(slug) → { slug: 'racks-tv' }
+    // ========================================
+    const categoryData = item.category as { slug: string } | null
+    const categorySlug = categoryData?.slug || null
 
     // Extrai imagem principal
-    const images = item!.product_images || []
+    const images = item.product_images || []
     const principalImage = images.find((img: { image_type: string }) => img.image_type === 'principal')
     const imageUrl = principalImage?.cloudinary_path || images[0]?.cloudinary_path || null
 
@@ -764,10 +772,10 @@ export async function getBestSellers(limit: number = 6): Promise<BestSellerProdu
     }
 
     return {
-      id: item!.id,
-      name: item!.name,
-      slug: item!.slug,
-      price: item!.price,
+      id: item.id,
+      name: item.name,
+      slug: item.slug,
+      price: item.price,
       categorySlug,
       imageUrl,
       badgeType

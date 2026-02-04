@@ -2,11 +2,14 @@
 
 /**
  * Moveirama Cart System - Cart Empty Component
- * Versão: 1.0
- * Data: Janeiro 2026
+ * Versão: 1.1
+ * Data: Fevereiro 2026
  * 
  * Estado vazio do carrinho com CTAs.
  * Duas variantes: drawer (compacta) e page (completa).
+ * 
+ * Changelog:
+ *   - v1.1: Corrigido link "Ver Móveis Populares" → "Ver Ofertas" (/ofertas-moveis-curitiba)
  */
 
 import React from 'react'
@@ -65,12 +68,12 @@ function CartEmptyDrawer({ onContinue }: CartEmptyDrawerProps) {
         Seu carrinho está vazio
       </h3>
       <p className="text-sm text-[#8B7355] mb-6">
-        Que tal dar uma olhada nos móveis mais vendidos?
+        Que tal dar uma olhada nas nossas ofertas?
       </p>
       
-      {/* CTA */}
-      <button
-        type="button"
+      {/* CTA - v1.1: Corrigido para /ofertas-moveis-curitiba */}
+      <Link
+        href="/ofertas-moveis-curitiba"
         onClick={onContinue}
         className="
           w-full h-12
@@ -81,8 +84,8 @@ function CartEmptyDrawer({ onContinue }: CartEmptyDrawerProps) {
           transition-colors duration-150
         "
       >
-        Ver Móveis Populares
-      </button>
+        Ver Ofertas
+      </Link>
     </div>
   )
 }
@@ -110,14 +113,14 @@ function CartEmptyPage() {
         Seu carrinho está vazio
       </h1>
       <p className="text-base text-[#8B7355] mb-8 max-w-md">
-        Que tal dar uma olhada nos móveis mais vendidos? 
+        Que tal dar uma olhada nas nossas ofertas? 
         Temos opções com ótimo custo-benefício para deixar sua casa incrível.
       </p>
       
-      {/* CTAs */}
+      {/* CTAs - v1.1: Corrigido para /ofertas-moveis-curitiba */}
       <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
         <Link
-          href="/"
+          href="/ofertas-moveis-curitiba"
           className="
             flex-1 h-12
             flex items-center justify-center
@@ -127,7 +130,7 @@ function CartEmptyPage() {
             transition-colors duration-150
           "
         >
-          Ver Móveis Populares
+          Ver Ofertas
         </Link>
         <Link
           href="/moveis-para-casa"
@@ -240,9 +243,9 @@ export function CartEmptyWithSuggestions({
         </div>
       )}
       
-      {/* CTA */}
-      <button
-        type="button"
+      {/* CTA - v1.1: Link para ofertas */}
+      <Link
+        href="/ofertas-moveis-curitiba"
         onClick={onContinue}
         className="
           w-full h-11
@@ -254,8 +257,8 @@ export function CartEmptyWithSuggestions({
           transition-colors duration-150
         "
       >
-        Ver Mais Móveis
-      </button>
+        Ver Mais Ofertas
+      </Link>
     </div>
   )
 }

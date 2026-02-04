@@ -1,11 +1,11 @@
 /**
  * OfertaProductCard - Card de produto em oferta
- * Squad Dev - 25/01/2026
+ * Squad Dev - 04/02/2026
  * 
  * ELEMENTOS:
  * - Badge de desconto (Terracota)
  * - Badge "Apê compacto" (Sage, se aplicável)
- * - Estrelas de avaliação
+ * - Estrelas de avaliação (reais do banco)
  * - Preço "de" riscado + preço "por"
  * - Parcelas em Terracota
  * - Prova social regional
@@ -13,7 +13,11 @@
  * - Botão Comprar
  * 
  * CHANGELOG:
- * - 25/01/2026: Corrigido campo de imagem (cloudinary_path em vez de url)
+ * - 04/02/2026: v1.2 - Título SEO otimizado com tv_max_size (ex: "para TV até 55 polegadas")
+ * - 04/02/2026: v1.2 - Seleção inteligente de imagem (evita dimensional)
+ * - 04/02/2026: v1.2 - Reviews reais do banco (rating_average, rating_count)
+ * - 25/01/2026: v1.1 - Corrigido campo de imagem (cloudinary_path em vez de url)
+ * - 25/01/2026: v1.0 - Versão inicial
  */
 
 import Link from 'next/link';
@@ -23,7 +27,7 @@ import Image from 'next/image';
 // ÍCONES SVG
 // ===========================================
 
-const StarIcon = ({ filled = true }: { filled?: boolean }) => (
+const StarIcon = ({ filled = true, half = false }: { filled?: boolean; half?: boolean }) => (
   <svg
     viewBox="0 0 24 24"
     fill={filled ? '#B85C38' : 'none'}
@@ -31,7 +35,22 @@ const StarIcon = ({ filled = true }: { filled?: boolean }) => (
     strokeWidth="2"
     className="w-4 h-4"
   >
-    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    {half ? (
+      <>
+        <defs>
+          <linearGradient id="halfStar">
+            <stop offset="50%" stopColor="#B85C38" />
+            <stop offset="50%" stopColor="transparent" />
+          </linearGradient>
+        </defs>
+        <polygon
+          points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+          fill="url(#halfStar)"
+        />
+      </>
+    ) : (
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    )}
   </svg>
 );
 
@@ -71,6 +90,13 @@ const TruckIcon = () => (
 // TIPOS
 // ===========================================
 
+interface ProductImage {
+  cloudinary_path: string;
+  alt_text: string | null;
+  image_type?: string | null;
+  position?: number;
+}
+
 interface Product {
   id: string;
   name: string;
@@ -80,8 +106,10 @@ interface Product {
   short_description: string;
   tv_max_size: number | null;
   for_small_spaces: boolean;
+  rating_average?: number | null;
+  rating_count?: number | null;
   category: { slug: string } | { slug: string }[] | null;
-  product_images: { cloudinary_path: string; alt_text: string | null }[];
+  product_images: ProductImage[];
 }
 
 interface OfertaProductCardProps {
@@ -132,6 +160,105 @@ function gerarProvaSocial(productId: string): {
   return { quantidade, bairro };
 }
 
+/**
+ * Gera título SEO otimizado para o card
+ * Segue o mesmo padrão do H1 da PDP
+ * Exemplo: "Rack Charlotte para TV até 75 polegadas - Carvalho C / Menta"
+ */
+function generateCardTitle(product: Product): string {
+  const { name, tv_max_size } = product;
+  
+  // Se não tem tv_max_size, retorna nome original
+  if (!tv_max_size) {
+    return name;
+  }
+  
+  // Detecta se é rack, painel ou outro móvel que usa TV
+  const nameLower = name.toLowerCase();
+  const isTvFurniture = 
+    nameLower.includes('rack') || 
+    nameLower.includes('painel') || 
+    nameLower.includes('estante');
+  
+  if (!isTvFurniture) {
+    return name;
+  }
+  
+  // Extrai o nome base (antes do " - " que indica cor)
+  const parts = name.split(' - ');
+  const baseName = parts[0].trim();
+  const colorPart = parts.slice(1).join(' - ').trim();
+  
+  // Verifica se já tem "para TV" ou "TV até" no nome
+  if (nameLower.includes('para tv') || nameLower.includes('tv até')) {
+    return name;
+  }
+  
+  // Monta o título SEO
+  const tvText = `para TV até ${tv_max_size} polegadas`;
+  
+  if (colorPart) {
+    return `${baseName} ${tvText} - ${colorPart}`;
+  }
+  
+  return `${baseName} ${tvText}`;
+}
+
+/**
+ * Seleciona a melhor imagem do produto
+ * Prioridade: principal > galeria > ambientada > qualquer outra (exceto dimensional)
+ */
+function getBestProductImage(images: ProductImage[]): { url: string; alt: string } {
+  const defaultImage = {
+    url: '/images/placeholder-product.jpg',
+    alt: 'Imagem do produto',
+  };
+
+  if (!images || images.length === 0) {
+    return defaultImage;
+  }
+
+  // Prioridade de tipos de imagem
+  const typePriority = ['principal', 'galeria', 'ambientada'];
+  
+  // Primeiro: busca por tipo na ordem de prioridade
+  for (const type of typePriority) {
+    const found = images.find(img => img.image_type === type);
+    if (found) {
+      return {
+        url: found.cloudinary_path,
+        alt: found.alt_text || 'Imagem do produto',
+      };
+    }
+  }
+
+  // Segundo: busca qualquer imagem que NÃO seja dimensional
+  const nonDimensional = images.find(img => img.image_type !== 'dimensional');
+  if (nonDimensional) {
+    return {
+      url: nonDimensional.cloudinary_path,
+      alt: nonDimensional.alt_text || 'Imagem do produto',
+    };
+  }
+
+  // Terceiro: ordena por position e pega a primeira não-dimensional
+  const sortedByPosition = [...images].sort((a, b) => (a.position || 0) - (b.position || 0));
+  const bestByPosition = sortedByPosition.find(img => img.image_type !== 'dimensional');
+  
+  if (bestByPosition) {
+    return {
+      url: bestByPosition.cloudinary_path,
+      alt: bestByPosition.alt_text || 'Imagem do produto',
+    };
+  }
+
+  // Último recurso: primeira imagem disponível (mesmo que seja dimensional)
+  return {
+    url: images[0].cloudinary_path,
+    alt: images[0].alt_text || 'Imagem do produto',
+  };
+}
+
 // ===========================================
 // COMPONENTE
 // ===========================================
@@ -153,15 +280,36 @@ export default function OfertaProductCard({
     ? `/${categorySlug}/${product.slug}`
     : `/produto/${product.slug}`;
 
-  // Imagem principal
-  const imagemPrincipal = product.product_images[0];
-  const imagemUrl = imagemPrincipal?.cloudinary_path || '/images/placeholder-product.jpg';
-  const imagemAlt =
-    imagemPrincipal?.alt_text || `${product.name} em oferta na Moveirama`;
+  // Imagem principal (seleção inteligente)
+  const bestImage = getBestProductImage(product.product_images);
+  const imagemUrl = bestImage.url;
+  const imagemAlt = bestImage.alt || `${product.name} em oferta na Moveirama`;
 
-  // Estrelas (mock - 4.5 média)
-  const nota = 4.5;
-  const avaliacoes = Math.floor(Math.random() * 40) + 10;
+  // Título SEO otimizado
+  const cardTitle = generateCardTitle(product);
+
+  // Estrelas - usa dados reais do banco ou fallback
+  const nota = product.rating_average || 4.5;
+  const avaliacoes = product.rating_count || Math.floor(Math.random() * 40) + 10;
+
+  // Renderiza estrelas com suporte a meia estrela
+  const renderStars = () => {
+    const stars = [];
+    const fullStars = Math.floor(nota);
+    const hasHalfStar = nota % 1 >= 0.5;
+
+    for (let i = 1; i <= 5; i++) {
+      if (i <= fullStars) {
+        stars.push(<StarIcon key={i} filled />);
+      } else if (i === fullStars + 1 && hasHalfStar) {
+        stars.push(<StarIcon key={i} half />);
+      } else {
+        stars.push(<StarIcon key={i} filled={false} />);
+      }
+    }
+
+    return stars;
+  };
 
   return (
     <article
@@ -205,20 +353,18 @@ export default function OfertaProductCard({
         {/* Estrelas */}
         <div className="flex items-center gap-1 mb-2">
           <div className="flex">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <StarIcon key={star} filled={star <= Math.floor(nota)} />
-            ))}
+            {renderStars()}
           </div>
           <span className="text-xs text-[#8B7355]">({avaliacoes})</span>
         </div>
 
-        {/* Nome do Produto */}
+        {/* Nome do Produto (SEO Otimizado) */}
         <Link href={productUrl}>
           <h3
             className="text-[15px] font-semibold text-[#2D2D2D] mb-3 line-clamp-2 hover:text-[#6B8E7A] transition-colors"
             itemProp="name"
           >
-            {product.name}
+            {cardTitle}
           </h3>
         </Link>
 

@@ -1,6 +1,6 @@
 /**
  * Página de Ofertas - Moveirama
- * Squad Dev - 25/01/2026
+ * Squad Dev - 04/02/2026
  * 
  * ESTRUTURA:
  * - Hero com Knowledge Block (SEO/AIO)
@@ -12,7 +12,10 @@
  * ROTA: /ofertas-moveis-curitiba
  * 
  * CHANGELOG:
- * - 25/01/2026: Corrigido campo de imagem (cloudinary_path em vez de url)
+ * - 04/02/2026: v1.2 - Filtro de imagem por image_type para evitar imagens dimensionais
+ * - 04/02/2026: v1.2 - Adicionado rating_average e rating_count para reviews reais
+ * - 25/01/2026: v1.1 - Corrigido campo de imagem (cloudinary_path em vez de url)
+ * - 25/01/2026: v1.0 - Versão inicial
  */
 
 import type { Metadata } from 'next';
@@ -59,6 +62,13 @@ export const metadata: Metadata = {
 // ===========================================
 // TIPOS
 // ===========================================
+interface ProductImage {
+  cloudinary_path: string;
+  alt_text: string | null;
+  image_type: string | null;
+  position: number;
+}
+
 interface Product {
   id: string;
   name: string;
@@ -71,8 +81,10 @@ interface Product {
   height_cm: number | null;
   depth_cm: number | null;
   for_small_spaces: boolean;
+  rating_average: number | null;
+  rating_count: number | null;
   category: { slug: string } | { slug: string }[] | null;
-  product_images: { cloudinary_path: string; alt_text: string | null }[];
+  product_images: ProductImage[];
 }
 
 interface OfertasPageProps {
@@ -94,7 +106,7 @@ async function getOfertasProducts(
   const ITEMS_PER_PAGE = 12;
   const offset = (pagina - 1) * ITEMS_PER_PAGE;
 
-  // Query base
+  // Query base - incluindo image_type e position para ordenar corretamente
   let query = supabase
     .from('products')
     .select(
@@ -110,8 +122,10 @@ async function getOfertasProducts(
       height_cm,
       depth_cm,
       for_small_spaces,
+      rating_average,
+      rating_count,
       category:categories(slug),
-      product_images(cloudinary_path, alt_text)
+      product_images(cloudinary_path, alt_text, image_type, position)
     `,
       { count: 'exact' }
     )
@@ -165,12 +179,15 @@ function generateProductSchema(product: Product) {
       ? product.category[0]?.slug
       : product.category?.slug;
 
+  // Pega a melhor imagem (prioriza principal/galeria, evita dimensional)
+  const bestImage = getBestProductImage(product.product_images);
+
   return {
     '@type': 'Product',
     name: product.name,
     description: product.short_description,
     url: `https://moveirama.com.br/${categorySlug}/${product.slug}`,
-    image: product.product_images[0]?.cloudinary_path,
+    image: bestImage,
     offers: {
       '@type': 'Offer',
       price: product.price.toFixed(2),
@@ -196,6 +213,44 @@ function generateProductSchema(product: Product) {
       },
     },
   };
+}
+
+/**
+ * Seleciona a melhor imagem do produto
+ * Prioridade: principal > galeria > ambientada > qualquer outra (exceto dimensional)
+ */
+function getBestProductImage(images: ProductImage[]): string {
+  if (!images || images.length === 0) {
+    return '/images/placeholder-product.jpg';
+  }
+
+  // Prioridade de tipos de imagem
+  const typePriority = ['principal', 'galeria', 'ambientada'];
+  
+  // Primeiro: busca por tipo na ordem de prioridade
+  for (const type of typePriority) {
+    const found = images.find(img => img.image_type === type);
+    if (found) {
+      return found.cloudinary_path;
+    }
+  }
+
+  // Segundo: busca qualquer imagem que NÃO seja dimensional
+  const nonDimensional = images.find(img => img.image_type !== 'dimensional');
+  if (nonDimensional) {
+    return nonDimensional.cloudinary_path;
+  }
+
+  // Fallback: pega a de menor position (mas evita dimensional se possível)
+  const sortedByPosition = [...images].sort((a, b) => (a.position || 0) - (b.position || 0));
+  const bestByPosition = sortedByPosition.find(img => img.image_type !== 'dimensional');
+  
+  if (bestByPosition) {
+    return bestByPosition.cloudinary_path;
+  }
+
+  // Último recurso: primeira imagem disponível
+  return images[0].cloudinary_path;
 }
 
 // ===========================================
