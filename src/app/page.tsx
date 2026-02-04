@@ -2,15 +2,19 @@
  * Home Page - Moveirama
  * Squad Dev - Fevereiro 2026
  * 
+ * ⭐ v2.8 (04/02/2026) - Carrossel Queridinhos:
+ * - Adicionado QueridinhosCuritiba após CategoriesSection
+ * - Removido FeaturedProducts (redundante)
+ * 
  * ⭐ v2.1 (01/02/2026) - CORREÇÕES SEO:
  * - Title Tag otimizado: "Móveis em Curitiba com Entrega em 72h"
  * - Meta Description com "escritório" e "apartamentos compactos"
  * - Schema LocalBusiness centralizado (removido inline)
  * - OG Image atualizado para .jpg
  * 
- * ESTRUTURA COMPLETA:
- * - Bloco 1: Hero, TrustBar, Categories
- * - Bloco 2: FeaturedProducts, Diferenciais, Knowledge
+ * ESTRUTURA:
+ * - Bloco 1: Hero, TrustBar, Categories, Queridinhos
+ * - Bloco 2: Diferenciais, Knowledge
  * - Bloco 3: FAQ, Cobertura, Social, CTAFinal
  */
 
@@ -19,7 +23,7 @@ import {
   HeroSection,
   TrustBar,
   CategoriesSection,
-  FeaturedProducts,
+  QueridinhosCuritiba,
   DiferenciaisSection,
   KnowledgeBlock,
   HomeFAQ,
@@ -113,8 +117,10 @@ export default function HomePage() {
       <TrustBar />
       <CategoriesSection />
 
+      {/* ⭐ v2.8: Queridinhos de Curitiba - Prova Social */}
+      <QueridinhosCuritiba />
+
       {/* Bloco 2 */}
-      <FeaturedProducts />
       <DiferenciaisSection />
       <KnowledgeBlock />
 

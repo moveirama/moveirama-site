@@ -664,3 +664,113 @@ export async function isValidCategoryRoute(
   const parent = await getParentCategory(category)
   return parent !== null
 }
+
+// ========================================
+// QUERIDINHOS DE CURITIBA (v2.8)
+// ========================================
+
+/**
+ * Produto para o carrossel "Queridinhos de Curitiba"
+ * 
+ * @since v2.8
+ */
+export type BestSellerProduct = {
+  id: string
+  name: string
+  slug: string
+  price: number
+  categorySlug: string | null
+  imageUrl: string | null
+  badgeType: 'top-sales' | 'favorite' | null
+}
+
+/**
+ * Busca os produtos "Queridinhos de Curitiba" para o carrossel da Home
+ * 
+ * Lista FIXA de produtos curados manualmente:
+ * 1. rack-duetto-cinamomo-c-off-white - Top 1 Vendas (badge amarelo)
+ * 2. rack-theo-cinamomo-c-off-white - Favorito Curitibano
+ * 3. escrivaninha-nomad-cinamomo-c-off-white - Favorito Curitibano
+ * 4. escrivaninha-match-pinho-c-preto - Favorito Curitibano
+ * 5. buffet-charlotte-cinamomo-c-off-white - Favorito Curitibano
+ * 6. mesa-apoio-trama-cinamomo-c-off-white - Sem badge
+ * 
+ * Badge logic:
+ * - Posição 1: 'top-sales' (🏆 Top 1 Vendas)
+ * - Posições 2-5: 'favorite' (💚 Favorito Curitibano)
+ * - Posição 6: null (sem badge)
+ * 
+ * @param limit Número de produtos (default: 6)
+ * @returns Array de BestSellerProduct com badges atribuídos
+ * 
+ * @since v2.8
+ */
+export async function getBestSellers(limit: number = 6): Promise<BestSellerProduct[]> {
+  // Lista fixa de slugs na ordem desejada
+  const QUERIDINHOS_SLUGS = [
+    'rack-duetto-cinamomo-c-off-white',           // #1 - Top 1 Vendas
+    'rack-theo-cinamomo-c-off-white',             // #2 - Favorito Curitibano
+    'escrivaninha-nomad-cinamomo-c-off-white',    // #3 - Favorito Curitibano
+    'escrivaninha-match-pinho-c-preto',           // #4 - Favorito Curitibano
+    'buffet-charlotte-cinamomo-c-off-white',      // #5 - Favorito Curitibano
+    'mesa-apoio-trama-cinamomo-c-off-white',      // #6 - Sem badge
+  ]
+
+  const slugsToFetch = QUERIDINHOS_SLUGS.slice(0, limit)
+
+  const { data, error } = await supabase
+    .from('products')
+    .select(`
+      id,
+      name,
+      slug,
+      price,
+      category:categories(slug),
+      product_images(cloudinary_path, image_type)
+    `)
+    .in('slug', slugsToFetch)
+    .eq('is_active', true)
+
+  if (error) {
+    console.error('Erro ao buscar best sellers:', error)
+    return []
+  }
+
+  if (!data) return []
+
+  // Ordena os resultados na mesma ordem do array QUERIDINHOS_SLUGS
+  const sortedData = slugsToFetch
+    .map(slug => data.find(item => item.slug === slug))
+    .filter(Boolean)
+
+  // Mapeia para o formato esperado e atribui badges
+  return sortedData.map((item, index) => {
+    // Extrai categoria (Supabase retorna array)
+    const categorySlug = Array.isArray(item!.category) 
+      ? item!.category[0]?.slug || null
+      : null
+
+    // Extrai imagem principal
+    const images = item!.product_images || []
+    const principalImage = images.find((img: { image_type: string }) => img.image_type === 'principal')
+    const imageUrl = principalImage?.cloudinary_path || images[0]?.cloudinary_path || null
+
+    // Atribui badge baseado na posição
+    let badgeType: 'top-sales' | 'favorite' | null = null
+    if (index === 0) {
+      badgeType = 'top-sales'
+    } else if (index < 5) {
+      badgeType = 'favorite'
+    }
+
+    return {
+      id: item!.id,
+      name: item!.name,
+      slug: item!.slug,
+      price: item!.price,
+      categorySlug,
+      imageUrl,
+      badgeType
+    }
+  })
+}

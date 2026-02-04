@@ -1732,3 +1732,388 @@ summary,
   color: var(--color-graphite);
   font-weight: var(--font-medium);
 }
+
+/* ============================================
+   QUERIDINHOS DE CURITIBA - Carrossel v2.8
+   ============================================ */
+
+.queridinhos {
+  background-color: #F5F5F5;
+  padding: 48px 0;
+}
+
+.queridinhos__container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+@media (min-width: 768px) {
+  .queridinhos__container {
+    padding: 0 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .queridinhos__container {
+    padding: 0 32px;
+  }
+}
+
+/* ---------- HEADER ---------- */
+
+.queridinhos__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.queridinhos__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-graphite);
+  margin: 0;
+  line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+  .queridinhos__title {
+    font-size: 1.875rem;
+  }
+}
+
+.queridinhos__subtitle {
+  font-size: 1rem;
+  color: #4A4A4A;
+  margin: 4px 0 0 0;
+}
+
+/* ---------- SETAS DE NAVEGAÇÃO ---------- */
+
+.queridinhos__nav {
+  display: none;
+  gap: 8px;
+}
+
+@media (min-width: 1024px) {
+  .queridinhos__nav {
+    display: flex;
+  }
+}
+
+.queridinhos__arrow {
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  background-color: var(--color-white);
+  border: 1px solid #E0E0E0;
+  color: var(--color-graphite);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 150ms ease-out;
+}
+
+.queridinhos__arrow:hover {
+  background-color: var(--color-sage-500);
+  border-color: var(--color-sage-500);
+  color: var(--color-white);
+}
+
+.queridinhos__arrow:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.queridinhos__arrow:focus-visible {
+  outline: 2px solid var(--color-sage-500);
+  outline-offset: 2px;
+}
+
+/* ---------- CARROSSEL / TRACK ---------- */
+
+.queridinhos__carousel {
+  overflow: hidden;
+  margin: 0 -16px;
+  padding: 0 16px;
+}
+
+@media (min-width: 768px) {
+  .queridinhos__carousel {
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+}
+
+.queridinhos__track {
+  display: flex;
+  gap: 16px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.queridinhos__track::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .queridinhos__track {
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .queridinhos__track {
+    gap: 24px;
+    overflow-x: auto;
+  }
+}
+
+/* ---------- ITEM / CARD ---------- */
+
+.queridinhos__item {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  width: calc(100% - 60px);
+}
+
+@media (min-width: 768px) {
+  .queridinhos__item {
+    width: calc((100% - 40px) / 2.3);
+  }
+}
+
+@media (min-width: 1024px) {
+  .queridinhos__item {
+    width: calc((100% - 72px) / 4);
+  }
+}
+
+.queridinhos__card {
+  background: var(--color-white);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  transition: box-shadow 200ms ease-out, transform 200ms ease-out;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (hover: hover) {
+  .queridinhos__card:hover {
+    box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+    transform: translateY(-4px);
+  }
+}
+
+/* ---------- ÁREA DA IMAGEM ---------- */
+
+.queridinhos__image-link {
+  display: block;
+  text-decoration: none;
+}
+
+.queridinhos__image-container {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background-color: #FAFAFA;
+  overflow: hidden;
+}
+
+.queridinhos__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 300ms ease-out;
+}
+
+@media (hover: hover) {
+  .queridinhos__card:hover .queridinhos__image {
+    transform: scale(1.05);
+  }
+}
+
+/* ---------- BADGES ---------- */
+
+.queridinhos__badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  z-index: 2;
+}
+
+.queridinhos__badge-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.queridinhos__badge--top-sales {
+  background-color: #F5A623;
+  color: var(--color-white);
+}
+
+.queridinhos__badge--favorite {
+  background-color: var(--color-sage-500);
+  color: var(--color-white);
+}
+
+/* Botão Wishlist (coração) */
+.queridinhos__wishlist {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4A4A4A;
+  transition: all 150ms ease-out;
+  z-index: 2;
+}
+
+.queridinhos__wishlist:hover {
+  background-color: var(--color-white);
+  color: #E53E3E;
+  transform: scale(1.1);
+}
+
+.queridinhos__wishlist--active {
+  color: #E53E3E;
+  background-color: var(--color-white);
+}
+
+/* ---------- CONTEÚDO DO CARD ---------- */
+
+.queridinhos__content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.queridinhos__product-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-graphite);
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.6em;
+}
+
+.queridinhos__product-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.queridinhos__product-title a:hover {
+  color: var(--color-sage-500);
+}
+
+/* Preço */
+.queridinhos__pricing {
+  margin-bottom: 12px;
+}
+
+.queridinhos__installment {
+  font-size: 1.125rem;
+  color: var(--color-graphite);
+  margin: 0;
+}
+
+.queridinhos__installment strong {
+  font-weight: 700;
+}
+
+.queridinhos__price-full {
+  font-size: 0.875rem;
+  color: #4A4A4A;
+  margin: 4px 0 0 0;
+}
+
+/* Frete */
+.queridinhos__shipping {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #E0E0E0;
+  margin-top: auto;
+  font-size: 0.875rem;
+  color: #4A4A4A;
+}
+
+.queridinhos__shipping-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--color-sage-500);
+  flex-shrink: 0;
+}
+
+.queridinhos__shipping strong {
+  color: var(--color-sage-500);
+  font-weight: 600;
+}
+
+/* ---------- DOTS (INDICADORES MOBILE) ---------- */
+
+.queridinhos__dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+@media (min-width: 1024px) {
+  .queridinhos__dots {
+    display: none;
+  }
+}
+
+.queridinhos__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background-color: #E0E0E0;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 150ms ease-out;
+}
+
+.queridinhos__dot--active {
+  background-color: var(--color-sage-500);
+  width: 24px;
+}
+
+.queridinhos__dot:focus-visible {
+  outline: 2px solid var(--color-sage-500);
+  outline-offset: 2px;
+}

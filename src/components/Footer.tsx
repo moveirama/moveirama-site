@@ -1,9 +1,12 @@
 import Link from 'next/link'
 
 // ============================================
-// FOOTER v2.1
-// Atualizado: 31/01/2026
+// FOOTER v2.2
+// Atualizado: 03/02/2026
 // Changelog:
+// - v2.2 (03/02/2026): Schema @id, email correto, Piraquara em areaServed
+//                      Link para /sobre-a-moveirama
+//                      Endereço completo (Decreto 7.962/2013)
 // - v2.1 (31/01/2026): Logo novo (SVG negativo para fundo escuro)
 // - v2.0 (Jan/2026): Versão inicial com Schema.org
 // ============================================
@@ -11,42 +14,46 @@ import Link from 'next/link'
 export default function Footer() {
   return (
     <footer className="bg-[#2D2D2D] text-[#FAF7F4] mt-16 overflow-x-hidden">
-      {/* Schema.org LocalBusiness */}
+      {/* Schema.org FurnitureStore - Atualizado v2.2 com @id */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "FurnitureStore",
+            "@id": "https://moveirama.com.br/#organization",
             "name": "Moveirama",
+            "legalName": "Moveirama Eureka Móveis LTDA",
             "description": "Loja de móveis em Curitiba. Racks, painéis, escrivaninhas e mais com entrega rápida em Curitiba e Região Metropolitana.",
             "url": "https://moveirama.com.br",
-            "logo": "https://moveirama.com.br/logo/logo-completo.svg",
+            "logo": "https://moveirama.com.br/logo/moveirama-grafite.svg",
             "telephone": "+55-41-98420-9323",
-            "email": "contato@moveirama.com.br",
+            "email": "atendimento@moveirama.com.br",
             "address": {
               "@type": "PostalAddress",
               "streetAddress": "Rua Barão de Guaraúna, 517",
               "addressLocality": "Curitiba",
               "addressRegion": "PR",
               "addressCountry": "BR",
-              "postalCode": "80030-310"
+              "postalCode": "80030-310",
+              "addressNeighborhood": "Juvevê"
             },
             "geo": {
               "@type": "GeoCoordinates",
-              "latitude": "-25.4284",
-              "longitude": "-49.2733"
+              "latitude": -25.419,
+              "longitude": -49.263
             },
             "areaServed": [
               { "@type": "City", "name": "Curitiba" },
-              { "@type": "City", "name": "Colombo" },
-              { "@type": "City", "name": "São José dos Pinhais" },
-              { "@type": "City", "name": "Araucária" },
               { "@type": "City", "name": "Pinhais" },
+              { "@type": "City", "name": "São José dos Pinhais" },
+              { "@type": "City", "name": "Colombo" },
+              { "@type": "City", "name": "Araucária" },
+              { "@type": "City", "name": "Piraquara" },
               { "@type": "City", "name": "Fazenda Rio Grande" },
               { "@type": "City", "name": "Almirante Tamandaré" },
-              { "@type": "City", "name": "Campina Grande do Sul" },
-              { "@type": "City", "name": "Quatro Barras" }
+              { "@type": "City", "name": "Quatro Barras" },
+              { "@type": "City", "name": "Campina Grande do Sul" }
             ],
             "openingHoursSpecification": {
               "@type": "OpeningHoursSpecification",
@@ -56,7 +63,8 @@ export default function Footer() {
             },
             "priceRange": "$$",
             "paymentAccepted": ["Pix", "Cartão de Crédito", "Cartão de Débito"],
-            "currenciesAccepted": "BRL"
+            "currenciesAccepted": "BRL",
+            "foundingDate": "2024"
           })
         }}
       />
@@ -140,6 +148,7 @@ export default function Footer() {
           <div className="flex flex-col items-center md:items-start">
             <h4 className="font-semibold mb-4 text-[#FAF7F4]">Atendimento</h4>
             <ul className="space-y-2 text-sm text-[#FAF7F4]/70">
+              <li><Link href="/sobre-a-moveirama" className="hover:text-[#FAF7F4] transition-colors">Sobre a Moveirama</Link></li>
               <li><Link href="/fale-com-a-gente" className="hover:text-[#FAF7F4] transition-colors">Fale com a Gente</Link></li>
               <li><Link href="/politica-trocas-devolucoes" className="hover:text-[#FAF7F4] transition-colors">Trocas e Devoluções</Link></li>
               <li><Link href="/politica-privacidade" className="hover:text-[#FAF7F4] transition-colors">Política de Privacidade</Link></li>
@@ -159,10 +168,10 @@ export default function Footer() {
         {/* Linha divisória */}
         <div className="border-t border-[#FAF7F4]/20 mt-10 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            {/* CNPJ e info legal */}
+            {/* CNPJ e info legal - Endereço completo conforme Decreto 7.962/2013 */}
             <div className="text-sm text-[#FAF7F4]/70 text-center md:text-left">
               <p>Moveirama Eureka Móveis Ltda - CNPJ: 61.154.643/0001-84</p>
-              <p>Escritório Administrativo - Bairro Juvevê - Curitiba - PR</p>
+              <p>Rua Barão de Guaraúna, 517 - Juvevê, Curitiba - PR - CEP 80030-310</p>
             </div>
 
             {/* Pagamentos */}

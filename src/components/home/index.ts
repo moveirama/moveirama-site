@@ -4,6 +4,9 @@ export { default as TrustBar } from './TrustBar';
 export { default as CategoriesSection } from './CategoriesSection';
 export { default as WhatsAppFloat } from './WhatsAppFloat';
 
+// Bloco 1.5 - Queridinhos de Curitiba (v2.8)
+export { default as QueridinhosCuritiba } from './QueridinhosCuritiba';
+
 // Bloco 2 - Implementado
 export { default as FeaturedProducts } from './FeaturedProducts';
 export { default as DiferenciaisSection } from './DiferenciaisSection';

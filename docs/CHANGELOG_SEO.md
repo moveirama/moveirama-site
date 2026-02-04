@@ -1,8 +1,8 @@
 # 📈 CHANGELOG SEO — Moveirama
 
 > **Histórico de implementações SEO/AIO e UX do projeto**  
-> **Última atualização:** 02 de Fevereiro de 2026  
-> **Versão atual:** 2.18.0
+> **Última atualização:** 03 de Fevereiro de 2026  
+> **Versão atual:** 2.19.0
 
 ---
 
@@ -33,6 +33,84 @@ Este documento registra todas as implementações de SEO técnico, otimização 
 | Minha Lista (Favoritos) | ✅ Ativo | v2.6 |
 | Reviews e Avaliações | ✅ Ativo | v2.8 |
 | Carrinho + Checkout | ✅ Ativo | v2.9/v2.10 |
+
+---
+
+## v2.19 — 03/02/2026
+
+### 🏢 Página Institucional "Sobre a Moveirama" (NOVO)
+
+**Objetivo:** Página institucional com dados da empresa para E-E-A-T (Google), conformidade legal (Decreto 7.962/2013) e FurnitureStore Schema completo.
+
+**URL:** `/sobre-a-moveirama`
+
+**Validação:** ✅ FurnitureStore Schema com @id para referência em Product schemas
+
+**Implementação:**
+
+#### Arquivos criados/alterados
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `src/app/sobre-a-moveirama/page.tsx` | Página completa com 6 seções |
+| `src/app/sobre-a-moveirama/layout.tsx` | Metadata SEO (title, description, canonical, OG) |
+| `src/components/Footer.tsx` | v2.2: Link para /sobre + endereço completo |
+
+#### 6 Seções implementadas
+
+| # | Seção | Conteúdo |
+|---|-------|----------|
+| 1 | Hero | H1 "Sobre a Moveirama" + subtítulo |
+| 2 | Nossa História | 2 cards timeline (2024 / Hoje) |
+| 3 | Nossos Diferenciais | 4 cards (Entrega, Medidas, WhatsApp, NF) |
+| 4 | Área de Atendimento | 10 cidades em pills |
+| 5 | Trust Block | CNPJ, endereço, contatos, redes sociais |
+| 6 | CTA Final | 2 botões (Casa / Escritório) |
+
+#### FurnitureStore Schema
+
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "FurnitureStore",
+  "@id": "https://moveirama.com.br/#organization",
+  "name": "Moveirama",
+  "legalName": "Moveirama Eureka Móveis LTDA",
+  "taxID": "61.154.643/0001-84",
+  "foundingDate": "2024",
+  "email": "atendimento@moveirama.com.br",
+  "telephone": "+55-41-98420-9323",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Rua Barão de Guaraúna, 517",
+    "addressLocality": "Curitiba",
+    "addressRegion": "PR",
+    "postalCode": "80030-310"
+  },
+  "areaServed": ["10 cidades como City objects"],
+  "knowsAbout": ["Móveis para casa", "Móveis para escritório", "..."],
+  "hasOfferCatalog": { "..." },
+  "potentialAction": { "@type": "SearchAction", "..." }
+}
+```
+
+**Segurança:**
+- Email com anti-spam (Base64 + reveal button)
+- Noscript fallback: "atendimento [arroba] moveirama.com.br"
+
+**Conformidade Legal:**
+- Decreto Federal 7.962/2013: CNPJ + endereço completo visíveis
+- Footer atualizado com endereço completo (não apenas bairro)
+
+**Benefícios SEO/AIO:**
+
+| Benefício | Impacto |
+|-----------|---------|
+| E-E-A-T | Transparência aumenta confiança do Google |
+| @id Organization | Product schemas podem referenciar seller |
+| SEO Local | 10 cidades reforçam autoridade regional |
+| knowsAbout | IA entende expertise da loja |
+| SearchAction | Sitelinks search box no Google |
 
 ---
 
@@ -656,8 +734,8 @@ Cajuru, Boqueirão, Xaxim, Pinheirinho, CIC, Sítio Cercado, Portão, Água Verd
 | ~~Alta~~ | ~~ProductGroup Schema~~ | ✅ **Implementado v2.17** |
 | ~~Alta~~ | ~~Seletor de Variantes~~ | ✅ **Implementado v2.16** |
 | ~~Alta~~ | ~~HowTo Schema~~ | ✅ **Implementado v2.15** |
-| Média | Organization Schema | Página "Sobre" |
-| Baixa | ItemList Schema | Páginas de categoria |
+| ~~Média~~ | ~~Organization Schema~~ | ✅ **Implementado v2.19** (FurnitureStore) |
+| ~~Baixa~~ | ~~ItemList Schema~~ | ✅ **Já implementado** (páginas de categoria) |
 
 ---
 
@@ -665,7 +743,8 @@ Cajuru, Boqueirão, Xaxim, Pinheirinho, CIC, Sítio Cercado, Portão, Água Verd
 
 | Data | Versão | Feature Principal |
 |------|--------|-------------------|
-| **02/02/2026** | **v2.18** | **Review Schema** ⭐ |
+| **03/02/2026** | **v2.19** | **Página Sobre + FurnitureStore Schema** ⭐ |
+| 02/02/2026 | v2.18 | Review Schema |
 | 02/02/2026 | v2.17 | ProductGroup Schema |
 | 02/02/2026 | v2.16 | Seletor de Variantes de Cor |
 | 02/02/2026 | v2.15 | HowTo Schema (vídeo montagem) |
@@ -678,4 +757,4 @@ Cajuru, Boqueirão, Xaxim, Pinheirinho, CIC, Sítio Cercado, Portão, Água Verd
 ---
 
 *Documento mantido pelo Squad Dev — Moveirama*
-*Última atualização: 02 de Fevereiro de 2026*
+*Última atualização: 03 de Fevereiro de 2026*

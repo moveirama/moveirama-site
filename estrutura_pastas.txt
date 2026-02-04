@@ -17,6 +17,7 @@ Raiz: C:\Users\sandr\Desktop\moveirama-site
     📄 tsconfig.tsbuildinfo
     📂 docs/
         📄 CHANGELOG_24_Janeiro_2026.md
+        📄 CHANGELOG_SEO.md
         📄 GUIA_Upload_Imagens.md
         📄 HANDOFF_Paginas_Categoria_v1.md
         📄 MAPA_PROJETO_MOVEIRAMA.md
@@ -26369,15 +26370,26 @@ Raiz: C:\Users\sandr\Desktop\moveirama-site
                 📄 index.mjs
                 📄 index.mjs.map
     📂 public/
-        📄 file.svg
-        📄 globe.svg
-        📄 next.svg
+        📄 android-chrome-192.png
+        📄 android-chrome-512.png
+        📄 apple-touch-icon.png
+        📄 favicon-16.png
+        📄 favicon-32.png
+        📄 favicon-48.png
+        📄 favicon.ico
+        📄 icon-social.png
+        📄 og-image.jpg
+        📄 site.webmanifest
         📄 vercel.svg
-        📄 window.svg
         📂 images/
             📂 categories/
                 📄 categoria-moveis-casa-moveirama.png
                 📄 categoria-moveis-escritorio-moveirama.png
+        📂 logo/
+            📄 icone-100.svg
+            📄 icone-512.svg
+            📄 logo-completo.svg
+            📄 logo-negativo.svg
     📂 sql/
         📄 add_product_fields_v2.sql
         📄 add_recursos_montagem.sql
@@ -26394,7 +26406,6 @@ Raiz: C:\Users\sandr\Desktop\moveirama-site
     📂 src/
         📄 middleware.ts
         📂 app/
-            📄 favicon.ico
             📄 globals.css
             📄 layout.tsx
             📄 page.tsx
@@ -26491,6 +26502,7 @@ Raiz: C:\Users\sandr\Desktop\moveirama-site
             📄 ShippingCalculator.tsx
             📄 SortControl.tsx
             📄 SubcategoryCard.tsx
+            📄 VariantSelector.tsx
             📄 VideoProduct.tsx
             📄 VizinhosAprovaram.tsx
             📂 cart/
