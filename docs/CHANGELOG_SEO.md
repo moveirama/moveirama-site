@@ -1,33 +1,35 @@
-# 📈 CHANGELOG SEO — Moveirama
+# ðŸ“ˆ CHANGELOG SEO â€” Moveirama
 
-> **Histórico de implementações SEO/AIO e UX do projeto**  
-> **Última atualização:** 03 de Fevereiro de 2026  
-> **Versão atual:** 2.19.0
+> **HistÃ³rico de implementaÃ§Ãµes SEO/AIO e UX do projeto**  
+> **Última atualização:** 04 de Fevereiro de 2026  
+> **Versão atual:** 2.20.0
 
 ---
 
-## Visão Geral
+## VisÃ£o Geral
 
-Este documento registra todas as implementações de SEO técnico, otimização para IA (AIO) e melhorias de UX/Conversão do site Moveirama.
+Este documento registra todas as implementaÃ§Ãµes de SEO tÃ©cnico, otimizaÃ§Ã£o para IA (AIO) e melhorias de UX/ConversÃ£o do site Moveirama.
 
-### Schemas Implementados (Página de Produto)
+### Schemas Implementados (PÃ¡gina de Produto)
 
 | Schema | Status | Arquivo |
 |--------|--------|---------|
-| **ProductGroup** | ✅ Ativo | `seo.ts` → `generateProductGroupSchema()` |
-| Product | ✅ Ativo | `seo.ts` → `generateProductSchema()` |
-| **Review** | ✅ Ativo | `seo.ts` → `generateReviewSchema()` |
-| BreadcrumbList | ✅ Ativo | `ProductPageContent.tsx` |
-| FAQPage | ✅ Ativo | `seo.ts` → `generateProductFAQs()` |
-| VideoObject | ✅ Ativo | `seo.ts` → `generateVideoSchema()` |
-| HowTo | ✅ Ativo | `seo.ts` → `generateHowToSchema()` |
-| AggregateRating | ✅ Condicional | Dentro do Product, se `rating_count > 0` |
-| FurnitureStore | ✅ Ativo | Home e páginas institucionais |
+| **ProductGroup** | âœ… Ativo | `seo.ts` â†’ `generateProductGroupSchema()` |
+| Product | âœ… Ativo | `seo.ts` â†’ `generateProductSchema()` |
+| **Review** | âœ… Ativo | `seo.ts` â†’ `generateReviewSchema()` |
+| BreadcrumbList | âœ… Ativo | `ProductPageContent.tsx` |
+| FAQPage | âœ… Ativo | `seo.ts` â†’ `generateProductFAQs()` |
+| VideoObject | âœ… Ativo | `seo.ts` â†’ `generateVideoSchema()` |
+| HowTo | âœ… Ativo | `seo.ts` â†’ `generateHowToSchema()` |
+| AggregateRating | âœ… Condicional | Dentro do Product, se `rating_count > 0` |
+| FurnitureStore | âœ… Ativo | Home e pÃ¡ginas institucionais |
+
 
 ### Features de UX/Conversão
 
 | Feature | Status | Versão |
 |---------|--------|--------|
+| **Carrossel Queridinhos de Curitiba** | ✅ Ativo | **v2.20** |
 | **Seletor de Variantes de Cor** | ✅ Ativo | **v2.16** |
 | Calculadora de Frete | ✅ Ativo | v2.x |
 | Minha Lista (Favoritos) | ✅ Ativo | v2.6 |
@@ -36,36 +38,123 @@ Este documento registra todas as implementações de SEO técnico, otimização 
 
 ---
 
-## v2.19 — 03/02/2026
+## v2.20 — 04/02/2026
 
-### 🏢 Página Institucional "Sobre a Moveirama" (NOVO)
+### 🏆 Carrossel "Os Queridinhos de Curitiba" (NOVO)
 
-**Objetivo:** Página institucional com dados da empresa para E-E-A-T (Google), conformidade legal (Decreto 7.962/2013) e FurnitureStore Schema completo.
+**Objetivo:** Seção de prova social na Home Page destacando os produtos mais vendidos, com badges de autoridade local e navegação fluida.
 
-**URL:** `/sobre-a-moveirama`
+**Localização:** Home Page, após seção de Categorias
 
-**Validação:** ✅ FurnitureStore Schema com @id para referência em Product schemas
+**Validação:** ✅ Desktop e Mobile funcionando com navegação completa
 
 **Implementação:**
 
-#### Arquivos criados/alterados
+#### Arquivos criados
 
 | Arquivo | Descrição |
 |---------|-----------|
-| `src/app/sobre-a-moveirama/page.tsx` | Página completa com 6 seções |
+| `src/components/home/QueridinhosCuritiba.tsx` | Componente principal (Server Component) |
+| `src/components/home/QueridinhoCard.tsx` | Card individual com badge, preço, favorito |
+| `src/components/home/QueridinhoNav.tsx` | Navegação (Client Component) - setas e dots |
+| `src/lib/supabase.ts` | Função `getBestSellers()` com lista fixa de produtos |
+
+#### Características
+
+| Feature | Desktop | Mobile |
+|---------|---------|--------|
+| Cards visíveis | 4 | 1.2 (peek) |
+| Navegação | Setas < > | Swipe + Dots |
+| Badges | ✅ | ✅ |
+| Favoritos (coração) | ✅ | ✅ |
+
+#### Lista Fixa de Produtos (Curadoria)
+
+| # | Produto | Badge |
+|---|---------|-------|
+| 1 | Rack Duetto Cinamomo C / Off White | 🏆 TOP 1 VENDAS (dourado) |
+| 2 | Rack Theo Cinamomo C / Off White | 💚 Favorito Curitibano |
+| 3 | Escrivaninha Nomad Cinamomo C / Off White | 💚 Favorito Curitibano |
+| 4 | Escrivaninha Match Pinho C / Preto | 💚 Favorito Curitibano |
+| 5 | Buffet Charlotte Cinamomo C / Off White | 💚 Favorito Curitibano |
+| 6 | Mesa Apoio Trama Cinamomo C / Off White | Sem badge |
+
+#### Badges Implementados
+
+| Badge | Visual | Posição |
+|-------|--------|---------|
+| TOP 1 VENDAS | Gradiente dourado + Troféu | Produto #1 |
+| FAVORITO CURITIBANO | Verde Sálvia + Coração | Produtos #2 a #5 |
+
+#### Estrutura do CSS (globals.css)
+
+Seções adicionadas:
+- `.queridinhos` — Container principal
+- `.queridinhos__header` — Título + setas
+- `.queridinhos__track` — Lista horizontal scrollável
+- `.queridinhos__item` — Card wrapper
+- `.queridinhos__card` — Card visual
+- `.queridinhos__badge` — TOP 1 / Favorito
+- `.queridinhos__nav` — Setas desktop
+- `.queridinhos__dots` — Dots mobile
+
+#### Integração com Minha Lista
+
+- Coração no card conecta com sistema de favoritos existente
+- Usa `isInMinhaLista()` e `toggleMinhaLista()` de `@/lib/minha-lista`
+- Sincroniza com localStorage
+
+**Benefícios UX/Conversão:**
+
+| Benefício | Impacto |
+|-----------|---------|
+| Prova social local | "Curitibanos escolhem" aumenta confiança |
+| Curadoria manual | Controle total sobre produtos destacados |
+| Badges de autoridade | TOP 1 VENDAS gera urgência |
+| Navegação fluida | Desktop setas, Mobile swipe nativo |
+| Integração favoritos | Usuário salva para comparar depois |
+| Entrega 72h visível | Reforça diferencial local |
+
+**Arquivos alterados:**
+
+| Arquivo | Alteração |
+|---------|-----------|
+| `src/app/page.tsx` | Adicionado `<QueridinhosCuritiba />` |
+| `src/app/globals.css` | +380 linhas de CSS do carrossel |
+| `src/lib/supabase.ts` | Nova função `getBestSellers()` |
+
+---
+
+## v2.19 â€” 03/02/2026
+
+### ðŸ¢ PÃ¡gina Institucional "Sobre a Moveirama" (NOVO)
+
+**Objetivo:** PÃ¡gina institucional com dados da empresa para E-E-A-T (Google), conformidade legal (Decreto 7.962/2013) e FurnitureStore Schema completo.
+
+**URL:** `/sobre-a-moveirama`
+
+**ValidaÃ§Ã£o:** âœ… FurnitureStore Schema com @id para referÃªncia em Product schemas
+
+**ImplementaÃ§Ã£o:**
+
+#### Arquivos criados/alterados
+
+| Arquivo | DescriÃ§Ã£o |
+|---------|-----------|
+| `src/app/sobre-a-moveirama/page.tsx` | PÃ¡gina completa com 6 seÃ§Ãµes |
 | `src/app/sobre-a-moveirama/layout.tsx` | Metadata SEO (title, description, canonical, OG) |
-| `src/components/Footer.tsx` | v2.2: Link para /sobre + endereço completo |
+| `src/components/Footer.tsx` | v2.2: Link para /sobre + endereÃ§o completo |
 
-#### 6 Seções implementadas
+#### 6 SeÃ§Ãµes implementadas
 
-| # | Seção | Conteúdo |
+| # | SeÃ§Ã£o | ConteÃºdo |
 |---|-------|----------|
-| 1 | Hero | H1 "Sobre a Moveirama" + subtítulo |
-| 2 | Nossa História | 2 cards timeline (2024 / Hoje) |
+| 1 | Hero | H1 "Sobre a Moveirama" + subtÃ­tulo |
+| 2 | Nossa HistÃ³ria | 2 cards timeline (2024 / Hoje) |
 | 3 | Nossos Diferenciais | 4 cards (Entrega, Medidas, WhatsApp, NF) |
-| 4 | Área de Atendimento | 10 cidades em pills |
-| 5 | Trust Block | CNPJ, endereço, contatos, redes sociais |
-| 6 | CTA Final | 2 botões (Casa / Escritório) |
+| 4 | Ãrea de Atendimento | 10 cidades em pills |
+| 5 | Trust Block | CNPJ, endereÃ§o, contatos, redes sociais |
+| 6 | CTA Final | 2 botÃµes (Casa / EscritÃ³rio) |
 
 #### FurnitureStore Schema
 
@@ -75,65 +164,65 @@ Este documento registra todas as implementações de SEO técnico, otimização 
   "@type": "FurnitureStore",
   "@id": "https://moveirama.com.br/#organization",
   "name": "Moveirama",
-  "legalName": "Moveirama Eureka Móveis LTDA",
+  "legalName": "Moveirama Eureka MÃ³veis LTDA",
   "taxID": "61.154.643/0001-84",
   "foundingDate": "2024",
   "email": "atendimento@moveirama.com.br",
   "telephone": "+55-41-98420-9323",
   "address": {
     "@type": "PostalAddress",
-    "streetAddress": "Rua Barão de Guaraúna, 517",
+    "streetAddress": "Rua BarÃ£o de GuaraÃºna, 517",
     "addressLocality": "Curitiba",
     "addressRegion": "PR",
     "postalCode": "80030-310"
   },
   "areaServed": ["10 cidades como City objects"],
-  "knowsAbout": ["Móveis para casa", "Móveis para escritório", "..."],
+  "knowsAbout": ["MÃ³veis para casa", "MÃ³veis para escritÃ³rio", "..."],
   "hasOfferCatalog": { "..." },
   "potentialAction": { "@type": "SearchAction", "..." }
 }
 ```
 
-**Segurança:**
+**SeguranÃ§a:**
 - Email com anti-spam (Base64 + reveal button)
 - Noscript fallback: "atendimento [arroba] moveirama.com.br"
 
 **Conformidade Legal:**
-- Decreto Federal 7.962/2013: CNPJ + endereço completo visíveis
-- Footer atualizado com endereço completo (não apenas bairro)
+- Decreto Federal 7.962/2013: CNPJ + endereÃ§o completo visÃ­veis
+- Footer atualizado com endereÃ§o completo (nÃ£o apenas bairro)
 
-**Benefícios SEO/AIO:**
+**BenefÃ­cios SEO/AIO:**
 
-| Benefício | Impacto |
+| BenefÃ­cio | Impacto |
 |-----------|---------|
-| E-E-A-T | Transparência aumenta confiança do Google |
+| E-E-A-T | TransparÃªncia aumenta confianÃ§a do Google |
 | @id Organization | Product schemas podem referenciar seller |
-| SEO Local | 10 cidades reforçam autoridade regional |
+| SEO Local | 10 cidades reforÃ§am autoridade regional |
 | knowsAbout | IA entende expertise da loja |
 | SearchAction | Sitelinks search box no Google |
 
 ---
 
-## v2.18 — 02/02/2026
+## v2.18 â€” 02/02/2026
 
-### ⭐ Review Schema (NOVO)
+### â­ Review Schema (NOVO)
 
-**Objetivo:** Exibir avaliações reais de clientes nos resultados do Google com rich snippets de estrelas e reviews individuais.
+**Objetivo:** Exibir avaliaÃ§Ãµes reais de clientes nos resultados do Google com rich snippets de estrelas e reviews individuais.
 
-**Validação:** ✅ **7 schemas detectados, 0 erros, 0 avisos**
+**ValidaÃ§Ã£o:** âœ… **7 schemas detectados, 0 erros, 0 avisos**
 
 | Schema Detectado | Status |
 |------------------|--------|
-| ProductGroup | ✅ 0 erros |
-| VideoObject | ✅ 0 erros |
-| FurnitureStore | ✅ 0 erros |
-| BreadcrumbList | ✅ 0 erros |
-| **Product** (com AggregateRating + Review) | ✅ 0 erros |
-| FAQPage | ✅ 0 erros |
+| ProductGroup | âœ… 0 erros |
+| VideoObject | âœ… 0 erros |
+| FurnitureStore | âœ… 0 erros |
+| BreadcrumbList | âœ… 0 erros |
+| **Product** (com AggregateRating + Review) | âœ… 0 erros |
+| FAQPage | âœ… 0 erros |
 
-**Implementação:**
+**ImplementaÃ§Ã£o:**
 
-#### Nova função em `seo.ts` (v3.5)
+#### Nova funÃ§Ã£o em `seo.ts` (v3.5)
 ```typescript
 export interface ReviewForSchema {
   author_name: string
@@ -171,44 +260,44 @@ export function generateReviewSchema(reviews: ReviewForSchema[]): object[]
       },
       "author": {
         "@type": "Person",
-        "name": "Patrícia"
+        "name": "PatrÃ­cia"
       },
-      "reviewBody": "Móvel lindo e fácil de montar!",
+      "reviewBody": "MÃ³vel lindo e fÃ¡cil de montar!",
       "datePublished": "2026-01-15"
     }
   ]
 }
 ```
 
-**Lógica de renderização:**
-- Só aparece se produto tem reviews aprovados (`is_approved = true`)
+**LÃ³gica de renderizaÃ§Ã£o:**
+- SÃ³ aparece se produto tem reviews aprovados (`is_approved = true`)
 - AggregateRating calculado a partir dos reviews reais
-- Até 5 reviews individuais incluídos no schema
-- Cidade do autor incluída quando disponível (SEO local)
+- AtÃ© 5 reviews individuais incluÃ­dos no schema
+- Cidade do autor incluÃ­da quando disponÃ­vel (SEO local)
 - Badge "Compra Verificada" quando `is_verified_purchase = true`
 
-**Mapeamento de Tipos (Frontend → Schema):**
+**Mapeamento de Tipos (Frontend â†’ Schema):**
 ```typescript
 // Interface Review (frontend - camelCase)
-customerName → author_name
-customerCity → author_city  
-comment → content
-isVerified → is_verified_purchase
-createdAt → created_at
+customerName â†’ author_name
+customerCity â†’ author_city  
+comment â†’ content
+isVerified â†’ is_verified_purchase
+createdAt â†’ created_at
 ```
 
 **Arquivos alterados:**
 
-| Arquivo | Versão | Alteração |
+| Arquivo | VersÃ£o | AlteraÃ§Ã£o |
 |---------|--------|-----------|
 | `src/lib/seo.ts` | v3.5 | +`generateReviewSchema()`, +`ReviewForSchema` interface |
-| `src/components/ProductPageContent.tsx` | v2.18 | Integração do Review Schema com mapeamento correto |
-| `src/lib/reviews.ts` | v1.2 | Busca reviews da tabela `reviews` (não `product_reviews`) |
+| `src/components/ProductPageContent.tsx` | v2.18 | IntegraÃ§Ã£o do Review Schema com mapeamento correto |
+| `src/lib/reviews.ts` | v1.2 | Busca reviews da tabela `reviews` (nÃ£o `product_reviews`) |
 
 **Tabela do Banco:**
 ```sql
 -- Tabela correta: reviews (283 registros)
--- NÃO usar: product_reviews (vazia)
+-- NÃƒO usar: product_reviews (vazia)
 
 SELECT * FROM reviews 
 WHERE product_id = ? AND is_approved = true
@@ -216,51 +305,51 @@ ORDER BY created_at DESC
 LIMIT 5;
 ```
 
-**Benefícios SEO:**
+**BenefÃ­cios SEO:**
 
-| Benefício | Impacto |
+| BenefÃ­cio | Impacto |
 |-----------|---------|
-| Rich snippet com estrelas | ⭐⭐⭐⭐⭐ 4.8 (4 avaliações) nos resultados |
-| Reviews individuais | Google pode exibir trechos das avaliações |
-| Prova social | Aumenta confiança e CTR |
-| SEO local | Cidade do cliente reforça autoridade regional |
+| Rich snippet com estrelas | â­â­â­â­â­ 4.8 (4 avaliaÃ§Ãµes) nos resultados |
+| Reviews individuais | Google pode exibir trechos das avaliaÃ§Ãµes |
+| Prova social | Aumenta confianÃ§a e CTR |
+| SEO local | Cidade do cliente reforÃ§a autoridade regional |
 | Compra verificada | Badge de autenticidade |
 
 **Cobertura atual:**
-| Métrica | Valor |
+| MÃ©trica | Valor |
 |---------|-------|
 | Total de reviews no banco | 283 |
 | Produtos com reviews | ~70 |
-| Média de reviews por produto | ~4 |
+| MÃ©dia de reviews por produto | ~4 |
 
 **Exemplo testado:**
 - Produto: Rack Charlotte Carvalho C / Menta
-- Reviews: 4 avaliações aprovadas
-- Média: 4.8 estrelas
-- Autores: Patrícia (Curitiba-Portão), Lucas M. (Colombo), Fernanda (Curitiba-Sítio Cercado), Diego (Pinhais)
+- Reviews: 4 avaliaÃ§Ãµes aprovadas
+- MÃ©dia: 4.8 estrelas
+- Autores: PatrÃ­cia (Curitiba-PortÃ£o), Lucas M. (Colombo), Fernanda (Curitiba-SÃ­tio Cercado), Diego (Pinhais)
 
 ---
 
-## v2.17 — 02/02/2026
+## v2.17 â€” 02/02/2026
 
-### 🏷️ ProductGroup Schema (NOVO)
+### ðŸ·ï¸ ProductGroup Schema (NOVO)
 
-**Objetivo:** Informar ao Google que variantes de cor pertencem ao mesmo modelo de produto. Permite rich snippets como "Disponível em 4 cores" e carrossel de variantes nos resultados de busca.
+**Objetivo:** Informar ao Google que variantes de cor pertencem ao mesmo modelo de produto. Permite rich snippets como "DisponÃ­vel em 4 cores" e carrossel de variantes nos resultados de busca.
 
-**Validação:** ✅ **7 schemas detectados, 0 erros, 0 avisos**
+**ValidaÃ§Ã£o:** âœ… **7 schemas detectados, 0 erros, 0 avisos**
 
 | Schema Detectado | Status |
 |------------------|--------|
-| ProductGroup | ✅ 0 erros |
-| VideoObject | ✅ 0 erros |
-| FurnitureStore | ✅ 0 erros |
-| BreadcrumbList | ✅ 0 erros |
-| Product | ✅ 0 erros |
-| FAQPage | ✅ 0 erros |
+| ProductGroup | âœ… 0 erros |
+| VideoObject | âœ… 0 erros |
+| FurnitureStore | âœ… 0 erros |
+| BreadcrumbList | âœ… 0 erros |
+| Product | âœ… 0 erros |
+| FAQPage | âœ… 0 erros |
 
-**Implementação:**
+**ImplementaÃ§Ã£o:**
 
-#### Nova função em `seo.ts` (v3.4)
+#### Nova funÃ§Ã£o em `seo.ts` (v3.4)
 ```typescript
 export function generateProductGroupSchema(
   product: ProductSEOInput,
@@ -281,7 +370,7 @@ export function generateProductGroupSchema(
   "@context": "https://schema.org",
   "@type": "ProductGroup",
   "name": "Rack Charlotte",
-  "description": "Disponível em 4 cores...",
+  "description": "DisponÃ­vel em 4 cores...",
   "url": "https://moveirama.com.br/racks-tv/rack-charlotte-cinamomo",
   "brand": { "@type": "Brand", "name": "Artely" },
   "productGroupID": "Rack Charlotte",
@@ -304,44 +393,44 @@ export function generateProductGroupSchema(
 }
 ```
 
-**Lógica de renderização:**
-- Só aparece se produto tem 2+ variantes de cor
+**LÃ³gica de renderizaÃ§Ã£o:**
+- SÃ³ aparece se produto tem 2+ variantes de cor
 - `productGroupID` = campo `model_group` do banco
 - `variesBy` = sempre `color` (por enquanto)
 - Cada variante vira um `Product` dentro de `hasVariant`
 
 **Arquivos alterados:**
 
-| Arquivo | Versão | Alteração |
+| Arquivo | VersÃ£o | AlteraÃ§Ã£o |
 |---------|--------|-----------|
 | `src/lib/seo.ts` | v3.4 | +`generateProductGroupSchema()` |
 | `src/lib/supabase.ts` | v2.7 | +`price` em `ProductColorVariant` |
-| `src/components/ProductPageContent.tsx` | v2.17 | Integração do ProductGroup Schema |
+| `src/components/ProductPageContent.tsx` | v2.17 | IntegraÃ§Ã£o do ProductGroup Schema |
 
-**Benefícios SEO:**
+**BenefÃ­cios SEO:**
 
-| Benefício | Impacto |
+| BenefÃ­cio | Impacto |
 |-----------|---------|
-| Rich snippet "X cores disponíveis" | Maior CTR nos resultados |
+| Rich snippet "X cores disponÃ­veis" | Maior CTR nos resultados |
 | Carrossel de variantes | Destaque visual no Google |
-| Preços por cor | Usuário vê opções antes de clicar |
-| Estrutura semântica | Google entende relação entre produtos |
-| Competitivo | Mesmo padrão de grandes e-commerces |
+| PreÃ§os por cor | UsuÃ¡rio vÃª opÃ§Ãµes antes de clicar |
+| Estrutura semÃ¢ntica | Google entende relaÃ§Ã£o entre produtos |
+| Competitivo | Mesmo padrÃ£o de grandes e-commerces |
 
 ---
 
-## v2.16 — 02/02/2026
+## v2.16 â€” 02/02/2026
 
-### 🎨 Seletor de Variantes de Cor (NOVO)
+### ðŸŽ¨ Seletor de Variantes de Cor (NOVO)
 
-**Objetivo:** Permitir navegação entre variantes de cor do mesmo modelo SEM voltar para listagem. Aumentar conversão reduzindo fricção na jornada de compra.
+**Objetivo:** Permitir navegaÃ§Ã£o entre variantes de cor do mesmo modelo SEM voltar para listagem. Aumentar conversÃ£o reduzindo fricÃ§Ã£o na jornada de compra.
 
 **Problema resolvido:**
 - Cliente via "Rack Charlotte Cinamomo" mas queria ver em "Pinho/Off White"
 - Tinha que voltar para listagem, encontrar o produto, clicar de novo
 - Agora: clica na miniatura da cor desejada e navega direto
 
-**Implementação completa em 4 passos:**
+**ImplementaÃ§Ã£o completa em 4 passos:**
 
 #### Passo 1: Banco de Dados
 Novos campos na tabela `products`:
@@ -351,19 +440,19 @@ ALTER TABLE products ADD COLUMN color_name TEXT;
 CREATE INDEX idx_products_model_group ON products(model_group);
 ```
 
-**População automática:**
-- `model_group`: Extraído do nome (ex: "Rack Charlotte" de "Rack Charlotte - Cinamomo")
-- `color_name`: Extraído da parte após " - " (ex: "Cinamomo" ou "Pinho C / Off White")
+**PopulaÃ§Ã£o automÃ¡tica:**
+- `model_group`: ExtraÃ­do do nome (ex: "Rack Charlotte" de "Rack Charlotte - Cinamomo")
+- `color_name`: ExtraÃ­do da parte apÃ³s " - " (ex: "Cinamomo" ou "Pinho C / Off White")
 
 **Cobertura:**
-| Métrica | Valor |
+| MÃ©trica | Valor |
 |---------|-------|
 | Produtos com `model_group` | ~180 |
 | Produtos com variantes (2+ cores) | ~60 modelos |
-| Produtos cor única | Sem seletor (comportamento correto) |
+| Produtos cor Ãºnica | Sem seletor (comportamento correto) |
 
 #### Passo 2: Backend
-Nova função em `src/lib/supabase.ts`:
+Nova funÃ§Ã£o em `src/lib/supabase.ts`:
 ```typescript
 export async function getSiblingVariants(
   modelGroup: string | null | undefined
@@ -382,15 +471,15 @@ Novo componente `src/components/VariantSelector.tsx`:
 **Visual:**
 - Miniaturas 64x64px com foto REAL do produto em cada cor
 - Nome da cor embaixo (truncado com "...")
-- Borda verde sálvia na variante atual
-- Hover com elevação sutil
+- Borda verde sÃ¡lvia na variante atual
+- Hover com elevaÃ§Ã£o sutil
 
 **Comportamento:**
-- Só aparece se produto tem 2+ variantes
+- SÃ³ aparece se produto tem 2+ variantes
 - Clique navega para URL da variante (SEO-friendly)
-- Label "Cores disponíveis:" acima das miniaturas
+- Label "Cores disponÃ­veis:" acima das miniaturas
 
-**CSS:** Adicionado ao final de `globals.css` (seção variant-selector)
+**CSS:** Adicionado ao final de `globals.css` (seÃ§Ã£o variant-selector)
 
 #### Passo 4: SEO (seo.ts v3.3)
 Atualizado para usar `color_name` do banco:
@@ -400,40 +489,40 @@ Atualizado para usar `color_name` do banco:
 const colorPart = color_name || variant_name || colorFromName
 ```
 
-**Funções atualizadas:**
-- `generateProductH1()` — usa `color_name`
-- `generateProductTitle()` — usa `color_name`
-- `generateProductSchema()` — campo "color" usa `color_name`
+**FunÃ§Ãµes atualizadas:**
+- `generateProductH1()` â€” usa `color_name`
+- `generateProductTitle()` â€” usa `color_name`
+- `generateProductSchema()` â€” campo "color" usa `color_name`
 
-**Nova função helper:**
+**Nova funÃ§Ã£o helper:**
 ```typescript
 export function extractModelName(fullName: string, colorName?: string | null): string
 ```
 
 **Arquivos alterados:**
-| Arquivo | Alteração |
+| Arquivo | AlteraÃ§Ã£o |
 |---------|-----------|
 | `src/lib/supabase.ts` | v2.6: +`getSiblingVariants()`, +type `ProductColorVariant` |
 | `src/lib/seo.ts` | v3.3: +`color_name` em interfaces, prioridade em H1/Title/Schema |
 | `src/components/VariantSelector.tsx` | **NOVO** componente completo |
-| `src/components/ProductPageContent.tsx` | Integração do VariantSelector |
+| `src/components/ProductPageContent.tsx` | IntegraÃ§Ã£o do VariantSelector |
 | `src/app/[category]/[...slug]/page.tsx` | Query inclui `model_group`, `color_name` |
-| `src/app/globals.css` | +seção `.variant-selector` |
+| `src/app/globals.css` | +seÃ§Ã£o `.variant-selector` |
 
-**Benefícios:**
-| Benefício | Impacto |
+**BenefÃ­cios:**
+| BenefÃ­cio | Impacto |
 |-----------|---------|
-| Reduz fricção | Cliente compara cores sem sair da PDP |
-| Aumenta conversão | Menos abandonos por "quero ver outra cor" |
-| UX premium | Miniaturas reais > bolinhas de cor genéricas |
-| SEO mantido | Cada cor tem URL própria (canônica) |
+| Reduz fricÃ§Ã£o | Cliente compara cores sem sair da PDP |
+| Aumenta conversÃ£o | Menos abandonos por "quero ver outra cor" |
+| UX premium | Miniaturas reais > bolinhas de cor genÃ©ricas |
+| SEO mantido | Cada cor tem URL prÃ³pria (canÃ´nica) |
 | Mobile-first | Touch targets 64px, scroll horizontal |
 
 ---
 
-## v2.15 — 02/02/2026
+## v2.15 â€” 02/02/2026
 
-### 🔧 HowTo Schema (Vídeo de Montagem)
+### ðŸ”§ HowTo Schema (VÃ­deo de Montagem)
 
 **Objetivo:** Capturar buscas informacionais de montagem e gerar rich snippet "Como fazer" no Google.
 
@@ -441,15 +530,15 @@ export function extractModelName(fullName: string, colorName?: string | null): s
 - "como montar rack"
 - "montagem painel TV"
 - "como montar escrivaninha"
-- "vídeo montagem móvel artely"
+- "vÃ­deo montagem mÃ³vel artely"
 
-**Implementação:**
-- Nova função `generateHowToSchema()` em `src/lib/seo.ts`
-- Renderização condicional em `ProductPageContent.tsx`
+**ImplementaÃ§Ã£o:**
+- Nova funÃ§Ã£o `generateHowToSchema()` em `src/lib/seo.ts`
+- RenderizaÃ§Ã£o condicional em `ProductPageContent.tsx`
 - Campo do banco: `products.assembly_video_url`
 
 **Cobertura:**
-| Fornecedor | Total | Com vídeo de montagem |
+| Fornecedor | Total | Com vÃ­deo de montagem |
 |------------|-------|----------------------|
 | Artely | 206 | **179** (87%) |
 | Artany | 165 | **80** (48%) |
@@ -461,26 +550,26 @@ export function extractModelName(fullName: string, colorName?: string | null): s
   "@context": "https://schema.org",
   "@type": "HowTo",
   "name": "Como montar o {Nome do Produto}",
-  "description": "Passo a passo de montagem. Nível {fácil/médio/difícil}, tempo estimado: {X} minutos.",
+  "description": "Passo a passo de montagem. NÃ­vel {fÃ¡cil/mÃ©dio/difÃ­cil}, tempo estimado: {X} minutos.",
   "totalTime": "PT45M",
   "tool": [
     { "@type": "HowToTool", "name": "Chave Phillips" },
     { "@type": "HowToTool", "name": "Martelo de borracha (opcional)" }
   ],
   "supply": [
-    { "@type": "HowToSupply", "name": "Manual de instruções (incluso)" },
+    { "@type": "HowToSupply", "name": "Manual de instruÃ§Ãµes (incluso)" },
     { "@type": "HowToSupply", "name": "Kit de ferragens (incluso)" }
   ],
   "step": [
-    { "@type": "HowToStep", "name": "Confira as peças", "text": "..." },
-    { "@type": "HowToStep", "name": "Assista o vídeo completo", "text": "..." },
-    { "@type": "HowToStep", "name": "Organize o espaço", "text": "..." },
+    { "@type": "HowToStep", "name": "Confira as peÃ§as", "text": "..." },
+    { "@type": "HowToStep", "name": "Assista o vÃ­deo completo", "text": "..." },
+    { "@type": "HowToStep", "name": "Organize o espaÃ§o", "text": "..." },
     { "@type": "HowToStep", "name": "Siga o manual passo a passo", "text": "..." },
     { "@type": "HowToStep", "name": "Finalize e posicione", "text": "..." }
   ],
   "video": {
     "@type": "VideoObject",
-    "name": "Vídeo de Montagem - {Produto} | Moveirama",
+    "name": "VÃ­deo de Montagem - {Produto} | Moveirama",
     "thumbnailUrl": "https://img.youtube.com/vi/{VIDEO_ID}/maxresdefault.jpg",
     "contentUrl": "{URL_YOUTUBE}",
     "embedUrl": "https://www.youtube.com/embed/{VIDEO_ID}"
@@ -488,36 +577,36 @@ export function extractModelName(fullName: string, colorName?: string | null): s
 }
 ```
 
-**Benefícios:**
+**BenefÃ­cios:**
 - Rich snippet "Como fazer" nos resultados do Google
 - Captura intent informacional (topo do funil)
 - Reduz medo de montagem (dor #1 do cliente Classe C/D)
-- Diferencial vs concorrentes sem vídeo de montagem
-- Thumbnail de vídeo aumenta CTR
+- Diferencial vs concorrentes sem vÃ­deo de montagem
+- Thumbnail de vÃ­deo aumenta CTR
 
 **Arquivos alterados:**
-- `src/lib/seo.ts` — Nova função `generateHowToSchema()`
-- `src/components/ProductPageContent.tsx` — Renderização condicional
+- `src/lib/seo.ts` â€” Nova funÃ§Ã£o `generateHowToSchema()`
+- `src/components/ProductPageContent.tsx` â€” RenderizaÃ§Ã£o condicional
 
 ---
 
-## v2.14 — 02/02/2026
+## v2.14 â€” 02/02/2026
 
-### 🎬 VideoObject Schema
+### ðŸŽ¬ VideoObject Schema
 
-**Objetivo:** Rich snippets de vídeo no Google para produtos com vídeo do fabricante.
+**Objetivo:** Rich snippets de vÃ­deo no Google para produtos com vÃ­deo do fabricante.
 
-**Implementação:**
-- Nova função `generateVideoSchema()` em `src/lib/seo.ts`
-- Renderização condicional em `ProductPageContent.tsx`
+**ImplementaÃ§Ã£o:**
+- Nova funÃ§Ã£o `generateVideoSchema()` em `src/lib/seo.ts`
+- RenderizaÃ§Ã£o condicional em `ProductPageContent.tsx`
 - Campo do banco: `products.video_product_url`
 
 **Estrutura do Schema:**
 ```json
 {
   "@type": "VideoObject",
-  "name": "{Nome do Produto} - Vídeo do Produto | Moveirama",
-  "description": "Veja o {Nome} em detalhes. Móvel para Curitiba e Região Metropolitana com entrega própria em até 72h.",
+  "name": "{Nome do Produto} - VÃ­deo do Produto | Moveirama",
+  "description": "Veja o {Nome} em detalhes. MÃ³vel para Curitiba e RegiÃ£o Metropolitana com entrega prÃ³pria em atÃ© 72h.",
   "thumbnailUrl": "https://img.youtube.com/vi/{VIDEO_ID}/maxresdefault.jpg",
   "uploadDate": "{DATA_ATUAL}",
   "contentUrl": "{URL_YOUTUBE}",
@@ -529,52 +618,52 @@ export function extractModelName(fullName: string, colorName?: string | null): s
 }
 ```
 
-**Benefícios:**
-- Thumbnail de vídeo nos resultados do Google
+**BenefÃ­cios:**
+- Thumbnail de vÃ­deo nos resultados do Google
 - Maior CTR em buscas
-- Diferencial vs concorrentes sem vídeo
+- Diferencial vs concorrentes sem vÃ­deo
 
 ---
 
-## v2.9 — 01/02/2026
+## v2.9 â€” 01/02/2026
 
-### 🎯 Estratégia SEO Avançada — 5 Melhorias
+### ðŸŽ¯ EstratÃ©gia SEO AvanÃ§ada â€” 5 Melhorias
 
-#### 1. FAQ de Comparação
-**Objetivo:** Capturar buscas comparativas ("rack X vs rack Y", "diferença entre racks")
+#### 1. FAQ de ComparaÃ§Ã£o
+**Objetivo:** Capturar buscas comparativas ("rack X vs rack Y", "diferenÃ§a entre racks")
 
-**Implementação:**
-- Nova pergunta dinâmica baseada na largura do produto
-- Exemplo: "Qual a diferença do Rack Theo para outros racks de 1,6m?"
+**ImplementaÃ§Ã£o:**
+- Nova pergunta dinÃ¢mica baseada na largura do produto
+- Exemplo: "Qual a diferenÃ§a do Rack Theo para outros racks de 1,6m?"
 
-**Lógica:**
+**LÃ³gica:**
 ```typescript
 // Agrupa por faixa de largura
-< 120cm → "compactos (até 1,2m)"
-120-150cm → "médios (1,2m a 1,5m)"  
-> 150cm → "grandes (acima de 1,5m)"
+< 120cm â†’ "compactos (atÃ© 1,2m)"
+120-150cm â†’ "mÃ©dios (1,2m a 1,5m)"  
+> 150cm â†’ "grandes (acima de 1,5m)"
 ```
 
 #### 2. Bairros de Curitiba nas FAQs
 **Objetivo:** Prova social regional + SEO local
 
-**Implementação:**
+**ImplementaÃ§Ã£o:**
 - Pool de 15 bairros reais de Curitiba
-- Rotação determinística por produto (baseada no slug)
+- RotaÃ§Ã£o determinÃ­stica por produto (baseada no slug)
 - Aparece na FAQ de entrega
 
-**Bairros incluídos:**
-Cajuru, Boqueirão, Xaxim, Pinheirinho, CIC, Sítio Cercado, Portão, Água Verde, Batel, Centro, Santa Felicidade, Boa Vista, Bacacheri, Capão Raso, Fazendinha
+**Bairros incluÃ­dos:**
+Cajuru, BoqueirÃ£o, Xaxim, Pinheirinho, CIC, SÃ­tio Cercado, PortÃ£o, Ãgua Verde, Batel, Centro, Santa Felicidade, Boa Vista, Bacacheri, CapÃ£o Raso, Fazendinha
 
 **Exemplo de output:**
-> "Entregamos em toda Curitiba (Cajuru, Boqueirão, Xaxim...) e Região Metropolitana."
+> "Entregamos em toda Curitiba (Cajuru, BoqueirÃ£o, Xaxim...) e RegiÃ£o Metropolitana."
 
 #### 3. Brand = Fabricante (Artely/Artany)
 **Objetivo:** Aparecer em buscas por marca do fabricante
 
-**Implementação:**
+**ImplementaÃ§Ã£o:**
 - Campo `brand` no Product Schema usa `product.supplier?.name`
-- Moveirama aparece como `seller`, não como `brand`
+- Moveirama aparece como `seller`, nÃ£o como `brand`
 
 **Estrutura:**
 ```json
@@ -587,12 +676,12 @@ Cajuru, Boqueirão, Xaxim, Pinheirinho, CIC, Sítio Cercado, Portão, Água Verd
 ```
 
 #### 4. MerchantReturnPolicy
-**Objetivo:** Badge de "Devolução Grátis" no Google Shopping
+**Objetivo:** Badge de "DevoluÃ§Ã£o GrÃ¡tis" no Google Shopping
 
-**Implementação:**
-- Política de 7 dias (direito do consumidor)
+**ImplementaÃ§Ã£o:**
+- PolÃ­tica de 7 dias (direito do consumidor)
 - Tipo: `MerchantReturnFiniteReturnWindow`
-- Custo de devolução: grátis
+- Custo de devoluÃ§Ã£o: grÃ¡tis
 
 **Estrutura:**
 ```json
@@ -608,63 +697,63 @@ Cajuru, Boqueirão, Xaxim, Pinheirinho, CIC, Sítio Cercado, Portão, Água Verd
 ```
 
 #### 5. Prazo de Entrega: 72h
-**Objetivo:** Maior especificidade + urgência
+**Objetivo:** Maior especificidade + urgÃªncia
 
-**Mudança:**
-- Antes: "até 3 dias úteis"
-- Depois: "em até 72h" / "entrega própria em até 72h"
+**MudanÃ§a:**
+- Antes: "atÃ© 3 dias Ãºteis"
+- Depois: "em atÃ© 72h" / "entrega prÃ³pria em atÃ© 72h"
 
 **Onde aparece:**
 - Meta description
 - FAQs
 - VideoObject description
-- Textos de confiança
+- Textos de confianÃ§a
 
 ---
 
-## v2.x — Implementações Anteriores
+## v2.x â€” ImplementaÃ§Ãµes Anteriores
 
-### Product Schema Básico
-- Nome, descrição, preço, imagens
-- SKU, disponibilidade, condição
-- Offers com preço e parcelamento
+### Product Schema BÃ¡sico
+- Nome, descriÃ§Ã£o, preÃ§o, imagens
+- SKU, disponibilidade, condiÃ§Ã£o
+- Offers com preÃ§o e parcelamento
 
 ### BreadcrumbList
-- Navegação estruturada: Início → Categoria → Subcategoria → Produto
+- NavegaÃ§Ã£o estruturada: InÃ­cio â†’ Categoria â†’ Subcategoria â†’ Produto
 - Implementado diretamente no `ProductPageContent.tsx`
 
 ### FAQPage Schema
-- Geração dinâmica baseada nos dados do produto
+- GeraÃ§Ã£o dinÃ¢mica baseada nos dados do produto
 - Perguntas sobre: TV, medidas, material, montagem, entrega, garantia
-- Função `generateProductFAQs()` em `seo.ts`
+- FunÃ§Ã£o `generateProductFAQs()` em `seo.ts`
 
 ### AggregateRating (Condicional)
-- Só renderiza se `rating_count > 0`
-- Evita penalização do Google por rating falso
+- SÃ³ renderiza se `rating_count > 0`
+- Evita penalizaÃ§Ã£o do Google por rating falso
 - Campos: `rating_average`, `rating_count`
 
 ### Meta Tags Otimizadas
 - Title: `{H1} | Moveirama`
-- Description: Preço + parcelamento + prazo + região
+- Description: PreÃ§o + parcelamento + prazo + regiÃ£o
 - Canonical URL
 - Open Graph tags
 
 ### FurnitureStore Schema
-- Informações da empresa
-- Área de atuação: Curitiba + RMC
-- Horário de funcionamento
+- InformaÃ§Ãµes da empresa
+- Ãrea de atuaÃ§Ã£o: Curitiba + RMC
+- HorÃ¡rio de funcionamento
 - Contato WhatsApp
 
 ---
 
-## 📁 Arquivos Principais
+## ðŸ“ Arquivos Principais
 
 | Arquivo | Responsabilidade |
 |---------|------------------|
-| `src/lib/seo.ts` | Funções de geração de Schema (v3.5) |
+| `src/lib/seo.ts` | FunÃ§Ãµes de geraÃ§Ã£o de Schema (v3.5) |
 | `src/lib/supabase.ts` | Queries + `getSiblingVariants()` (v2.7) |
 | `src/lib/reviews.ts` | Busca reviews da tabela `reviews` (v1.2) |
-| `src/components/ProductPageContent.tsx` | Renderização dos JSON-LD + VariantSelector (v2.18) |
+| `src/components/ProductPageContent.tsx` | RenderizaÃ§Ã£o dos JSON-LD + VariantSelector (v2.18) |
 | `src/components/VariantSelector.tsx` | Seletor de variantes de cor |
 | `src/components/ProductFAQ.tsx` | Componente visual do FAQ |
 | `src/app/[category]/[...slug]/page.tsx` | generateMetadata() + query de produto |
@@ -672,7 +761,7 @@ Cajuru, Boqueirão, Xaxim, Pinheirinho, CIC, Sítio Cercado, Portão, Água Verd
 
 ---
 
-## 🧪 Como Testar
+## ðŸ§ª Como Testar
 
 ### Rich Results Test (Google)
 1. Acesse: https://search.google.com/test/rich-results
@@ -681,69 +770,71 @@ Cajuru, Boqueirão, Xaxim, Pinheirinho, CIC, Sítio Cercado, Portão, Água Verd
 
 ### Schema Validator
 1. Acesse: https://validator.schema.org/
-2. Cole o JSON-LD da página
-3. Verifique se não há erros
+2. Cole o JSON-LD da pÃ¡gina
+3. Verifique se nÃ£o hÃ¡ erros
 
 ### View Source
-1. Abra a página do produto
+1. Abra a pÃ¡gina do produto
 2. Ctrl+U (View Source)
-3. Ctrl+F → procure por `"@type":`
+3. Ctrl+F â†’ procure por `"@type":`
 4. Confirme que ProductGroup, Product, FAQPage, VideoObject, HowTo aparecem
 
 ### Seletor de Variantes
-1. Acesse produto com múltiplas cores (ex: Rack Charlotte)
+1. Acesse produto com mÃºltiplas cores (ex: Rack Charlotte)
 2. Verifique se miniaturas aparecem com fotos reais
-3. Clique em outra cor → deve navegar para URL da variante
+3. Clique em outra cor â†’ deve navegar para URL da variante
 4. Borda verde deve estar na cor atual
 
 ### ProductGroup Schema
 1. Acesse produto com 2+ variantes de cor
-2. View Source → buscar "ProductGroup"
-3. Verificar que `hasVariant` contém todas as cores
+2. View Source â†’ buscar "ProductGroup"
+3. Verificar que `hasVariant` contÃ©m todas as cores
 4. Cada variante deve ter `price` e `color`
 
 ### Review Schema
 1. Acesse produto com reviews (ex: Rack Charlotte)
-2. View Source → buscar "aggregateRating"
+2. View Source â†’ buscar "aggregateRating"
 3. Verificar que `ratingValue` e `reviewCount` aparecem
-4. Verificar que array `review` contém avaliações individuais
+4. Verificar que array `review` contÃ©m avaliaÃ§Ãµes individuais
 
 ---
 
-## 📊 Métricas para Acompanhar
+## ðŸ“Š MÃ©tricas para Acompanhar
 
-| Métrica | Ferramenta | O que observar |
+| MÃ©trica | Ferramenta | O que observar |
 |---------|------------|----------------|
-| Rich Results | Search Console | Impressões de rich snippets |
-| CTR orgânico | Search Console | Aumento após rich snippets |
-| Posição média | Search Console | Buscas por marca (Artely, Artany) |
-| Indexação | Search Console | Páginas com erros de Schema |
+| Rich Results | Search Console | ImpressÃµes de rich snippets |
+| CTR orgÃ¢nico | Search Console | Aumento apÃ³s rich snippets |
+| PosiÃ§Ã£o mÃ©dia | Search Console | Buscas por marca (Artely, Artany) |
+| IndexaÃ§Ã£o | Search Console | PÃ¡ginas com erros de Schema |
 | HowTo impressions | Search Console | Buscas "como montar" |
-| **Review snippets** | Search Console | Rich snippet ⭐⭐⭐⭐⭐ |
+| **Review snippets** | Search Console | Rich snippet â­â­â­â­â­ |
 | **ProductGroup** | Search Console | Rich snippet "X cores" |
-| **Conversão PDP** | Analytics | Taxa de "Add to Cart" |
-| **Navegação variantes** | Analytics | Cliques no VariantSelector |
+| **ConversÃ£o PDP** | Analytics | Taxa de "Add to Cart" |
+| **NavegaÃ§Ã£o variantes** | Analytics | Cliques no VariantSelector |
 
 ---
 
-## 🔮 Próximas Implementações (Backlog)
+## ðŸ”® PrÃ³ximas ImplementaÃ§Ãµes (Backlog)
 
-| Prioridade | Item | Descrição |
+| Prioridade | Item | DescriÃ§Ã£o |
 |------------|------|-----------|
-| ~~Alta~~ | ~~Review Schema~~ | ✅ **Implementado v2.18** |
-| ~~Alta~~ | ~~ProductGroup Schema~~ | ✅ **Implementado v2.17** |
-| ~~Alta~~ | ~~Seletor de Variantes~~ | ✅ **Implementado v2.16** |
-| ~~Alta~~ | ~~HowTo Schema~~ | ✅ **Implementado v2.15** |
-| ~~Média~~ | ~~Organization Schema~~ | ✅ **Implementado v2.19** (FurnitureStore) |
-| ~~Baixa~~ | ~~ItemList Schema~~ | ✅ **Já implementado** (páginas de categoria) |
+| ~~Alta~~ | ~~Review Schema~~ | âœ… **Implementado v2.18** |
+| ~~Alta~~ | ~~ProductGroup Schema~~ | âœ… **Implementado v2.17** |
+| ~~Alta~~ | ~~Seletor de Variantes~~ | âœ… **Implementado v2.16** |
+| ~~Alta~~ | ~~HowTo Schema~~ | âœ… **Implementado v2.15** |
+| ~~MÃ©dia~~ | ~~Organization Schema~~ | âœ… **Implementado v2.19** (FurnitureStore) |
+| ~~Baixa~~ | ~~ItemList Schema~~ | âœ… **JÃ¡ implementado** (pÃ¡ginas de categoria) |
 
 ---
+
 
 ## 📅 Timeline de Implementações
 
 | Data | Versão | Feature Principal |
 |------|--------|-------------------|
-| **03/02/2026** | **v2.19** | **Página Sobre + FurnitureStore Schema** ⭐ |
+| **04/02/2026** | **v2.20** | **Carrossel Queridinhos de Curitiba** ⭐ |
+| 03/02/2026 | v2.19 | Página Sobre + FurnitureStore Schema |
 | 02/02/2026 | v2.18 | Review Schema |
 | 02/02/2026 | v2.17 | ProductGroup Schema |
 | 02/02/2026 | v2.16 | Seletor de Variantes de Cor |
@@ -752,9 +843,9 @@ Cajuru, Boqueirão, Xaxim, Pinheirinho, CIC, Sítio Cercado, Portão, Água Verd
 | 01/02/2026 | v2.9 | SEO Avançado (5 melhorias) |
 | Janeiro 2026 | v2.8 | Reviews e Vizinhos que Aprovaram |
 | Janeiro 2026 | v2.6 | Minha Lista (Favoritos) |
-| Janeiro 2026 | v2.5 | Home Page completa |
+| Janeiro 2026 | v2.5 | Home Page completa
 
 ---
 
 *Documento mantido pelo Squad Dev — Moveirama*
-*Última atualização: 03 de Fevereiro de 2026*
+*Última atualização: 04 de Fevereiro de 2026*
