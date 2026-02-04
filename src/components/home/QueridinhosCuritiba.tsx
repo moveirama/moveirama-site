@@ -65,8 +65,7 @@ export default async function QueridinhosCuritiba() {
               >
                 <QueridinhoCard 
                   product={product} 
-                  position={index + 1}
-                  priority={index < 2}
+                  index={index}
                 />
               </li>
             ))}
