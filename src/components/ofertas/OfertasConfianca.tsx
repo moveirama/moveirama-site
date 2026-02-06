@@ -4,6 +4,11 @@
  * 
  * IMPORTANTE: Usa ícones SVG, NÃO emojis
  * Cor dos ícones: Toffee (#8B7355)
+ * 
+ * Changelog:
+ *   - v1.1 (05/02/2026): Copy focado no cliente
+ *                        • Subtítulo: "Você escolhe, a gente entrega e resolve. Simples assim."
+ *                        • Benefício 2: "Móveis que cabem no seu espaço"
  */
 
 // ===========================================
@@ -71,7 +76,7 @@ const BENEFICIOS = [
   },
   {
     icon: <FloorPlanIcon />,
-    texto: 'Móveis para apê compacto',
+    texto: 'Móveis que cabem no seu espaço',  // v1.1: antes "apê compacto"
   },
   {
     icon: <ChatBubbleIcon />,
@@ -91,9 +96,9 @@ export default function OfertasConfianca() {
         Por que comprar na Moveirama?
       </h2>
 
-      {/* Subtítulo */}
+      {/* Subtítulo - v1.1: foco no cliente */}
       <p className="text-sm text-[#8B7355] mb-6 md:mb-8">
-        Somos de Curitiba e entendemos as necessidades da região.
+        Você escolhe, a gente entrega e resolve. Simples assim.
       </p>
 
       {/* Grid de Benefícios */}
@@ -116,4 +121,3 @@ export default function OfertasConfianca() {
     </section>
   );
 }
-

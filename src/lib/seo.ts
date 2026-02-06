@@ -2,9 +2,17 @@
 
 /**
  * Moveirama SEO Utilities
- * Versão: 3.6.0 - Adiciona @id nos schemas para evitar conflito de grafo
+ * Versão: 3.6.2 - Ajustes de copy (metros, travessão, apartamentos)
  * 
  * Changelog:
+ *   - v3.6.2 (05/02/2026): AJUSTES DE COPY
+ *                        • Largura ≥100cm agora exibe em metros (ex: 1,80m)
+ *                        • Todos os travessões "—" substituídos por hífen "-"
+ *                        • Removido "ideal para apartamentos alugados" da FAQ
+ *   - v3.6.1 (05/02/2026): FIX FAQ RACKS
+ *                        • Removido "de Curitiba" → "da sua casa ou apartamento"
+ *                        • Removido "proteção contra umidade" (sem comprovação)
+ *                        • Removido "resistente à umidade local" (sem comprovação)
  *   - v3.6.0 (05/02/2026): @ID NOS SCHEMAS
  *                        • Product Schema: @id = "{canonicalUrl}#product"
  *                        • ProductGroup Schema: @id = "{url}#product-group"
@@ -228,10 +236,10 @@ function generateMontageAnswer(
   const timeText = timeMinutes ? ` (~${timeMinutes}min)` : ''
   
   if (supplierProfile?.name === 'Artany') {
-    return `Nível ${difficultyText}${timeText}. Móvel profissional com montagem estruturada: manual técnico detalhado e ferragens de alta resistência identificadas. Você precisa apenas de chave Phillips — sem ferramentas elétricas. Para facilitar, disponibilizamos vídeo de montagem completo.`
+    return `Nível ${difficultyText}${timeText}. Móvel profissional com montagem estruturada: manual técnico detalhado e ferragens de alta resistência identificadas. Você precisa apenas de chave Phillips - sem ferramentas elétricas. Para facilitar, disponibilizamos vídeo de montagem completo.`
   }
   
-  return `Nível ${difficultyText}${timeText}. Montagem intuitiva: acompanha manual ilustrado passo a passo e todas as ferragens já vêm separadas e identificadas. Você só precisa de chave de fenda comum — sem ferramentas elétricas. Para facilitar ainda mais, deixamos um vídeo de montagem completo logo acima nesta página.`
+  return `Nível ${difficultyText}${timeText}. Montagem intuitiva: acompanha manual ilustrado passo a passo e todas as ferragens já vêm separadas e identificadas. Você só precisa de chave de fenda comum - sem ferramentas elétricas. Para facilitar ainda mais, deixamos um vídeo de montagem completo logo acima nesta página.`
 }
 
 /**
@@ -400,7 +408,7 @@ export function generateProductMetaDescription(product: ProductForMeta): string 
       const depthText = productDepth ? `Profundidade de ${productDepth}cm garante fluidez de circulação. ` : ''
       benefit = `Visual elegante para salas de estar e ambientes integrados. ${depthText}Design sofisticado com entrega própria em Curitiba.`
     } else {
-      const depthText = productDepth && productDepth <= 40 ? `Profundidade de apenas ${productDepth}cm — não obstrui a passagem. ` : ''
+      const depthText = productDepth && productDepth <= 40 ? `Profundidade de apenas ${productDepth}cm - não obstrui a passagem. ` : ''
       if (hasTamburato) {
         benefit = `Tampo robusto de ${thickness_mm}mm em Tamburato. ${depthText}Design elegante para salas de jantar. Entrega própria em 72h.`
       } else {
@@ -867,7 +875,7 @@ export function extractModelName(fullName: string, colorName?: string | null): s
 }
 
 // ============================================
-// FAQs POR CATEGORIA (v3.2.2)
+// FAQs POR CATEGORIA (v3.2.2 / v3.6.1)
 // ============================================
 
 export function generateRackFAQs(product: {
@@ -899,7 +907,7 @@ export function generateRackFAQs(product: {
   if (product.tv_max_size) {
     faqs.push({
       question: `O ${baseName} serve para TV de quantas polegadas?`,
-      answer: `Serve para TV de até ${product.tv_max_size} polegadas.${product.width ? ` Largura total de ${product.width}cm.` : ''} Antes de comprar, confira se a base da sua TV cabe no tampo.`
+      answer: `Serve para TV de até ${product.tv_max_size} polegadas.${product.width ? ` Largura total de ${product.width >= 100 ? (product.width / 100).toFixed(2).replace('.', ',') + 'm' : product.width + 'cm'}.` : ''} Antes de comprar, confira se a base da sua TV cabe no tampo.`
     })
   }
   
@@ -910,20 +918,18 @@ export function generateRackFAQs(product: {
     })
   }
   
-  // v3.2.2: FAQ de comparação com semântica de escala (somente Artely)
+  // v3.6.1: FAQ de comparação com semântica de escala (corrigido)
   if (product.width && product.depth && product.thickness_mm) {
     const larguraMetros = (product.width / 100).toFixed(1).replace('.', ',')
     const tipoMovel = product.name.toLowerCase().includes('painel') ? 'painéis' : 'racks'
     
     let answerText: string
     if (isArtelyProduct && isLarge) {
-      // v3.2.2: Móvel grande Artely — fluidez, visual imponente
-      // v3.2.3: Removido menção de peso (confunde cliente - é da prateleira, não do tampo)
-      answerText = `O diferencial do ${baseName} é a sua profundidade otimizada de ${product.depth}cm, que permite um visual imponente sem comprometer o fluxo de circulação em salas de estar ou ambientes integrados de Curitiba. Acabamento sofisticado com proteção contra umidade.`
+      // v3.6.1: Móvel grande Artely — fluidez, visual imponente (CORRIGIDO)
+      answerText = `O diferencial do ${baseName} é a sua profundidade otimizada de ${product.depth}cm, que permite um visual imponente sem comprometer o fluxo de circulação em salas de estar ou ambientes integrados da sua casa ou apartamento. Acabamento sofisticado e resistente.`
     } else {
-      // Móvel compacto ou Artany — otimização de espaço
-      // v3.2.3: Removido menção de peso (confunde cliente - é da prateleira, não do tampo)
-      answerText = `O diferencial do ${baseName} é o tampo de ${product.thickness_mm}mm e a profundidade de ${product.depth}cm, ideal para otimizar o espaço em salas compactas de Curitiba. Material resistente à umidade local.`
+      // v3.6.1: Móvel compacto ou Artany — otimização de espaço (CORRIGIDO)
+      answerText = `O diferencial do ${baseName} é o tampo de ${product.thickness_mm}mm e a profundidade de ${product.depth}cm, ideal para otimizar o espaço em salas compactas. Material resistente e de fácil limpeza.`
     }
     
     faqs.push({
@@ -940,7 +946,7 @@ export function generateRackFAQs(product: {
   if (product.main_material) {
     faqs.push({
       question: `Qual o material do ${baseName}?`,
-      answer: `${product.main_material}${product.thickness_mm ? ` de ${product.thickness_mm}mm` : ''}, com acabamento em pintura UV que protege da umidade característica de Curitiba. Fácil de limpar - só passar pano úmido.`
+      answer: `${product.main_material}${product.thickness_mm ? ` de ${product.thickness_mm}mm` : ''}, com acabamento em pintura UV que facilita a limpeza. Fácil de limpar - só passar pano úmido.`
     })
   }
   
@@ -952,7 +958,7 @@ export function generateRackFAQs(product: {
     question: `Precisa furar a parede para instalar o ${baseName}?`,
     answer: product.requires_wall_mount 
       ? `Sim, recomendamos fixar na parede por segurança. Buchas e parafusos de fixação acompanham o produto.`
-      : `Não precisa furar. O rack fica apoiado no chão, sem necessidade de fixação na parede - ideal para apartamentos alugados.`
+      : `Não precisa furar. O rack fica apoiado no chão, sem necessidade de fixação na parede.`
   })
   
   faqs.push({
@@ -994,14 +1000,14 @@ export function generateBuffetAparadorFAQs(product: {
     if (isArtelyProduct && isLarge) {
       faqs.push({
         question: `O ${baseName} compromete a circulação na sala?`,
-        answer: `Não! O ${baseName} tem ${product.depth}cm de profundidade, projetado para oferecer visual imponente sem comprometer o fluxo de circulação em salas de estar e ambientes integrados de Curitiba.`
+        answer: `Não! O ${baseName} tem ${product.depth}cm de profundidade, projetado para oferecer visual imponente sem comprometer o fluxo de circulação em salas de estar e ambientes integrados.`
       })
     } else {
       const isCompact = product.depth <= 40
       faqs.push({
         question: `O ${baseName} obstrui a passagem na sala de jantar?`,
         answer: isCompact
-          ? `Não! Com apenas ${product.depth}cm de profundidade, o ${baseName} foi projetado para salas de jantar compactas típicas de Curitiba. Você consegue circular tranquilamente mesmo em ambientes pequenos.`
+          ? `Não! Com apenas ${product.depth}cm de profundidade, o ${baseName} foi projetado para salas de jantar compactas. Você consegue circular tranquilamente mesmo em ambientes pequenos.`
           : `O ${baseName} tem ${product.depth}cm de profundidade. Recomendamos medir o espaço disponível na sua sala antes de comprar. Dúvida? Chama no WhatsApp.`
       })
     }
@@ -1015,8 +1021,8 @@ export function generateBuffetAparadorFAQs(product: {
   }
   
   faqs.push({
-    question: `O ${baseName} é resistente à umidade de Curitiba?`,
-    answer: `Sim! ${product.main_material ? `Feito em ${product.main_material} com ` : 'Com '}acabamento em pintura UV que protege contra a umidade característica de Curitiba. Suas louças e objetos ficam protegidos. Limpe apenas com pano levemente úmido.`
+    question: `O ${baseName} é resistente?`,
+    answer: `Sim! ${product.main_material ? `Feito em ${product.main_material} com ` : 'Com '}acabamento em pintura UV que facilita a limpeza. Suas louças e objetos ficam protegidos. Limpe apenas com pano levemente úmido.`
   })
   
   if (product.weight_capacity) {
@@ -1090,7 +1096,7 @@ export function generateMesaProfissionalFAQs(product: {
   if (product.main_material) {
     faqs.push({
       question: `Qual o material da ${baseName}?`,
-      answer: `${product.main_material}${product.thickness_mm ? ` com ${product.thickness_mm}mm de espessura` : ''} — padrão corporativo de durabilidade. Acabamento resistente a riscos e fácil de limpar.`
+      answer: `${product.main_material}${product.thickness_mm ? ` com ${product.thickness_mm}mm de espessura` : ''} - padrão corporativo de durabilidade. Acabamento resistente a riscos e fácil de limpar.`
     })
   }
   
@@ -1143,8 +1149,8 @@ export function generateEstanteFAQs(product: {
   }
   
   faqs.push({
-    question: `A ${baseName} é resistente à umidade?`,
-    answer: `Sim! ${product.main_material ? `Feita em ${product.main_material} com ` : 'Com '}acabamento protetor contra a umidade de Curitiba. Seus livros e objetos ficam protegidos.`
+    question: `A ${baseName} é resistente?`,
+    answer: `Sim! ${product.main_material ? `Feita em ${product.main_material} com ` : 'Com '}acabamento protetor que facilita a limpeza. Seus livros e objetos ficam protegidos.`
   })
   
   faqs.push({
@@ -1211,7 +1217,7 @@ export function generateEscrivaninhaFAQs(product: {
   if (product.main_material) {
     faqs.push({
       question: `Qual o material da ${baseName}?`,
-      answer: `${product.main_material}. Resistente à umidade de Curitiba e fácil de limpar.`
+      answer: `${product.main_material}. Material resistente e fácil de limpar.`
     })
   }
   
@@ -1345,7 +1351,7 @@ export function generateCategoryMetaDescription(categoryName: string, categorySl
     return `Confira ${seoNameLower} em Curitiba e Região Metropolitana. Modelos para TV de 32" a 75", com design elegante e acabamento resistente à umidade. Entrega própria em até 72h. Compre móveis na caixa sem dor de cabeça.`
   }
   if (['buffets', 'aparadores'].includes(categorySlug)) {
-    return `${seoName} em Curitiba com profundidade reduzida — ideais para salas de jantar. Proteção contra umidade. Entrega própria em até 72h.`
+    return `${seoName} em Curitiba com profundidade reduzida - ideais para salas de jantar. Proteção contra umidade. Entrega própria em até 72h.`
   }
   if (categorySlug.includes('escrivaninha') || categorySlug.includes('home-office')) {
     return `${seoName} em Curitiba e RMC com entrega rápida. Modelos práticos para home office em casas e apartamentos. Frota própria, entrega em até 72h. Monte seu home office sem stress.`

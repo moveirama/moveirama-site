@@ -33,7 +33,7 @@ export default function HeroSection() {
 
         {/* Subtítulo */}
         <p className="text-[17px] text-[#8B7355] max-w-xl mx-auto mb-8">
-          Racks, painéis, escrivaninhas e mais. Frota própria, preço justo e suporte humano no WhatsApp.
+          Racks, painéis, escrivaninhas e muito mais. Frota própria, preço justo e móveis que cabem no seu bolso e no seu espaço.
         </p>
 
         {/* CTAs */}

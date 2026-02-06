@@ -34,7 +34,7 @@ const diferenciais = [
   {
     icon: MessageCircle,
     title: 'WhatsApp de Verdade',
-    description: 'Gente real que entende de móveis e te ajuda a escolher.',
+    description: 'A gente responde rápido.',
   },
   {
     icon: Ruler,

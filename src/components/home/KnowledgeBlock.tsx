@@ -7,6 +7,12 @@
  * - Layout: 1 coluna centralizada, max-width 720px
  * - Texto: Toffee (#8B7355) com destaques em Graphite
  * - Conteúdo: SEO semântico para Curitiba/RMC
+ * 
+ * Changelog:
+ *   - v1.1 (05/02/2026): Texto final aprovado
+ *                        • Título: "Móveis com Medidas Certas para Curitiba"
+ *                        • Copy focado em medidas + praticidade
+ *                        • TVs de 43 a 75 polegadas (antes: 65)
  */
 
 export default function KnowledgeBlock() {
@@ -16,22 +22,22 @@ export default function KnowledgeBlock() {
         <div className="max-w-[720px] mx-auto">
           {/* H2 SEO */}
           <h2 className="text-[29px] md:text-[36px] font-bold text-[#2D2D2D] mb-7 leading-tight">
-            Móveis para Apartamentos Compactos em Curitiba
+            Móveis com Medidas Certas para Curitiba e Região
           </h2>
 
           {/* Conteúdo SEO */}
           <div className="text-[17px] text-[#8B7355] leading-[1.8] space-y-[18px]">
             <p>
-              A Moveirama entende a realidade de quem mora em{' '}
-              <strong className="text-[#2D2D2D] font-semibold">apartamento pequeno</strong>{' '}
-              em Curitiba e Região Metropolitana. Por isso, trabalhamos com móveis que{' '}
-              <strong className="text-[#2D2D2D] font-semibold">otimizam espaço</strong>{' '}
-              sem abrir mão do design.
+              Na Moveirama, cada móvel tem as{' '}
+              <strong className="text-[#2D2D2D] font-semibold">medidas na cara</strong>{' '}
+              - pra você comprar com certeza de que vai caber. Móveis bonitos e práticos{' '}
+              que funcionam no seu espaço, seja{' '}
+              <strong className="text-[#2D2D2D] font-semibold">apê ou casa</strong>.
             </p>
 
             <p>
-              Nossos racks comportam TVs de{' '}
-              <strong className="text-[#2D2D2D] font-semibold">43 a 65 polegadas</strong>.{' '}
+              Nossos racks e painéis acomodam TVs de{' '}
+              <strong className="text-[#2D2D2D] font-semibold">43 a 75 polegadas</strong>.{' '}
               As escrivaninhas cabem em qualquer cantinho do home office. E o melhor:{' '}
               entregamos com{' '}
               <strong className="text-[#2D2D2D] font-semibold">frota própria em até 72 horas</strong>.
