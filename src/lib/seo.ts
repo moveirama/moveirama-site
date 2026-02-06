@@ -2,9 +2,14 @@
 
 /**
  * Moveirama SEO Utilities
- * Versão: 3.5.0 - Adiciona Review Schema para avaliações de clientes
+ * Versão: 3.6.0 - Adiciona @id nos schemas para evitar conflito de grafo
  * 
  * Changelog:
+ *   - v3.6.0 (05/02/2026): @ID NOS SCHEMAS
+ *                        • Product Schema: @id = "{canonicalUrl}#product"
+ *                        • ProductGroup Schema: @id = "{url}#product-group"
+ *                        • Variantes: @id = "{variantUrl}#variant"
+ *                        • Evita conflito de grafo quando Google indexa
  *   - v3.5.0 (02/02/2026): REVIEW SCHEMA
  *                        • Nova interface ReviewForSchema
  *                        • Nova função generateReviewSchema()
@@ -460,6 +465,11 @@ export function generateProductMetaDescription(product: ProductForMeta): string 
 // SCHEMA.ORG
 // ============================================
 
+/**
+ * ⭐ v3.6: Gera Product Schema com @id para evitar conflito de grafo
+ * 
+ * @id = "{canonicalUrl}#product" — identificador único do produto
+ */
 export function generateProductSchema(product: ProductForSchema, canonicalUrl: string) {
   const h1Title = generateProductH1({
     name: product.name,
@@ -492,6 +502,7 @@ export function generateProductSchema(product: ProductForSchema, canonicalUrl: s
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Product",
+    "@id": `${canonicalUrl}#product`,  // ⭐ v3.6: @id único
     "name": h1Title,
     "description": metaDescription,
     "image": product.images?.map(img => img.url) || [],
@@ -502,13 +513,19 @@ export function generateProductSchema(product: ProductForSchema, canonicalUrl: s
     ...(productColor && { "color": productColor }),
     "offers": {
       "@type": "Offer",
+      "@id": `${canonicalUrl}#offer`,  // ⭐ v3.6: @id para Offer também
       "url": canonicalUrl,
       "priceCurrency": "BRL",
       "price": product.price,
       "priceValidUntil": priceValidUntil.toISOString().split('T')[0],
       "availability": product.stock_quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       "itemCondition": "https://schema.org/NewCondition",
-      "seller": { "@type": "Organization", "name": "Moveirama", "url": "https://moveirama.com.br" },
+      "seller": { 
+        "@type": "Organization", 
+        "@id": "https://moveirama.com.br/#organization",  // ⭐ v3.6: referência à org
+        "name": "Moveirama", 
+        "url": "https://moveirama.com.br" 
+      },
       "hasMerchantReturnPolicy": {
         "@type": "MerchantReturnPolicy",
         "applicableCountry": "BR",
@@ -566,6 +583,7 @@ export function generateVideoSchema(videoUrl: string, productName: string, thumb
     "embedUrl": videoId ? `https://www.youtube.com/embed/${videoId}` : videoUrl,
     "publisher": {
       "@type": "Organization",
+      "@id": "https://moveirama.com.br/#organization",  // ⭐ v3.6: referência à org
       "name": "Moveirama",
       "logo": { "@type": "ImageObject", "url": "https://moveirama.com.br/logo/moveirama-grafite.svg" }
     }
@@ -616,7 +634,12 @@ export function generateHowToSchema(
       "embedUrl": videoId ? `https://www.youtube.com/embed/${videoId}` : assemblyVideoUrl,
       "uploadDate": new Date().toISOString().split('T')[0],
       "duration": totalTime,
-      "publisher": { "@type": "Organization", "name": "Moveirama", "logo": { "@type": "ImageObject", "url": "https://moveirama.com.br/logo/moveirama-grafite.svg" } }
+      "publisher": { 
+        "@type": "Organization", 
+        "@id": "https://moveirama.com.br/#organization",  // ⭐ v3.6: referência à org
+        "name": "Moveirama", 
+        "logo": { "@type": "ImageObject", "url": "https://moveirama.com.br/logo/moveirama-grafite.svg" } 
+      }
     }
   }
 }
@@ -634,12 +657,14 @@ export function generateFAQSchema(faqs: FAQItem[]) {
 }
 
 // ============================================
-// ⭐ v3.4: PRODUCTGROUP SCHEMA (Variantes de Cor)
+// ⭐ v3.4/v3.6: PRODUCTGROUP SCHEMA (Variantes de Cor)
 // ============================================
 
 /**
  * Gera Schema ProductGroup para o Google entender variantes de cor
  * Rich snippet: "Disponível em X cores"
+ * 
+ * ⭐ v3.6: Adicionado @id em ProductGroup e cada variante
  * 
  * @param currentProduct - Produto atual sendo visualizado
  * @param siblingVariants - Todas as variantes do mesmo modelo (incluindo a atual)
@@ -673,6 +698,9 @@ export function generateProductGroupSchema(
   // Nome do modelo (sem a cor)
   const modelName = extractModelName(currentProduct.name, currentProduct.color_name)
   
+  // URL do ProductGroup (usa a página atual como canônica do grupo)
+  const productGroupUrl = `${baseUrl}/${subcategorySlug}/${currentProduct.slug}`
+  
   // Gera schema para cada variante
   const variantSchemas = siblingVariants.map((variant) => {
     const variantUrl = `${baseUrl}/${subcategorySlug}/${variant.slug}`
@@ -681,6 +709,7 @@ export function generateProductGroupSchema(
     
     return {
       "@type": "Product",
+      "@id": `${variantUrl}#variant`,  // ⭐ v3.6: @id único para cada variante
       "name": variant.name,
       "url": variantUrl,
       "sku": variant.slug,
@@ -701,9 +730,10 @@ export function generateProductGroupSchema(
   return {
     "@context": "https://schema.org",
     "@type": "ProductGroup",
+    "@id": `${productGroupUrl}#product-group`,  // ⭐ v3.6: @id único para o grupo
     "name": modelName,
     "description": `${modelName} disponível em ${siblingVariants.length} cores. Móvel para Curitiba e Região Metropolitana com entrega própria em até 72h.`,
-    "url": `${baseUrl}/${subcategorySlug}/${currentProduct.slug}`,
+    "url": productGroupUrl,
     "brand": {
       "@type": "Brand",
       "name": currentProduct.brand || "Moveirama"

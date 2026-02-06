@@ -26,8 +26,8 @@ const trustItems = [
   },
   {
     icon: MessageCircle,
-    title: 'Suporte Humano',
-    subtitle: 'WhatsApp de verdade',
+    title: 'Atendimento Humano',
+    subtitle: 'Se precisar de suporte',
   },
 ];
 

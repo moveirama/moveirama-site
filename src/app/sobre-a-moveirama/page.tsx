@@ -6,9 +6,14 @@ import Head from 'next/head'
 
 // ============================================
 // PÁGINA: Sobre a Moveirama
-// Versão: 1.0
-// Data: 03/02/2026
+// Versão: 1.1
+// Data: 05/02/2026
 // 
+// Changelog:
+// - v1.1 (05/02/2026): Removido addressNeighborhood (não existe no Schema.org)
+//                      Bairro movido para streetAddress
+// - v1.0 (03/02/2026): Versão inicial baseada em SPEC v1.1
+//
 // Baseado em: SPEC_Pagina_Sobre_Moveirama.md v1.1
 // Implementa: 6 seções conforme spec do Squad Visual
 // Schemas: FurnitureStore (SEO local + AIO)
@@ -238,12 +243,11 @@ const FurnitureStoreSchema = () => {
     "paymentAccepted": "Pix, Cartão de Crédito, Cartão de Débito",
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": COMPANY_DATA.address.street,
+      "streetAddress": `${COMPANY_DATA.address.street} - ${COMPANY_DATA.address.neighborhood}`,
       "addressLocality": COMPANY_DATA.address.city,
       "addressRegion": COMPANY_DATA.address.state,
       "postalCode": COMPANY_DATA.address.cep,
-      "addressCountry": "BR",
-      "addressNeighborhood": COMPANY_DATA.address.neighborhood
+      "addressCountry": "BR"
     },
     "geo": {
       "@type": "GeoCoordinates",

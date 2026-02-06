@@ -1,9 +1,11 @@
 import Link from 'next/link'
 
 // ============================================
-// FOOTER v2.2
-// Atualizado: 03/02/2026
+// FOOTER v2.3
+// Atualizado: 05/02/2026
 // Changelog:
+// - v2.3 (05/02/2026): Removido addressNeighborhood (não existe no Schema.org)
+//                      Bairro movido para streetAddress
 // - v2.2 (03/02/2026): Schema @id, email correto, Piraquara em areaServed
 //                      Link para /sobre-a-moveirama
 //                      Endereço completo (Decreto 7.962/2013)
@@ -14,7 +16,7 @@ import Link from 'next/link'
 export default function Footer() {
   return (
     <footer className="bg-[#2D2D2D] text-[#FAF7F4] mt-16 overflow-x-hidden">
-      {/* Schema.org FurnitureStore - Atualizado v2.2 com @id */}
+      {/* Schema.org FurnitureStore - Atualizado v2.3 sem addressNeighborhood */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -31,12 +33,11 @@ export default function Footer() {
             "email": "atendimento@moveirama.com.br",
             "address": {
               "@type": "PostalAddress",
-              "streetAddress": "Rua Barão de Guaraúna, 517",
+              "streetAddress": "Rua Barão de Guaraúna, 517 - Juvevê",
               "addressLocality": "Curitiba",
               "addressRegion": "PR",
               "addressCountry": "BR",
-              "postalCode": "80030-310",
-              "addressNeighborhood": "Juvevê"
+              "postalCode": "80030-310"
             },
             "geo": {
               "@type": "GeoCoordinates",
